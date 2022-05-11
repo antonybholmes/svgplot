@@ -1,20 +1,19 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 from .svgfiguregenes import SVGFigureGenes
 
 
 class SVGFigure(SVGFigureGenes):
     def __init__(self,
                  file,
-                 size=('11in', '8.5in'),  # size=('279mm', '216mm'),
-                 view=(2790, 2160),
+                 size: tuple[float, float] = (279, 216),
+                 view: Optional[tuple[int, int]] = None, #(2790, 2160),
                  grid=(12, 12),
-                 subgrid=(12, 12),
                  border=40):
         super().__init__(file,
                          size=size,
                          view=view,
                          grid=grid,
-                         subgrid=subgrid,
                          border=border)
 
 
@@ -28,15 +27,15 @@ class JournalFigureFactory(FigureFactory):
     def get_figure(file: str, name: str = None, size: tuple[float, float] = None) -> SVGFigure:
         match name:
             case 'portrait':
-                size = (8.5, 11)
+                size = (216, 279)
             case 'jem':
-                size = (7, 9)
+                size = (int(round(7*25.4)), int(round(9*25.4)))
             case 'frontier':
-                size = (180/25.4, 279/25.4)
+                size = (180, 279)
             case _:
-                size = (11, 8.5)
+                size = (279, 216)
 
-        return SVGFigure(file, size=('{}in'.format(size[0]), '{}in'.format(size[1])), view=(int(size[0] * 254), int(size[1] * 254)))
+        return SVGFigure(file, size=size)
 
 
 class FigureFactoryProducer:

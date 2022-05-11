@@ -12,25 +12,30 @@ class SVGFigureBase:
     def __init__(self,
                  file,
                  # size=('279mm', '216mm'),
-                 size: tuple[str, str] = ('11in', '8.5in'),
-                 view: tuple[int, int] = (2790, 2160),
+                 size: tuple[float, float] = (279, 216),
+                 view: Optional[tuple[int, int]] = None, #(2790, 2160),
                  grid: tuple[int, int] = (12, 12),
                  border: int = 100):
+
+        if view is None:
+            view = (int(size[0] * 10), int(size[1] * 10))
+        
+        size = (f'{size[0]}mm', f'{size[1]}mm')
+
         self._svg = svgwrite.Drawing(
             file,
             size=size,
             viewBox='0 0 {} {}'.format(view[0], view[1]))
         # self._svg.add_stylesheet(
         #    href='/ifs/scratch/cancer/Lab_RDF/abh2138/scRNA/data/samples/human/10X/rdf/restricted_grch38/manuscript/svg-fig.css', title='svg-fig')
-        self.set_units(svgplot.mm)
         self._view = view
         self._scale_xy = (1, 1)  # (view[0] / 2790, view[1] / 2160)
         self._border = (border * self._scale_xy[0], border * self._scale_xy[1])
-        self._grid = (int(12 * self._scale_xy[0]), int(12 * self._scale_xy[1]))
+        self._grid = grid #(int(12 * self._scale_xy[0]), int(12 * self._scale_xy[1]))
         self._int_view = (view[0] - 2 * self._border[0],
                           view[1] - 2 * self._border[1])
-        self._grid_xy = ((view[0] - 2 * self._border[0]) / grid[1],
-                         (view[1] - 2 * self._border[1]) / grid[0])
+        self._grid_xy = (self._int_view[0] / grid[1],
+                         self._int_view[1] / grid[0])
         self._subgrid_xy = (self._grid_xy[0] / grid[1],
                             self._grid_xy[1] / grid[0])
         self._offset = (0, 0)
@@ -68,9 +73,6 @@ class SVGFigureBase:
 
     # def grid_block(self, row, col, name=None):
     #    return SVGGridBlock(self, row, col, name=name)
-
-    def set_units(self, units):
-        self.units = units
 
     def unit(self, num):
         # * 10 #self.units #'{}{}'.format(num, self.units)

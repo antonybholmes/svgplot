@@ -1,4 +1,5 @@
 import math
+from typing import Optional
 import numpy as np
 import re
 import os
@@ -11,16 +12,14 @@ from .svgfigureheatmap import SVGFigureHeatmap
 class SVGFigureGenes(SVGFigureHeatmap):
     def __init__(self,
                  file,
-                 size=('11in', '8.5in'),  # size=('279mm', '216mm'),
-                 view=(2790, 2160),
+                 size: tuple[float, float] = (279, 216),
+                 view: Optional[tuple[int, int]] = None, #(2790, 2160),
                  grid=(12, 12),
-                 subgrid=(12, 12),
                  border=100):
         super().__init__(file,
                          size=size,
                          view=view,
                          grid=grid,
-                         subgrid=subgrid,
                          border=border)
 
     def add_vert_legend(self,

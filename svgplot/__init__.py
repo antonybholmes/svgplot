@@ -1,8 +1,9 @@
 from .svgfigure import *
 from .svgfigureheatmap import *
 from .svgfiguremutationheatmap import *
-from .graph import *
-from .survival import *
-from .heatmap import *
-from .gsea import *
+# from . import graph
+# from . import colorbar
+# from . import survival
+# from . import heatmap
+# from . import gsea
 from .svgplot import *

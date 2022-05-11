@@ -7,6 +7,7 @@ Created on Tue Aug 27 09:36:28 2019
 """
 import collections
 import re
+from typing import Optional
 import numpy as np
 import libplot
 import matplotlib
@@ -25,16 +26,14 @@ DEFAULT_LIMITS = [-2, 2]
 class SVGFigureHeatmap(SVGFigurePlot):
     def __init__(self,
                  file,
-                 size=('11in', '8.5in'),  # size=('279mm', '216mm'),
-                 view=(2790, 2160),
+                 size: tuple[float, float] = (279, 216),
+                 view: Optional[tuple[int, int]] = None, #(2790, 2160),
                  grid=(12, 12),
-                 subgrid=(12, 12),
                  border=100):
         super().__init__(file,
                          size=size,
                          view=view,
                          grid=grid,
-                         subgrid=subgrid,
                          border=border)
 
     def heatmap_color_cols(self,

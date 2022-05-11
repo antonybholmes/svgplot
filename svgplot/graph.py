@@ -92,10 +92,10 @@ def add_linegraph(svg: SVGFigure,
 
             if _show_axes[1]['invert']:
                 points.append([x + xaxis.scale(d[0]), y +
-                              yaxis.trans(d[1], clip=_show_axes[1]['clip'])])
+                              yaxis.scale(d[1], clip=_show_axes[1]['clip'])])
             else:
                 points.append([x + xaxis.scale(d[0]), y + yaxis.w -
-                              yaxis.trans(d[1], clip=_show_axes[1]['clip'])])
+                              yaxis.scale(d[1], clip=_show_axes[1]['clip'])])
     else:
         for i in range(0, data.shape[0]):
             id = f'{data.iloc[i, 0]}:{data.iloc[i, 1]}'
@@ -134,7 +134,7 @@ def add_linegraph(svg: SVGFigure,
     return xaxis.w, yaxis.w
 
 
-def add_pie_chart(svg,
+def add_pie_chart(svg: SVGFigure,
                   values: list[float],
                   colors: list[str] = None,
                   labels: list[str] = None,
@@ -220,6 +220,142 @@ def add_pie_chart(svg,
                             align='c', color=labelcolors[i % labelcolors.size])
 
             angle1 += angle2
+
+
+def add_stacked_bar(svg: SVGFigure,
+                    tables,
+                    bar_colors={},
+                    x=0,
+                    y=0,
+                    height=400,
+                    bar_width=60,
+                    bar_padding=10,
+                    bar_color='#cccccc',
+                    ylim=[0, 100],
+                    yticks=[0, 50, 100],
+                    xlabel='',
+                    ylabel='% cells',
+                    padding=10,
+                    whisker=20,
+                    as_pc=True):
+    # self.set_font_size(svgplot.FIGURE_FONT_SIZE)
+
+    if as_pc:
+        pc_tables = [(t / t.sum(axis=0) * 100) for t in tables]
+        yaxis = Axis(lim=[0, 100], w=height)
+    else:
+        pc_tables = tables
+        yaxis = Axis(lim=ylim, w=height)
+
+    block_size = bar_width + 2 * bar_padding
+
+    #w = means.size * block_size
+
+    #xaxis = axis.Axis(lim=[0, df.shape[1]], w=w)
+
+    y2 = y + height
+
+    # draw bars
+
+    x1 = x + bar_padding
+
+    for t in pc_tables:
+        for c in range(0, t.shape[1]):
+            y3 = y2
+            for r in range(t.shape[0] - 1, -1, -1):
+                h = yaxis.scale(t.iloc[r, c])
+                y1 = y3 - h
+
+                bar_name = str(t.index[r])
+
+                if bar_name in bar_colors:
+                    bar_color = bar_colors[bar_name]
+                else:
+                    bar_color = 'gray'
+
+                svg.add_rect(x1, y1, bar_width, h, fill=bar_color)
+                svg.add_rect(x1, y1, bar_width, h, color='black')
+                y3 -= h
+            x1 += block_size
+
+    add_y_axis(svg, axis=yaxis, pos=(0, 0), ticks=yticks, label=ylabel)
+
+    # # draw xaxis
+    #self.add_line(x1=x, y1=y+h, x2=x + df.shape[1] * block_size, y2=y+h)
+
+    # # draw sd
+
+    # x1 = x + bar_padding + bar_width / 2
+
+    # for i in range(0, means.size):
+    #     y1 = y2 - yaxis.scale(means[i])
+
+    #     ysd = yaxis.scale(sds[i])
+
+    #     yb1 = y1 - ysd
+
+    #     # stop bars dropping below x axis
+    #     yb2 = min(y2, y1 + ysd)
+
+    #     self.add_line(x1=x1, y1=yb1, x2=x1, y2=yb2)
+
+    #     xb1 = x1 - whisker / 2
+    #     xb2 = xb1 + whisker
+
+    #     self.add_line(x1=xb1, y1=yb1, x2=xb2, y2=yb1)
+
+    #     if (y1 + ysd) < y2 - 20:
+    #         self.add_line(x1=xb1, y1=yb2, x2=xb2, y2=yb2)
+
+    #     x1 += block_size
+
+    # self.add_y_axis(axis=yaxis, y=y+h, ticks=[0, 50, 100], label='% cells')
+
+    # # draw xaxis
+    # self.add_line(x1=x, y1=y+h, x2=x + df.shape[1] * block_size, y2=y+h)
+
+    # x1 = x
+    # for i in range(0, df.shape[1]):
+    #     y1 = h - yaxis.scale(means[i]) - yaxis.scale(sds[i]) - self.get_font_h()
+
+    #     self.add_text_bb('{}%'.format(
+    #         round(means[i], 1)), x=x1, y=y1, w=block_size, align='c')
+
+    #     x1 += block_size
+
+    # rows = df.columns[0].replace('+', '').replace('-', '').split(' ')
+
+    # d = np.empty((len(rows), df.shape[1]), dtype=object)
+
+    # for j in range(0, df.shape[1]):
+    #     names = df.columns[j].split(' ')
+
+    #     for i in range(0, len(names)):
+    #         name = names[i]
+
+    #         if '+' in name:
+    #             d[i, j] = '+'
+    #         else:
+    #             d[i, j] = '-'
+
+    # self.inc(y=y2 + 50)
+
+    # self.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+
+    # for i in range(0, len(rows)):
+    #     self.add_text_bb(rows[i], x=0, align='r')
+
+    #     x1 = 0
+
+    #     for j in range(0, df.shape[1]):
+    #         self.add_text_bb(d[i, j], x=x1, w=block_size, align='c')
+    #         #self.add_frame(x, 0, xd, 20, color='red')
+    #         x1 += block_size
+
+    #     self.inc(y=self.get_font_h() + 10)
+
+
+
 
 
 def add_axes(svg: SVGFigure,

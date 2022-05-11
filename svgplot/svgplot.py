@@ -12,19 +12,13 @@ Created on Fri Mar  1 17:40:38 2019
 #import pandas as pd
 
 from typing import Mapping
-import libplot
-import figures
 import matplotlib
 import pandas as pd
 import numpy as np
 import os
 from PIL import Image
-import svgwrite
 from svgwrite import cm, mm
-import math
 import sys
-import svgwrite
-import collections
 from PIL import ImageFont
 import re
 import tkinter as Tkinter
