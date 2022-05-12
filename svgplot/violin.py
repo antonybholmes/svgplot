@@ -1,7 +1,5 @@
 from optparse import Option
-from tkinter.ttk import Style
-from turtle import dot
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Optional, Union
 from scipy.stats import gaussian_kde
 from pandas import DataFrame
 from .svgfigure import SVGFigure
@@ -10,13 +8,10 @@ import numpy as np
 from . import svgplot
 from .axis import Axis
 from . import graph
+from . import swarm
 from . import boxplot
 
 
-def _kws(kws: dict[str, Any], user_kws: Optional[dict[str, Any]] = None) -> dict[str, Any]:
-    if user_kws is not None:
-        kws.update(user_kws)
-    return kws
 
 
 def _add_violin(svg: SVGFigure,
@@ -25,8 +20,20 @@ def _add_violin(svg: SVGFigure,
                 axes: tuple[Axis, Axis],
                 color: str = 'blue',
                 opacity: float = 0.3,
-                pos: tuple[int, int] = (0, 0)):
+                pos: tuple[int, int] = (0, 0),
+                clip: bool = True):
+    """Add the base violin to a plot
 
+    Args:
+        svg (SVGFigure): SVG canvas to draw on.
+        df (DataFrame): Data to render.
+        max_density (float): Controls the height of the KDE
+        axes (tuple[Axis, Axis]): x and y axes.
+        color (str, optional): Color of violin. Defaults to 'blue'.
+        opacity (float, optional): Opacity between 0 and 1 to govern translucency. Defaults to 0.3.
+        pos (tuple[int, int], optional): Initial relative offset position to render from. Defaults to (0, 0).
+        clip (bool, optional): Whether to clip coordinates so the plot does not exceed the y lim. Defaults to True.
+    """
     x, y = pos
 
     xaxis, yaxis = axes
@@ -36,8 +43,7 @@ def _add_violin(svg: SVGFigure,
     points1 = []
 
     for i in range(0, df.shape[0]):
-        p = (x - xaxis.scale(df['x'][i]/max_density), y +
-             yaxis.w - yaxis.scale(df['y'][i]))
+        p = (x - xaxis.scale(df['x'][i]/max_density), y + yaxis.w - yaxis.scale(df['y'][i], clip=clip))
 
         id = f'{p[0]}:{p[1]}'
 
@@ -79,69 +85,7 @@ def _add_violin(svg: SVGFigure,
     svg.add_polygon(points, fill=color, fill_opacity=opacity)
 
 
-def _add_swarm(svg: SVGFigure,
-               data_points: np.array,
-               axes: tuple[Axis, Axis],
-               dot_size: int = 8,
-               color: str = 'blue',
-               fill: Optional[str] = None,
-               opacity: float = 0.3,
-               pos: tuple[int, int] = (0, 0),
-               style: str = '.'):
-    if fill is None:
-        fill = color
 
-    x, y = pos
-
-    xaxis, yaxis = axes
-
-    dot_r = dot_size / 2
-
-    dot_positions = [y + yaxis.w - yaxis.scale(p) for p in sorted(data_points)]
-
-    groups = []
-
-    for p in dot_positions:
-        found = False
-
-        p1 = p - dot_r
-        p2 = p + dot_r
-
-        for group in groups:
-            if (p1 >= group['x1'] and p1 <= group['x2']) or (p2 >= group['x1'] and p2 <= group['x2']):
-                group['dots'].append(p)
-                # make group more inclusive
-                #group['x1'] = min(group['x1'], p1)
-                #group['x2'] = max(group['x2'], p2)
-                found = True
-                break
-
-        if not found:
-            groups.append({'x1': p1, 'x2': p2, 'dots': [p]})
-
-    for group in groups:
-        x2 = x - (len(group['dots']) - 1) * dot_size / 2
-        l = (len(group['dots'])-1) * dot_size
-        # shift points
-
-        for i, p in enumerate(reversed(group['dots'])):
-            match style:
-                case '+':
-                    svg.add_line(x1=x2-dot_size/2, x2=x2+dot_size/2, y1=p, color=color)
-                    svg.add_line(x1=x2, y1=p-dot_size/2, y2=p+dot_size/2, color=color)
-                case '^':
-                    h = np.sin(np.pi / 3) * dot_size
-                    svg.add_polygon([[x2-dot_size/2, p+h/2], [x2, p-h/2], [x2+dot_size/2, p+h/2]], fill=fill, fill_opacity=opacity)
-                case _:
-                    svg.add_circle(x=x2, y=p, w=dot_size,
-                                fill=fill, fill_opacity=opacity)
-
-            if i % 2 == 0:
-                x2 += l
-            else:
-                x2 -= l
-
-            l -= dot_size
 
 
 def _add_legend(svg: SVGFigure,
@@ -187,65 +131,90 @@ def add_violinplot(svg: SVGFigure,
                    hue: Optional[str] = None,
                    x_order: Optional[list[str]] = None,
                    hue_order: Optional[list[str]] = None,
-                   colors: Optional[list[str]] = None,
+                   palette: Optional[list[str]] = None,
                    scale: str = 'area',
+                   scale_hue: bool = True,
                    plot_width: int = 80,
                    height: int = 500,
                    x_gap: int = 20,
-                   show_labels: bool = True,
-                   label_pos:str='axis',
                    title_offset: int = -50,
+                   show_legend: bool = False,
+                   pos: tuple[int, int] = (0, 0),
                    bw_kws: Optional[dict[str, Any]] = None,
-                   show_legend: bool = True,
+                   x_kws: Optional[dict[str, Any]] = None,
                    y_kws: Optional[dict[str, Any]] = None,
                    violin_kws: Optional[dict[str, Any]] = None,
                    swarm_kws: Optional[dict[str, Any]] = None,
                    box_kws: Optional[dict[str, Any]] = None) -> None:
 
-    _bw_kws = _kws({'bw': 'scott', 'cut': 2, 'gridsize': 100}, bw_kws)
+    _bw_kws = svgplot.kws({'bw': 'scott', 'cut': 2, 'gridsize': 100}, bw_kws)
 
-    _y_kws = _kws({'show': True, 'lim': None, 'ticks': None,
-                  'ticklabels': None, 'offset': None}, y_kws)
-    _violin_kws = _kws({'show': True, 'opacity': 0.3}, violin_kws)
-    _swarm_kws = _kws({'show': True, 'dot_size': 10, 'opacity': 0.7, 'style': '^'}, swarm_kws)
-    _box_kws = _kws({'show': True, 'width': 20, 'whisker_width': 20, 'stroke': 3, 'dot_size': 12,
+    _x_kws = svgplot.kws({'show': True, 'show_labels': True, 'show_axis':True, 'label_pos':'axis', 'label_orientation': 'h'}, x_kws)
+    _y_kws = svgplot.kws({'show': True, 'lim': None, 'ticks': None,
+                  'ticklabels': None, 'offset': None, 'title': None}, y_kws)
+    _violin_kws = svgplot.kws({'show': True, 'opacity': 0.3}, violin_kws)
+    _swarm_kws = svgplot.kws({'show': True, 'dot_size': 10, 'opacity': 0.7, 'style': '^'}, swarm_kws)
+    _box_kws = svgplot.kws({'show': True, 'width': 20, 'whisker_width': 20, 'stroke': 3, 'dot_size': 12,
                     'fill': 'white', 'opacity': 1, 'rounded': True, 'median_style': 'circle'}, box_kws)
 
-    if colors is None:
-        colors = matplotlib.cm.Set2
+    if palette is None:
+        palette = matplotlib.cm.Set2
 
-    if isinstance(colors, matplotlib.colors.ListedColormap):
-        colors = np.array([svgplot.rgbtohex(c) for c in colors.colors])
+    if isinstance(palette, matplotlib.colors.ListedColormap):
+        palette = [svgplot.rgbtohex(c) for c in palette.colors]
+
+    if isinstance(palette, list):
+        palette = np.array(palette)
 
     if hue is not None:
-        colors = colors[0:2]
+        palette = palette[0:2]
 
     if x_order is None:
-        x_order = np.sort(data[x].unique())  # data[x][np.sort(idx)]
-    else:
-        x_order = np.array(x_order)
+        x_order = []    
+        used = set()
+
+        for n in data[x]:
+            if n in used:
+                continue
+
+            x_order.append(n)
+            used.add(n)
+    
+    x_order = np.array(x_order)
 
     if hue_order is None:
-        hue_order = np.sort(data[hue].unique())  # data[x][np.sort(idx)]
-    else:
-        hue_order = np.array(hue_order)
+        hue_order = []    
+        used = set()
 
-    x1 = y1 = 0
+        for n in data[hue]:
+            if n in used:
+                continue
+
+            hue_order.append(n)
+            used.add(n)
+
+    hue_order = np.array(hue_order)
+
+    x1, y1 = pos
 
     if _y_kws['lim'] is None:
         _y_kws['lim'] = (data[y].min(), data[y].max())
 
     if _y_kws['offset'] is None:
-        _y_kws['offset'] = -(plot_width + x_gap)
+        _y_kws['offset'] = -(plot_width/2 + x_gap)
 
-    xaxis = Axis(lim=[0, 1], w=plot_width)
+    if _y_kws['title'] is None:
+        _y_kws['title'] = y
+
+    xaxis = Axis(lim=[0, 1], w=plot_width/2)
     yaxis = Axis(lim=_y_kws['lim'], ticks=_y_kws['ticks'],
-                 ticklabels=_y_kws['ticklabels'], w=height)
+                 ticklabels=_y_kws['ticklabels'], label=y_kws['title'], w=height)
 
     densities = []
     data_points = []
 
     global_max_density = 0
+    max_densities = np.zeros(x_order.size)
 
     colori = 0
 
@@ -273,21 +242,25 @@ def add_violinplot(svg: SVGFigure,
             densities.append(df)
             data_points.append(d)
             global_max_density = max(global_max_density, density.max())
+            max_densities[labeli] = max(max_densities[labeli], density.max())
 
     colori = 0
 
     for labeli, label in enumerate(x_order):
-        w = 2 * (hue_order.size - 1) * plot_width
+        w = (hue_order.size - 1) * plot_width
 
-        if show_labels:
-            match label_pos:
+        if _x_kws['show_labels']:
+            match _x_kws['label_pos']:
                 case 'title':
                     svg.add_text_bb(label, x=x1+w/2, y=title_offset, align='c')
                 case _:
-                    svg.add_text_bb(label, x=x1+w/2, y=y1+yaxis.w+50, align='c')
+                    if _x_kws['label_orientation'] == 'v':
+                        svg.add_text_bb(label, x=x1+w/2, y=y1+yaxis.w+10, orientation='v', align='r')
+                    else:
+                        svg.add_text_bb(label, x=x1+w/2, y=y1+yaxis.w+50, align='c')
 
         for huei, hue_label in enumerate(hue_order):
-            color = colors[colori % colors.size]
+            color = palette[colori % palette.size]
 
             dp = data_points[colori]
 
@@ -295,7 +268,10 @@ def add_violinplot(svg: SVGFigure,
 
             match scale:
                 case 'area':
-                    md = global_max_density
+                    if scale_hue:
+                        md = max_densities[labeli]
+                    else:
+                        md = global_max_density
                 case _:
                     md = df['x'].max()
 
@@ -311,7 +287,7 @@ def add_violinplot(svg: SVGFigure,
             # iqr line
 
             if _swarm_kws['show']:
-                _add_swarm(svg,
+                swarm.add_swarm(svg,
                            dp,
                            axes=(xaxis, yaxis),
                            dot_size=_swarm_kws['dot_size'],
@@ -335,13 +311,22 @@ def add_violinplot(svg: SVGFigure,
                                     pos=(x1, y1),
                                     rounded=_box_kws['rounded'])
 
-            x1 += 2 * xaxis.w
+            x1 += plot_width #2 * xaxis.w
             colori += 1
 
+        
+
         x1 += x_gap
+
+    if _x_kws['show_axis']:
+        print(x, x1, y1+yaxis.w)
+        svg.add_line(x1=pos[0]-plot_width/2-x_gap, x2=x1-plot_width/2-x_gap, y1=y1+yaxis.w)
+
 
     if show_legend:
         _add_legend(svg,
                     hue_order,
-                    colors,
+                    palette,
                     pos=(x1, 0))
+
+    return (x1, height)

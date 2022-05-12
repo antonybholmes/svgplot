@@ -6,8 +6,9 @@ import lib10x
 from scipy.cluster.hierarchy import linkage, dendrogram
 from . import heatmap
 from . import svgplot
+from .svgfigure import SVGFigure
 
-def add_dendrogram(svg,
+def add_dendrogram(svg: SVGFigure,
                    df: pd.DataFrame,
                    pos: tuple[int, int] = (0, 0),
                    cell: tuple[int, int] = heatmap.DEFAULT_CELL,
@@ -17,10 +18,12 @@ def add_dendrogram(svg,
                    showgrid=True,
                    showframe=True,
                    xticklabels=True,
+                   xticklabel_colors:dict[str, str]={},
                    yticklabels=True,
                    zscore=True,
                    row_colors={},
-                   col_colors={},
+                   col_colors:dict[str, str]={},
+                   show_col_colobar=True,
                    color_height=40,
                    tree_offset=15,
                    tree_height=180,
@@ -28,7 +31,34 @@ def add_dendrogram(svg,
                    col_linkage=None,
                    show_col_tree=True,
                    show_row_tree=True):
+    """_summary_
 
+    Args:
+        svg (SVGFigure): Figure to draw onto.
+        df (pd.DataFrame): Dataframe to create dendogram from.
+        pos (tuple[int, int], optional): Relative position to render dendrogram. Defaults to (0, 0).
+        cell (tuple[int, int], optional): Size of heatmap cell. Defaults to heatmap.DEFAULT_CELL.
+        lim (tuple[int, int], optional): Data range for coloring. Defaults to heatmap.DEFAULT_LIMITS.
+        cmap (_type_, optional): A colormap to render cell color. Defaults to libplot.BWR2_CMAP.
+        gridcolor (_type_, optional): Color of grid lines. Defaults to svgplot.GRID_COLOR.
+        showgrid (bool, optional): If true, show grid lines. Defaults to True.
+        showframe (bool, optional): If true, show frame around heat map. Defaults to True.
+        xticklabels (bool, optional): If true, show column labels. Defaults to True.
+        yticklabels (bool, optional): If true, show row labels. Defaults to True.
+        zscore (bool, optional): If true, row z-score data before plotting. Defaults to True.
+        row_colors (dict, optional): _description_. Defaults to {}.
+        col_colors (dict, optional): _description_. Defaults to {}.
+        color_height (int, optional): Height of the color bar. Defaults to 40.
+        tree_offset (int, optional): _description_. Defaults to 15.
+        tree_height (int, optional): _description_. Defaults to 180.
+        row_linkage (_type_, optional): _description_. Defaults to None.
+        col_linkage (_type_, optional): _description_. Defaults to None.
+        show_col_tree (bool, optional): _description_. Defaults to True.
+        show_row_tree (bool, optional): _description_. Defaults to True.
+
+    Returns:
+        _type_: _description_
+    """                   
     x, y = pos
 
     if zscore:
@@ -83,7 +113,7 @@ def add_dendrogram(svg,
         x1 = x + cell[0] / 2
         y1 = y - tree_offset
 
-        if len(col_colors) > 0:
+        if show_col_colobar and len(col_colors) > 0:
             y1 -= color_height + tree_offset
 
         for i, ic in enumerate(icoord):
@@ -95,7 +125,7 @@ def add_dendrogram(svg,
 
     # col colors
 
-    if len(col_colors) > 0:
+    if show_col_colobar and len(col_colors) > 0:
         x1 = x
         y1 = y - tree_offset - color_height
 
@@ -155,7 +185,7 @@ def add_dendrogram(svg,
                 showgrid=showgrid,
                 showframe=showframe,
                 xticklabels=False,
-                yticklabels=xticklabels)
+                yticklabels=yticklabels)
 
     # for i in range(0, df.shape[0]):
     #     hx = x
@@ -180,22 +210,29 @@ def add_dendrogram(svg,
     # if showframe:
     #     svg.add_frame(x=x, y=y, w=w, h=h)
 
-    if yticklabels:
-        y1 = y + cell[1] / 2
+    # if yticklabels:
+    #     y1 = y + cell[1] / 2
 
-        for name in df.index:
-            svg.add_text_bb(name, x=w+20, y=y1)
-            y1 += cell[1]
+    #     for name in df.index:
+    #         svg.add_text_bb(name, x=w+20, y=y1)
+    #         y1 += cell[1]
 
     if xticklabels:
+
+
         x1 = x + cell[0] / 2
         y1 = y - 30 
         
         if show_col_tree:
             y1 -= (tree_offset + tree_height)
 
-        for name in df.columns:
-            svg.add_text_bb(name, x=x1, y=y1, orientation='v')
-            x1 += cell[0]
+        if show_col_colobar and len(col_colors) > 0:
+            y1 -= color_height + tree_offset
+
+        heatmap.add_xticklabels(svg, df, pos=(x, y1), xticklabel_colors=xticklabel_colors)
+
+        # for name in df.columns:
+        #     svg.add_text_bb(name, x=x1, y=y1, orientation='v')
+        #     x1 += cell[0]
 
     return (w, h)

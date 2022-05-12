@@ -1,8 +1,6 @@
 from typing import Optional
-from .svgfigure import SVGFigure
-import matplotlib
 import numpy as np
-from . import svgplot
+from .svgfigure import SVGFigure
 from .axis import Axis
 
 

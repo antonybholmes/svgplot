@@ -11,7 +11,7 @@ Created on Fri Mar  1 17:40:38 2019
 #import numpy as np
 #import pandas as pd
 
-from typing import Mapping
+from typing import Any, Mapping, Optional
 import matplotlib
 import pandas as pd
 import numpy as np
@@ -99,6 +99,11 @@ AXIS_STROKE = 2
 MINOR_TICK_STROKE = 2
 
 # initialize Tk so that font metrics will work
+
+def kws(kws: dict[str, Any], user_kws: Optional[dict[str, Any]] = None) -> dict[str, Any]:
+    if user_kws is not None:
+        kws.update(user_kws)
+    return kws
 
 def clamp(x): 
     return max(0, min(int(x * 255), 255))

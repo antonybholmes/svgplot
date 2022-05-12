@@ -14,6 +14,7 @@ from . import svgplot
 
 
 DEFAULT_CELL = (50, 50)
+DEFAULT_COLORBAR_CELL = (50, 25)
 DEFAULT_LIMITS = (-2, 2)
 
 
@@ -27,6 +28,7 @@ def add_heatmap(svg,
                 showgrid: bool = True,
                 showframe: bool = True,
                 xticklabels: bool = True,
+                xticklabel_colors: dict[str, str] = {},
                 yticklabels: bool = True,
                 row_zscore: bool = False):
 
@@ -75,24 +77,48 @@ def add_heatmap(svg,
             y1 += cell[1]
 
     if xticklabels:
-        x1 = x + cell[0] / 2
-
-        for name in df.columns:
-            svg.add_text_bb(name, x=x1, y=-30, orientation='v')
-            x1 += cell[0]
+        add_xticklabels(svg, df, cell=cell, xticklabel_colors=xticklabel_colors)
 
     return (w, h)
 
 
+def add_xticklabels(svg,
+                    df: pd.DataFrame,
+                    xticklabel_colors: dict[str, str] = {},
+                    pos: tuple[int, int] = (0, -30),
+                    cell: tuple[int, int] = DEFAULT_CELL):
+    """
+    Add vertical column labels to heatmap
+
+    Args:
+        s
+    """
+    x, y = pos
+
+    x1 = x + cell[0] / 2
+
+    for name in df.columns:
+        color = 'black'
+
+        if len(xticklabel_colors) > 0:
+            for label, c in xticklabel_colors.items():
+                if label in name:
+                    color = c
+                    break
+
+        svg.add_text_bb(name, x=x1, y=y, orientation='v', color=color)
+        x1 += cell[0]
+
+
 def add_col_colorbar(svg,
-                labels: list[str],
-                colormap: dict[str, str],
-                pos: tuple[int, int] = (0, 0),
-                cell: tuple[int, int] = (DEFAULT_CELL[0], DEFAULT_CELL[1]/2),
-                gridcolor=svgplot.GRID_COLOR,
-                showgrid: bool = False,
-                showframe: bool = False,
-                default_color: str = '#cccccc'):
+                     labels: list[str],
+                     colormap: dict[str, str],
+                     pos: tuple[int, int] = (0, 0),
+                     cell: tuple[int, int] = DEFAULT_COLORBAR_CELL,
+                     gridcolor=svgplot.GRID_COLOR,
+                     showgrid: bool = False,
+                     showframe: bool = False,
+                     default_color: str = '#cccccc'):
 
     x, y = pos
 
@@ -120,9 +146,6 @@ def add_col_colorbar(svg,
         svg.add_frame(x=x, y=y, w=w, h=h)
 
     return (w, h)
-
-
-
 
 
 def add_grid(svg,
