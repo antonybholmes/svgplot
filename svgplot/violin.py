@@ -85,9 +85,6 @@ def _add_violin(svg: SVGFigure,
     svg.add_polygon(points, fill=color, fill_opacity=opacity)
 
 
-
-
-
 def _add_legend(svg: SVGFigure,
                 hue_order: Optional[list[str]] = None,
                 colors: Optional[list[str]] = None,
@@ -327,6 +324,6 @@ def add_violinplot(svg: SVGFigure,
         _add_legend(svg,
                     hue_order,
                     palette,
-                    pos=(x1, 0))
+                    pos=(x1-plot_width, 0))
 
     return (x1, height)
