@@ -29,7 +29,9 @@ def add_dendrogram(svg: SVGFigure,
                    row_linkage:Optional[Union[linkage, str]]='auto',
                    col_linkage:Optional[Union[linkage, str]]='auto',
                    show_col_tree=True,
-                   show_row_tree=True):
+                   show_row_tree=True,
+                   ysplits=[],
+                   ysplitgap=40):
     """_summary_
 
     Args:
@@ -90,6 +92,26 @@ def add_dendrogram(svg: SVGFigure,
     hy = y
     w = cell[0] * df.shape[1]
     h = cell[1] * df.shape[0]
+
+
+    # heatmap
+
+    w, h, y_map = heatmap.add_heatmap(svg=svg,
+                df=df,
+                pos=pos,
+                cell=cell,
+                lim=lim,
+                cmap=cmap,
+                gridcolor=gridcolor,
+                showframe=showframe,
+                xticklabels=False,
+                yticklabels=yticklabels,
+                ysplits=ysplits,
+                ysplitgap=ysplitgap)
+
+    # determine the offset of each cell relative to where it should be
+    # on a normal heatmap this will be 0 for every row
+    y_offset_map = {x:y_map[x] - x * cell[1] for x in range(df.shape[0])}
 
     # col tree
     if col_linkage is not None and show_col_tree:
@@ -168,25 +190,19 @@ def add_dendrogram(svg: SVGFigure,
         tree_width = cell[1] * (df.shape[0] - 1)
         y1 = y + cell[1] / 2
 
+        n = df.shape[0] - 1
         for i, ic in enumerate(icoord):
             dc = dcoord[i]
 
             for j in range(0, 3):
-                svg.add_line(x1=x1-dc[j]*tree_height, y1=y1+ic[j]*tree_width,
-                            x2=x1-dc[j+1]*tree_height, y2=y1+ic[j+1]*tree_width)
+                #y2 = y_map[int(ic[j]*n)]
+                #y3 = y_map[int(ic[j+1]*n)]
+                y2 = y1+ic[j]*tree_width + y_offset_map[int(ic[j]*n)]
+                y3 = y1+ic[j+1]*tree_width + y_offset_map[int(ic[j+1]*n)]
+                svg.add_line(x1=x1-dc[j]*tree_height, y1=y2,
+                            x2=x1-dc[j+1]*tree_height, y2=y3)
 
-    # heatmap
-
-    heatmap.add_heatmap(svg=svg,
-                df=df,
-                pos=pos,
-                cell=cell,
-                lim=lim,
-                cmap=cmap,
-                gridcolor=gridcolor,
-                showframe=showframe,
-                xticklabels=False,
-                yticklabels=yticklabels)
+    
     
     # col labels
 

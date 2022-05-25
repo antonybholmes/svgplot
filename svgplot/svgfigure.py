@@ -1,13 +1,13 @@
-from abc import ABC, abstractmethod
 from typing import Optional
-from .svgfigureplot import SVGFigurePlot
+from .svgfiguredraw import SVGFigureDraw
+from enum import Enum
 
 
-class SVGFigure(SVGFigurePlot):
+class SVGFigure(SVGFigureDraw):
     def __init__(self,
                  file,
                  size: tuple[float, float] = (279, 216),
-                 view: Optional[tuple[int, int]] = None, #(2790, 2160),
+                 view: Optional[tuple[int, int]] = None,  # (2790, 2160),
                  grid=(12, 12),
                  border=40):
         super().__init__(file,
@@ -17,33 +17,47 @@ class SVGFigure(SVGFigurePlot):
                          border=border)
 
 
-class FigureFactory(ABC):
-    @abstractmethod
-    def get_figure(file: str, name: str = None, size: tuple[float, float] = None) -> SVGFigure:
-        pass
+class FigureSize(Enum):
+    LETTER = 1
+    JEM = 2
+    FRONTIER = 3
+
+class Orientation(Enum):
+    PORTRAIT = 1
+    LANDSCAPE = 2
 
 
-class JournalFigureFactory(FigureFactory):
-    def get_figure(file: str, name: str = None, size: tuple[float, float] = None) -> SVGFigure:
-        match name:
-            case 'portrait':
-                size = (216, 279)
-            case 'jem':
+class FigureFactory:
+    def create_figure(file: str,
+        size: FigureSize = FigureSize.LETTER, 
+        orientation: Orientation = Orientation.LANDSCAPE) -> SVGFigure:
+
+        match size:
+            case FigureSize.JEM:
                 size = (int(round(7*25.4)), int(round(9*25.4)))
-            case 'frontier':
+            case FigureSize.FRONTIER:
                 size = (180, 279)
             case _:
-                size = (279, 216)
+                # landscape
+                size = (216, 279)
+
+        if orientation == Orientation.LANDSCAPE:
+            size = (size[1], size[0])
 
         return SVGFigure(file, size=size)
 
 
-class FigureFactoryProducer:
-    def get_factory(name: str):
-        match name:
-            case 'journal':
-                return JournalFigureFactory
+    def portrait(file: str):
+        return FigureFactory.create_figure(file, orientation=Orientation.PORTRAIT)
 
+    def landscape(file: str):
+        return FigureFactory.create_figure(file, orientation=Orientation.LANDSCAPE)
+
+    def frontier(file: str, orientation=Orientation.PORTRAIT):
+        return FigureFactory.create_figure(file, size=FigureSize.FRONTIER, orientation=orientation)
+
+    def jem(file: str, orientation=Orientation.PORTRAIT):
+        return FigureFactory.create_figure(file, size=FigureSize.JEM, orientation=orientation)
 
 # def make_panel():
 #     svg = SVGFigure('panel.svg',

@@ -31,7 +31,9 @@ def add_heatmap(svg: SVGFigure,
                 xticklabel_colors: dict[str, str] = {},
                 yticklabels: Optional[Union[list[str], bool]] = True,
                 yticklabel_colors: dict[str, str] = {},
-                row_zscore: bool = False):
+                row_zscore: bool = False,
+                ysplits=[],
+                ysplitgap=40):
     """
     Draws a heat map.
 
@@ -58,37 +60,11 @@ def add_heatmap(svg: SVGFigure,
     if row_zscore:
         df = lib10x.scale(df)
 
-    mapper = matplotlib.cm.ScalarMappable(
-        norm=matplotlib.colors.Normalize(vmin=lim[0], vmax=lim[1]), cmap=cmap)
-
-    hx = x
-    hy = y
-
-    for i in range(0, df.shape[0]):
-        hx = x
-
-        for j in range(0, df.shape[1]):
-            v = df.iloc[i, j]
-            color = svgplot.rgbatohex(mapper.to_rgba(v))
-
-            svg.add_rect(hx, hy, cell[0], cell[1], fill=color)
-
-            hx += cell[0]
-
-        hy += cell[1]
-
-    w = cell[0] * df.shape[1]
-    h = cell[1] * df.shape[0]
-
-    if gridcolor is not None:
-        add_grid(svg,
-                 pos=pos,
-                 size=(w, h),
-                 shape=df.shape,
-                 color=gridcolor)
-
-    if showframe:
-        svg.add_frame(x=x, y=y, w=w, h=h)
+    if isinstance(xticklabels, bool):
+        if xticklabels:
+            xticklabels = df.columns
+        else:
+            xticklabels = []
 
     if isinstance(yticklabels, bool):
         if yticklabels:
@@ -96,19 +72,62 @@ def add_heatmap(svg: SVGFigure,
         else:
             yticklabels = []
 
-    if len(yticklabels) > 0:
-        add_yticklabels(svg, yticklabels, cell=cell, pos=(w+20,0), colors=yticklabel_colors)
+    mapper = matplotlib.cm.ScalarMappable(
+        norm=matplotlib.colors.Normalize(vmin=lim[0], vmax=lim[1]), cmap=cmap)
 
-    if isinstance(xticklabels, bool):
-        if xticklabels:
-            xticklabels = df.columns
-        else:
-            xticklabels = []
+    w = cell[0] * df.shape[1]
 
+    if len(ysplits) == 0 or ysplits[-1] != df.shape[0]:
+        ysplits.append(df.shape[0])
+
+    y_map = {}
+
+    ys1 = 0
+    y1 = y
+    y2 = y
+    for ys2 in ysplits:
+        y2 = y1
+        for i in range(ys1, ys2):
+            x1 = x
+
+            print(i, cell[1])
+
+            for j in range(0, df.shape[1]):
+                v = df.iloc[i, j]
+                color = svgplot.rgbatohex(mapper.to_rgba(v))
+
+                svg.add_rect(x1, y2, cell[0], cell[1], fill=color)
+
+                x1 += cell[0]
+
+            y_map[i] = y2
+            y2 += cell[1]
+
+        if gridcolor is not None:
+            print('ys', ys1, ys2)
+            add_grid(svg,
+                    pos=(x, y1),
+                    size=(w, y2 - y1),
+                    shape=(ys2 - ys1, df.shape[1]),
+                    color=gridcolor)
+
+        if showframe:
+            svg.add_frame(x=x, y=y1, w=w, h=y2-y1)
+
+        if len(yticklabels) > 0:
+            add_yticklabels(svg, yticklabels[ys1:ys2], cell=cell, pos=(w+20,y1), colors=yticklabel_colors)
+
+        ys1 = ys2
+        y1 = y2 + ysplitgap
+
+    
+    h = y1 - ysplitgap #cell[1] * df.shape[0]
+
+    
     if len(xticklabels) > 0:
         add_xticklabels(svg, xticklabels, cell=cell, colors=xticklabel_colors)
 
-    return (w, h)
+    return (w, h, y_map)
 
 
 def add_xticklabels(svg,

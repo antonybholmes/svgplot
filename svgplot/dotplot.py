@@ -16,7 +16,7 @@ from .axis import Axis
 from scipy.stats import zscore
 
 
-def dot_plot(svg: SVGFigure,
+def add_dot_plot(svg: SVGFigure,
              df_data: pd.DataFrame,
              df_coldata: pd.DataFrame,
              genes: list[str],
@@ -357,7 +357,7 @@ def dot_plot(svg: SVGFigure,
     return df_exp
 
 
-def dot_plot_legend(svg: SVGFigure,
+def add_dot_plot_legend(svg: SVGFigure,
                     pos: tuple[int, int] = (0, 0),
                     fraction_groups: list[float] = [0.25, 0.5, 0.75, 1],
                     dot_sizes: tuple[int, int] = (8, 30),
