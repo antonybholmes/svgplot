@@ -25,12 +25,31 @@ def add_heatmap(svg,
                 lim: tuple[int, int] = DEFAULT_LIMITS,
                 cmap=libplot.BWR2_CMAP,
                 gridcolor=svgplot.GRID_COLOR,
-                showgrid: bool = True,
                 showframe: bool = True,
                 xticklabels: bool = True,
                 xticklabel_colors: dict[str, str] = {},
                 yticklabels: bool = True,
                 row_zscore: bool = False):
+    """
+    Draws a heat map.
+
+    Args:
+        svg (_type_): _description_
+        df (pd.DataFrame): table data to render.
+        pos (tuple[int, int], optional): Offset to render heat map at. Defaults to (0, 0).
+        cell (tuple[int, int], optional): Size of heat map cell. Defaults to DEFAULT_CELL.
+        lim (tuple[int, int], optional): _description_. Defaults to DEFAULT_LIMITS.
+        cmap (_type_, optional): _description_. Defaults to libplot.BWR2_CMAP.
+        gridcolor (_type_, optional): _description_. Defaults to svgplot.GRID_COLOR.
+        showframe (bool, optional): _description_. Defaults to True.
+        xticklabels (bool, optional): _description_. Defaults to True.
+        xticklabel_colors (dict[str, str], optional): _description_. Defaults to {}.
+        yticklabels (bool, optional): _description_. Defaults to True.
+        row_zscore (bool, optional): _description_. Defaults to False.
+
+    Returns:
+        tuple[int, int]: width and height of plot.
+    """
 
     x, y = pos
 
@@ -59,7 +78,7 @@ def add_heatmap(svg,
     w = cell[0] * df.shape[1]
     h = cell[1] * df.shape[0]
 
-    if showgrid:
+    if gridcolor is not None:
         add_grid(svg,
                  pos=pos,
                  size=(w, h),
@@ -77,7 +96,8 @@ def add_heatmap(svg,
             y1 += cell[1]
 
     if xticklabels:
-        add_xticklabels(svg, df, cell=cell, xticklabel_colors=xticklabel_colors)
+        add_xticklabels(svg, df, cell=cell,
+                        xticklabel_colors=xticklabel_colors)
 
     return (w, h)
 
@@ -158,6 +178,16 @@ def add_grid(svg,
              drawcols=True):
     """
     Add grid lines to a figure. Mostly used for enhancing heat maps.
+
+    Args:
+        svg (_type_): _description_
+        pos (tuple[int, int], optional): _description_. Defaults to (0, 0).
+        size (tuple[int, int], optional): _description_. Defaults to (0, 0).
+        shape (tuple[int, int], optional): _description_. Defaults to (0, 0).
+        color (_type_, optional): _description_. Defaults to svgplot.GRID_COLOR.
+        stroke (_type_, optional): _description_. Defaults to svgplot.GRID_STROKE.
+        drawrows (bool, optional): _description_. Defaults to True.
+        drawcols (bool, optional): _description_. Defaults to True.
     """
 
     x, y = pos
