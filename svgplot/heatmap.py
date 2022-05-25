@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Aug 27 09:36:28 2019
-
 @author: antony
 """
 from typing import Optional, Union
@@ -108,24 +106,23 @@ def add_heatmap(svg: SVGFigure,
 
         if gridcolor is not None:
             add_grid(svg,
-                    pos=(x, y1),
-                    size=(w, y2 - y1),
-                    shape=(ys2 - ys1, df.shape[1]),
-                    color=gridcolor)
+                     pos=(x, y1),
+                     size=(w, y2 - y1),
+                     shape=(ys2 - ys1, df.shape[1]),
+                     color=gridcolor)
 
         if showframe:
             svg.add_frame(x=x, y=y1, w=w, h=y2-y1)
 
         if len(yticklabels) > 0:
-            add_yticklabels(svg, yticklabels[ys1:ys2], cell=cell, pos=(w+20,y1), colors=yticklabel_colors)
+            add_yticklabels(svg, yticklabels[ys1:ys2], cell=cell, pos=(
+                w+20, y1), colors=yticklabel_colors)
 
         ys1 = ys2
         y1 = y2 + ysplitgap
 
-    
-    h = y1 - ysplitgap #cell[1] * df.shape[0]
+    h = y1 - ysplitgap  # cell[1] * df.shape[0]
 
-    
     if len(xticklabels) > 0:
         add_xticklabels(svg, xticklabels, cell=cell, colors=xticklabel_colors)
 
@@ -136,7 +133,8 @@ def add_xticklabels(svg,
                     labels: Union[pd.DataFrame, list[str]],
                     colors: dict[str, str] = {},
                     pos: tuple[int, int] = (0, -30),
-                    cell: tuple[int, int] = DEFAULT_CELL):
+                    cell: tuple[int, int] = DEFAULT_CELL,
+                    default_color: str = 'black'):
     if isinstance(labels, pd.DataFrame):
         labels = labels.columns
 
@@ -148,8 +146,10 @@ def add_xticklabels(svg,
     x1 = x + cell[0] / 2
 
     for name in labels:
-        color = 'black'
-
+        color = default_color
+        
+        # this is to allow for partial matches to column names
+        # but it is less efficient than a simple lookup
         if len(colors) > 0:
             for label, c in colors.items():
                 if label in name:
@@ -164,7 +164,8 @@ def add_yticklabels(svg,
                     labels: Union[pd.DataFrame, list[str]],
                     colors: dict[str, str] = {},
                     pos: tuple[int, int] = (0, 0),
-                    cell: tuple[int, int] = DEFAULT_CELL):
+                    cell: tuple[int, int] = DEFAULT_CELL,
+                    default_color: str = 'black'):
     if isinstance(labels, pd.DataFrame):
         labels = labels.index
 
@@ -176,7 +177,7 @@ def add_yticklabels(svg,
     y1 = y + cell[1] / 2
 
     for name in labels:
-        color = 'black'
+        color = default_color
 
         if len(colors) > 0:
             for label, c in colors.items():
@@ -193,7 +194,7 @@ def add_col_colorbar(svg,
                      colormap: dict[str, str],
                      pos: tuple[int, int] = (0, 0),
                      cell: tuple[int, int] = DEFAULT_COLORBAR_CELL,
-                     gridcolor=svgplot.GRID_COLOR,
+                     gridcolor: str = svgplot.GRID_COLOR,
                      showgrid: bool = False,
                      showframe: bool = False,
                      default_color: str = '#cccccc'):
@@ -230,10 +231,10 @@ def add_grid(svg,
              pos: tuple[int, int] = (0, 0),
              size: tuple[int, int] = (0, 0),
              shape: tuple[int, int] = (0, 0),
-             color=svgplot.GRID_COLOR,
-             stroke=svgplot.GRID_STROKE,
-             drawrows=True,
-             drawcols=True):
+             color: str = svgplot.GRID_COLOR,
+             stroke: int = svgplot.GRID_STROKE,
+             drawrows: bool = True,
+             drawcols: bool = True):
     """
     Add grid lines to a figure. Mostly used for enhancing heat maps.
 
