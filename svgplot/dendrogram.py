@@ -80,7 +80,7 @@ def add_dendrogram(svg: SVGFigure,
     
     if col_linkage is not None:
         dc = dendrogram(col_linkage, get_leaves=True, no_plot=True)
-        # reorder leaves
+        # reorder columns
         df = df.iloc[:, dc['leaves']]
 
     #df.to_csv('reordered.tsv', sep='\t', header=True, index=True)
@@ -111,7 +111,7 @@ def add_dendrogram(svg: SVGFigure,
 
     # determine the offset of each cell relative to where it should be
     # on a normal heatmap this will be 0 for every row
-    y_offset_map = {x:y_map[x] - x * cell[1] for x in range(df.shape[0])}
+    y_offset_map = {x:y_map[x]-x*cell[1] for x in range(df.shape[0])}
 
     # col tree
     if col_linkage is not None and show_col_tree:
@@ -121,15 +121,13 @@ def add_dendrogram(svg: SVGFigure,
         # norm x
         ic = icoord.flatten()
         min_i = ic.min()
-        max_i = ic.max()
-        range_i = max_i - min_i
+        range_i = ic.max() - min_i
         icoord = np.array([[(i - min_i) / range_i for i in ic] for ic in icoord])
 
         # norm y
         ic = dcoord.flatten()
         min_i = ic.min()
-        max_i = ic.max()
-        range_i = max_i - min_i
+        range_i = ic.max() - min_i
         dcoord = np.array([[(i - min_i) / range_i for i in ic] for ic in dcoord])
 
         # plot col tree
@@ -174,15 +172,13 @@ def add_dendrogram(svg: SVGFigure,
         # norm x
         ic = icoord.flatten()
         min_i = ic.min()
-        max_i = ic.max()
-        range_i = max_i - min_i
+        range_i = ic.max() - min_i
         icoord = np.array([[(i - min_i) / range_i for i in ic] for ic in icoord])
 
         # norm y
         ic = dcoord.flatten()
         min_i = ic.min()
-        max_i = ic.max()
-        range_i = max_i - min_i
+        range_i = ic.max() - min_i
         dcoord = np.array([[(i - min_i) / range_i for i in ic] for ic in dcoord])
 
         x1 = x - tree_offset
