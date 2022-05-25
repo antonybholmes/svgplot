@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Optional
-from .svgfiguregenes import SVGFigureGenes
+from .svgfigureplot import SVGFigurePlot
 
 
-class SVGFigure(SVGFigureGenes):
+class SVGFigure(SVGFigurePlot):
     def __init__(self,
                  file,
                  size: tuple[float, float] = (279, 216),

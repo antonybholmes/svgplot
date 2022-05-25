@@ -12,14 +12,14 @@ import matplotlib
 import pandas as pd
 import lib10x
 from . import svgplot
-
+from .svgfigure import SVGFigure
 
 DEFAULT_CELL = (50, 50)
 DEFAULT_COLORBAR_CELL = (50, 25)
 DEFAULT_LIMITS = (-2, 2)
 
 
-def add_heatmap(svg,
+def add_heatmap(svg: SVGFigure,
                 df: pd.DataFrame,
                 pos: tuple[int, int] = (0, 0),
                 cell: tuple[int, int] = DEFAULT_CELL,
