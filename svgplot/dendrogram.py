@@ -133,7 +133,6 @@ def add_dendrogram(svg: SVGFigure,
         dcoord = np.array([[(i - min_i) / range_i for i in ic] for ic in dcoord])
 
         # plot col tree
-        
         tree_width = cell[0] * (df.shape[1] - 1)
 
         x1 = x + cell[0] / 2
@@ -188,17 +187,23 @@ def add_dendrogram(svg: SVGFigure,
 
         x1 = x - tree_offset
         tree_width = cell[1] * (df.shape[0] - 1)
+        # Render the tree so the leaves are in the middle of the cell
         y1 = y + cell[1] / 2
 
+        # used to take the normalized value of the tree y between 0 and 1
+        # and map it to a row 0-(#rows-1)
         n = df.shape[0] - 1
+
         for i, ic in enumerate(icoord):
             dc = dcoord[i]
 
             for j in range(0, 3):
-                #y2 = y_map[int(ic[j]*n)]
-                #y3 = y_map[int(ic[j+1]*n)]
+                # calculate coordinate as normal, but also lookup the row the
+                # normalized coordinate maps to and check if it has an offset
+                # because of a split gap and add this
                 y2 = y1+ic[j]*tree_width + y_offset_map[int(ic[j]*n)]
                 y3 = y1+ic[j+1]*tree_width + y_offset_map[int(ic[j+1]*n)]
+
                 svg.add_line(x1=x1-dc[j]*tree_height, y1=y2,
                             x2=x1-dc[j+1]*tree_height, y2=y3)
 

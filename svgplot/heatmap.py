@@ -52,7 +52,7 @@ def add_heatmap(svg: SVGFigure,
         row_zscore (bool, optional): _description_. Defaults to False.
 
     Returns:
-        tuple[int, int]: width and height of plot.
+        tuple[int, int, dict[int, int]]: width and height of plot and map of row to y position.
     """
 
     x, y = pos
@@ -77,9 +77,14 @@ def add_heatmap(svg: SVGFigure,
 
     w = cell[0] * df.shape[1]
 
+    # the last/only split is the last row so the block
+    # always goes from the start/last split to the end row
     if len(ysplits) == 0 or ysplits[-1] != df.shape[0]:
         ysplits.append(df.shape[0])
 
+    # track y location of each row, useful for fixing
+    # dendrograms or other plot elements that sync to
+    # row positions
     y_map = {}
 
     ys1 = 0
@@ -89,8 +94,6 @@ def add_heatmap(svg: SVGFigure,
         y2 = y1
         for i in range(ys1, ys2):
             x1 = x
-
-            print(i, cell[1])
 
             for j in range(0, df.shape[1]):
                 v = df.iloc[i, j]
@@ -104,7 +107,6 @@ def add_heatmap(svg: SVGFigure,
             y2 += cell[1]
 
         if gridcolor is not None:
-            print('ys', ys1, ys2)
             add_grid(svg,
                     pos=(x, y1),
                     size=(w, y2 - y1),
