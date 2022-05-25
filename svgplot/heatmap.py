@@ -5,6 +5,7 @@ Created on Tue Aug 27 09:36:28 2019
 
 @author: antony
 """
+from typing import Optional, Union
 import numpy as np
 import libplot
 import matplotlib
@@ -26,9 +27,10 @@ def add_heatmap(svg,
                 cmap=libplot.BWR2_CMAP,
                 gridcolor=svgplot.GRID_COLOR,
                 showframe: bool = True,
-                xticklabels: bool = True,
+                xticklabels: Optional[Union[list[str], bool]] = True,
                 xticklabel_colors: dict[str, str] = {},
-                yticklabels: bool = True,
+                yticklabels: Optional[Union[list[str], bool]] = True,
+                yticklabel_colors: dict[str, str] = {},
                 row_zscore: bool = False):
     """
     Draws a heat map.
@@ -42,9 +44,9 @@ def add_heatmap(svg,
         cmap (_type_, optional): _description_. Defaults to libplot.BWR2_CMAP.
         gridcolor (_type_, optional): _description_. Defaults to svgplot.GRID_COLOR.
         showframe (bool, optional): _description_. Defaults to True.
-        xticklabels (bool, optional): _description_. Defaults to True.
+        xticklabels (Optional[Union[list[str], bool]], optional): _description_. Defaults to True.
         xticklabel_colors (dict[str, str], optional): _description_. Defaults to {}.
-        yticklabels (bool, optional): _description_. Defaults to True.
+        yticklabels (Optional[Union[list[str], bool]], optional): _description_. Defaults to True.
         row_zscore (bool, optional): _description_. Defaults to False.
 
     Returns:
@@ -88,46 +90,81 @@ def add_heatmap(svg,
     if showframe:
         svg.add_frame(x=x, y=y, w=w, h=h)
 
-    if yticklabels:
-        y1 = y + cell[1] / 2
+    if isinstance(yticklabels, bool):
+        if yticklabels:
+            yticklabels = df.index
+        else:
+            yticklabels = []
 
-        for name in df.index:
-            svg.add_text_bb(name, x=w+20, y=y1)
-            y1 += cell[1]
+    if len(yticklabels) > 0:
+        add_yticklabels(svg, yticklabels, cell=cell, pos=(w+20,0), colors=yticklabel_colors)
 
-    if xticklabels:
-        add_xticklabels(svg, df, cell=cell,
-                        xticklabel_colors=xticklabel_colors)
+    if isinstance(xticklabels, bool):
+        if xticklabels:
+            xticklabels = df.columns
+        else:
+            xticklabels = []
+
+    if len(xticklabels) > 0:
+        add_xticklabels(svg, xticklabels, cell=cell, colors=xticklabel_colors)
 
     return (w, h)
 
 
 def add_xticklabels(svg,
-                    df: pd.DataFrame,
-                    xticklabel_colors: dict[str, str] = {},
+                    labels: Union[pd.DataFrame, list[str]],
+                    colors: dict[str, str] = {},
                     pos: tuple[int, int] = (0, -30),
                     cell: tuple[int, int] = DEFAULT_CELL):
-    """
-    Add vertical column labels to heatmap
+    if isinstance(labels, pd.DataFrame):
+        labels = labels.columns
 
-    Args:
-        s
-    """
+    if len(labels) == 0:
+        return
+
     x, y = pos
 
     x1 = x + cell[0] / 2
 
-    for name in df.columns:
+    for name in labels:
         color = 'black'
 
-        if len(xticklabel_colors) > 0:
-            for label, c in xticklabel_colors.items():
+        if len(colors) > 0:
+            for label, c in colors.items():
                 if label in name:
                     color = c
                     break
 
         svg.add_text_bb(name, x=x1, y=y, orientation='v', color=color)
         x1 += cell[0]
+
+
+def add_yticklabels(svg,
+                    labels: Union[pd.DataFrame, list[str]],
+                    colors: dict[str, str] = {},
+                    pos: tuple[int, int] = (0, 0),
+                    cell: tuple[int, int] = DEFAULT_CELL):
+    if isinstance(labels, pd.DataFrame):
+        labels = labels.index
+
+    if len(labels) == 0:
+        return
+
+    x, y = pos
+
+    y1 = y + cell[1] / 2
+
+    for name in labels:
+        color = 'black'
+
+        if len(colors) > 0:
+            for label, c in colors.items():
+                if label in name:
+                    color = c
+                    break
+
+        svg.add_text_bb(name, x=x, y=y1, color=color)
+        y1 += cell[1]
 
 
 def add_col_colorbar(svg,

@@ -17,7 +17,7 @@ def add_dendrogram(svg: SVGFigure,
                    cmap=libplot.BWR2_CMAP,
                    gridcolor=svgplot.GRID_COLOR,
                    showframe=True,
-                   xticklabels=True,
+                   xticklabels: Optional[Union[list[str], bool]]=True,
                    xticklabel_colors:dict[str, str]={},
                    yticklabels=True,
                    zscore=True,
@@ -187,40 +187,16 @@ def add_dendrogram(svg: SVGFigure,
                 showframe=showframe,
                 xticklabels=False,
                 yticklabels=yticklabels)
+    
+    # col labels
 
-    # for i in range(0, df.shape[0]):
-    #     hx = x
-
-    #     for j in range(0, df.shape[1]):
-    #         v = df.iloc[i, j]
-    #         color = svgplot.rgbatohex(mapper.to_rgba(v))
-
-    #         svg.add_rect(hx, hy, cell[0], cell[1], fill=color)
-
-    #         hx += cell[0]
-
-    #     hy += cell[1]
-
-    # if showgrid:
-    #     add_grid(svg,
-    #              pos=pos,
-    #              size=(w, h),
-    #              shape=df.shape,
-    #              color=gridcolor)
-
-    # if showframe:
-    #     svg.add_frame(x=x, y=y, w=w, h=h)
-
-    # if yticklabels:
-    #     y1 = y + cell[1] / 2
-
-    #     for name in df.index:
-    #         svg.add_text_bb(name, x=w+20, y=y1)
-    #         y1 += cell[1]
-
-    if xticklabels:
-
-
+    if isinstance(xticklabels, bool):
+        if xticklabels:
+            xticklabels = df.columns
+        else:
+            xticklabels = []
+    
+    if len(xticklabels) > 0:
         x1 = x + cell[0] / 2
         y1 = y - 30 
         
@@ -230,10 +206,6 @@ def add_dendrogram(svg: SVGFigure,
         if show_col_colobar and len(col_colors) > 0:
             y1 -= color_height + tree_offset
 
-        heatmap.add_xticklabels(svg, df, pos=(x, y1), xticklabel_colors=xticklabel_colors)
-
-        # for name in df.columns:
-        #     svg.add_text_bb(name, x=x1, y=y1, orientation='v')
-        #     x1 += cell[0]
+        heatmap.add_xticklabels(svg, xticklabels, pos=(x, y1), colors=xticklabel_colors)
 
     return (w, h)
