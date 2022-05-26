@@ -15,7 +15,7 @@ def add_dendrogram(svg: SVGFigure,
                    pos: tuple[int, int] = (0, 0),
                    cell: tuple[int, int] = heatmap.DEFAULT_CELL,
                    lim: tuple[int, int] = heatmap.DEFAULT_LIMITS,
-                   cmap=libplot.BWR2_CMAP,
+                   cmap: matplotlib.colors.Colormap = libplot.BWR2_CMAP,
                    gridcolor=svgplot.GRID_COLOR,
                    showframe=True,
                    xticklabels: Optional[Union[list[str], bool]] = True,
@@ -31,6 +31,8 @@ def add_dendrogram(svg: SVGFigure,
                    col_linkage: Optional[Union[linkage, str]] = 'auto',
                    show_col_tree=True,
                    show_row_tree=True,
+                   xsplits=[],
+                   xsplitgap=40,
                    ysplits=[],
                    ysplitgap=40):
     """_summary_
@@ -96,7 +98,7 @@ def add_dendrogram(svg: SVGFigure,
 
     # heatmap
 
-    w, h, y_map = heatmap.add_heatmap(svg=svg,
+    w, h, x_map, y_map = heatmap.add_heatmap(svg=svg,
                                       df=df,
                                       pos=pos,
                                       cell=cell,
@@ -106,11 +108,14 @@ def add_dendrogram(svg: SVGFigure,
                                       showframe=showframe,
                                       xticklabels=False,
                                       yticklabels=yticklabels,
+                                      xsplits=xsplits,
+                                      xsplitgap=xsplitgap,
                                       ysplits=ysplits,
                                       ysplitgap=ysplitgap)
 
     # determine the offset of each cell relative to where it should be
     # on a normal heatmap this will be 0 for every row
+    x_offset_map = {x: x_map[x]-x*cell[0] for x in range(df.shape[1])}
     y_offset_map = {x: y_map[x]-x*cell[1] for x in range(df.shape[0])}
 
     # col tree
@@ -141,28 +146,40 @@ def add_dendrogram(svg: SVGFigure,
         if show_col_colobar and len(col_colors) > 0:
             y1 -= color_height + tree_offset
 
+        n = df.shape[1] - 1
+
         for i, ic in enumerate(icoord):
             dc = dcoord[i]
 
             for j in range(0, 3):
-                svg.add_line(x1=x1+ic[j]*tree_width, y1=y1-dc[j]*tree_height,
-                             x2=x1+ic[j+1]*tree_width, y2=y1-dc[j+1]*tree_height)
+                x2 = x1 + ic[j] * tree_width + x_offset_map[int(ic[j] * n)]
+                x3 = x1 + ic[j + 1] * tree_width + x_offset_map[int(ic[j + 1] * n)]
+
+                svg.add_line(x1=x2, y1=y1-dc[j]*tree_height,
+                             x2=x3, y2=y1-dc[j+1]*tree_height)
 
     # col colors
 
     if show_col_colobar and len(col_colors) > 0:
-        x1 = x
         y1 = y - tree_offset - color_height
 
-        for c in df.columns:
-            for name in col_colors:
-                if name in c:
-                    svg.add_rect(x1, y1, w - x1, color_height,
-                                 fill=col_colors[name])
-                    break
-            x1 += cell[0]
+        x1 = x
+        xs1 = 0
+        for xs2 in xsplits:
+            labels = df.columns[xs1:xs2]
+            x2 = x1
+            for i, c in enumerate(df.columns[xs1:xs2]):
+                for name in col_colors:
+                    if name in c:
+                        svg.add_rect(x2, y1, cell[0] * (labels.size - i), color_height,
+                                    fill=col_colors[name])
+                        break
+                x2 += cell[0]
 
-        svg.add_frame(x=x, y=y1, w=w, h=color_height)
+            svg.add_frame(x=x1, y=y1, w=x2-x1, h=color_height)
+            
+            x1 = x2 + xsplitgap
+            xs1 = xs2
 
     # plot row tree
 
@@ -190,7 +207,7 @@ def add_dendrogram(svg: SVGFigure,
         # Render the tree so the leaves are in the middle of the cell
         y1 = y + cell[1] / 2
 
-        # used to take the normalized value of the tree y between 0 and 1
+        # Used to take the normalized value of the tree y between 0 and 1
         # and map it to a row 0-(#rows-1)
         n = df.shape[0] - 1
 
@@ -225,7 +242,14 @@ def add_dendrogram(svg: SVGFigure,
         if show_col_colobar and len(col_colors) > 0:
             y1 -= color_height + tree_offset
 
-        heatmap.add_xticklabels(svg, xticklabels, pos=(
-            x, y1), colors=xticklabel_colors)
+        x1 = x
+        xs1 = 0
+        for xs2 in xsplits:
+            labels = df.columns[xs1:xs2]
+            
+            heatmap.add_xticklabels(svg, labels, pos=(x1, y1), colors=xticklabel_colors)
+            
+            x1 += cell[0] * labels.size + xsplitgap
+            xs1 = xs2
 
     return (w, h)

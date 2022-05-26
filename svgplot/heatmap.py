@@ -30,6 +30,8 @@ def add_heatmap(svg: SVGFigure,
                 yticklabels: Optional[Union[list[str], bool]] = True,
                 yticklabel_colors: dict[str, str] = {},
                 row_zscore: bool = False,
+                xsplits=[],
+                xsplitgap=40,
                 ysplits=[],
                 ysplitgap=40):
     """
@@ -77,56 +79,77 @@ def add_heatmap(svg: SVGFigure,
 
     # the last/only split is the last row so the block
     # always goes from the start/last split to the end row
+    if len(xsplits) == 0 or xsplits[-1] != df.shape[1]:
+        xsplits.append(df.shape[1])
+
+    # the last/only split is the last row so the block
+    # always goes from the start/last split to the end row
     if len(ysplits) == 0 or ysplits[-1] != df.shape[0]:
         ysplits.append(df.shape[0])
 
     # track y location of each row, useful for fixing
     # dendrograms or other plot elements that sync to
     # row positions
+    x_map = {}
     y_map = {}
 
-    ys1 = 0
-    y1 = y
-    y2 = y
-    for ys2 in ysplits:
-        y2 = y1
-        for i in range(ys1, ys2):
-            x1 = x
+    xs1 = 0
+    x1 = x
 
-            for j in range(0, df.shape[1]):
-                v = df.iloc[i, j]
-                color = svgplot.rgbatohex(mapper.to_rgba(v))
+    for xs2 in xsplits:
+        ys1 = 0
+        y1 = y
 
-                svg.add_rect(x1, y2, cell[0], cell[1], fill=color)
+        for ys2 in ysplits:
+            x2 = x1
 
-                x1 += cell[0]
+            for xi in range(xs1, xs2):
+                y2 = y1
 
-            y_map[i] = y2
-            y2 += cell[1]
+                for yi in range(ys1, ys2):
+                    v = df.iloc[yi, xi]
+                    color = svgplot.rgbatohex(mapper.to_rgba(v))
+                    svg.add_rect(x2, y2, cell[0], cell[1], fill=color)
 
-        if gridcolor is not None:
-            add_grid(svg,
-                     pos=(x, y1),
-                     size=(w, y2 - y1),
-                     shape=(ys2 - ys1, df.shape[1]),
-                     color=gridcolor)
+                    y_map[yi] = y2
+                    y2 += cell[1]
+                x_map[xi] = x2
+                x2 += cell[0]
 
-        if showframe:
-            svg.add_frame(x=x, y=y1, w=w, h=y2-y1)
+            if gridcolor is not None:
+                add_grid(svg,
+                        pos=(x1, y1),
+                        size=(x2 - x1, y2 - y1),
+                        shape=(ys2 - ys1, xs2 - xs1),
+                        color=gridcolor)
 
-        if len(yticklabels) > 0:
-            add_yticklabels(svg, yticklabels[ys1:ys2], cell=cell, pos=(
-                w+20, y1), colors=yticklabel_colors)
+            if showframe:
+                svg.add_frame(x=x1, y=y1, w=x2-x1, h=y2-y1)
 
-        ys1 = ys2
-        y1 = y2 + ysplitgap
+            ys1 = ys2
+            y1 = y2 + ysplitgap
 
+        xs1 = xs2
+        x1 = x2 + xsplitgap
+
+
+    w = x1 - xsplitgap
     h = y1 - ysplitgap  # cell[1] * df.shape[0]
+
+    if len(yticklabels) > 0:
+        y1 = y
+        ys1 = 0
+        for ys2 in ysplits:
+            labels = yticklabels[ys1:ys2]
+            add_yticklabels(svg, yticklabels[ys1:ys2], cell=cell, pos=(w+20, y1), colors=yticklabel_colors)
+            ys1 = ys2
+            y1 += cell[1] * len(labels) + ysplitgap
+
 
     if len(xticklabels) > 0:
         add_xticklabels(svg, xticklabels, cell=cell, colors=xticklabel_colors)
 
-    return (w, h, y_map)
+    return (w, h, x_map, y_map)
 
 
 def add_xticklabels(svg,
