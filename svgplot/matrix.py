@@ -17,7 +17,7 @@ DEFAULT_COLORBAR_CELL = (50, 25)
 DEFAULT_LIMITS = (-2, 2)
 
 
-def add_heatmap(svg: SVGFigure,
+def heatmap(svg: SVGFigure,
                 df: pd.DataFrame,
                 pos: tuple[int, int] = (0, 0),
                 cell: tuple[int, int] = DEFAULT_CELL,

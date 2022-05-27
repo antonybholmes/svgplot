@@ -10,7 +10,7 @@ from . import svgplot
 from .svgfigure import SVGFigure
 
 
-def add_clustermap(svg: SVGFigure,
+def clustermap(svg: SVGFigure,
                    df: pd.DataFrame,
                    pos: tuple[int, int] = (0, 0),
                    cell: tuple[int, int] = heatmap.DEFAULT_CELL,
