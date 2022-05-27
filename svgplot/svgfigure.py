@@ -46,6 +46,8 @@ class FigureFactory:
 
         return SVGFigure(file, size=size)
 
+    def letter(file: str, landscape:bool=False):
+        return FigureFactory.create_figure(file, orientation=Orientation.LANDSCAPE if landscape else Orientation.PORTRAIT)
 
     def portrait(file: str):
         return FigureFactory.create_figure(file, orientation=Orientation.PORTRAIT)

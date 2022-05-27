@@ -10,7 +10,7 @@ from . import svgplot
 from .svgfigure import SVGFigure
 
 
-def add_dendrogram(svg: SVGFigure,
+def add_clustermap(svg: SVGFigure,
                    df: pd.DataFrame,
                    pos: tuple[int, int] = (0, 0),
                    cell: tuple[int, int] = heatmap.DEFAULT_CELL,
@@ -19,7 +19,7 @@ def add_dendrogram(svg: SVGFigure,
                    gridcolor=svgplot.GRID_COLOR,
                    showframe=True,
                    xticklabels: Optional[Union[list[str], bool]] = True,
-                   xticklabel_colors: dict[str, str] = {},
+                   xticklabelcolors: dict[str, str] = {},
                    yticklabels=True,
                    zscore=True,
                    col_colors: dict[str, str] = {},
@@ -47,7 +47,7 @@ def add_dendrogram(svg: SVGFigure,
         gridcolor (_type_, optional): _description_. Defaults to svgplot.GRID_COLOR.
         showframe (bool, optional): _description_. Defaults to True.
         xticklabels (bool, optional): _description_. Defaults to True.
-        xticklabel_colors (dict[str, str], optional): _description_. Defaults to {}.
+        xticklabelcolors (dict[str, str], optional): _description_. Defaults to {}.
         yticklabels (bool, optional): _description_. Defaults to True.
         zscore (bool, optional): _description_. Defaults to True.
         col_colors (dict[str, str], optional): _description_. Defaults to {}.
@@ -247,7 +247,7 @@ def add_dendrogram(svg: SVGFigure,
         for xs2 in xsplits:
             labels = df.columns[xs1:xs2]
             
-            heatmap.add_xticklabels(svg, labels, pos=(x1, y1), colors=xticklabel_colors)
+            heatmap.add_xticklabels(svg, labels, pos=(x1, y1), colors=xticklabelcolors)
             
             x1 += cell[0] * labels.size + xsplitgap
             xs1 = xs2

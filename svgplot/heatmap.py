@@ -26,9 +26,9 @@ def add_heatmap(svg: SVGFigure,
                 gridcolor=svgplot.GRID_COLOR,
                 showframe: bool = True,
                 xticklabels: Optional[Union[list[str], bool]] = True,
-                xticklabel_colors: dict[str, str] = {},
+                xticklabelcolors: dict[str, str] = {},
                 yticklabels: Optional[Union[list[str], bool]] = True,
-                yticklabel_colors: dict[str, str] = {},
+                yticklabelcolors: dict[str, str] = {},
                 row_zscore: bool = False,
                 xsplits=[],
                 xsplitgap=40,
@@ -47,7 +47,7 @@ def add_heatmap(svg: SVGFigure,
         gridcolor (_type_, optional): _description_. Defaults to svgplot.GRID_COLOR.
         showframe (bool, optional): _description_. Defaults to True.
         xticklabels (Optional[Union[list[str], bool]], optional): _description_. Defaults to True.
-        xticklabel_colors (dict[str, str], optional): _description_. Defaults to {}.
+        xticklabelcolors (dict[str, str], optional): _description_. Defaults to {}.
         yticklabels (Optional[Union[list[str], bool]], optional): _description_. Defaults to True.
         row_zscore (bool, optional): _description_. Defaults to False.
 
@@ -141,13 +141,23 @@ def add_heatmap(svg: SVGFigure,
         ys1 = 0
         for ys2 in ysplits:
             labels = yticklabels[ys1:ys2]
-            add_yticklabels(svg, yticklabels[ys1:ys2], cell=cell, pos=(w+20, y1), colors=yticklabel_colors)
+            add_yticklabels(svg, yticklabels[ys1:ys2], cell=cell, pos=(w+20, y1), colors=yticklabelcolors)
             ys1 = ys2
             y1 += cell[1] * len(labels) + ysplitgap
 
 
     if len(xticklabels) > 0:
-        add_xticklabels(svg, xticklabels, cell=cell, colors=xticklabel_colors)
+        x1 = x
+        xs1 = 0
+        for xs2 in xsplits:
+            labels = df.columns[xs1:xs2]
+            
+            add_xticklabels(svg, labels, pos=(x1, y1), colors=xticklabelcolors)
+            
+            x1 += cell[0] * labels.size + xsplitgap
+            xs1 = xs2
+
+        #add_xticklabels(svg, xticklabels, cell=cell, colors=xticklabelcolors)
 
     return (w, h, x_map, y_map)
 
