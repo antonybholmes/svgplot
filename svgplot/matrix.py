@@ -4,7 +4,6 @@
 @author: antony
 """
 from typing import Optional, Union
-import numpy as np
 import libplot
 import matplotlib
 import pandas as pd
@@ -17,18 +16,20 @@ DEFAULT_COLORBAR_CELL = (50, 25)
 DEFAULT_LIMITS = (-2, 2)
 
 
-def heatmap(svg: SVGFigure,
+def add_heatmap(svg: SVGFigure,
                 df: pd.DataFrame,
                 pos: tuple[int, int] = (0, 0),
                 cell: tuple[int, int] = DEFAULT_CELL,
                 lim: tuple[int, int] = DEFAULT_LIMITS,
-                cmap=libplot.BWR2_CMAP,
+                cmap = libplot.BWR2_CMAP,
                 gridcolor=svgplot.GRID_COLOR,
                 showframe: bool = True,
                 xticklabels: Optional[Union[list[str], bool]] = True,
-                xticklabelcolors: dict[str, str] = {},
+                xticklabel_colors: dict[str, str] = {},
                 yticklabels: Optional[Union[list[str], bool]] = True,
-                yticklabelcolors: dict[str, str] = {},
+                yticklabel_colors: dict[str, str] = {},
+                col_colors: dict[str, str] = {},
+                color_height=0,
                 row_zscore: bool = False,
                 xsplits=[],
                 xsplitgap=40,
@@ -38,7 +39,7 @@ def heatmap(svg: SVGFigure,
     Draws a heat map.
 
     Args:
-        svg (_type_): _description_
+        svg (SVGFigure): _description_
         df (pd.DataFrame): table data to render.
         pos (tuple[int, int], optional): Offset to render heat map at. Defaults to (0, 0).
         cell (tuple[int, int], optional): Size of heat map cell. Defaults to DEFAULT_CELL.
@@ -47,7 +48,7 @@ def heatmap(svg: SVGFigure,
         gridcolor (_type_, optional): _description_. Defaults to svgplot.GRID_COLOR.
         showframe (bool, optional): _description_. Defaults to True.
         xticklabels (Optional[Union[list[str], bool]], optional): _description_. Defaults to True.
-        xticklabelcolors (dict[str, str], optional): _description_. Defaults to {}.
+        xticklabel_colors (dict[str, str], optional): _description_. Defaults to {}.
         yticklabels (Optional[Union[list[str], bool]], optional): _description_. Defaults to True.
         row_zscore (bool, optional): _description_. Defaults to False.
 
@@ -141,7 +142,7 @@ def heatmap(svg: SVGFigure,
         ys1 = 0
         for ys2 in ysplits:
             labels = yticklabels[ys1:ys2]
-            add_yticklabels(svg, yticklabels[ys1:ys2], cell=cell, pos=(w+20, y1), colors=yticklabelcolors)
+            add_yticklabels(svg, yticklabels[ys1:ys2], cell=cell, pos=(w+20, y1), colors=yticklabel_colors)
             ys1 = ys2
             y1 += cell[1] * len(labels) + ysplitgap
 
@@ -149,20 +150,48 @@ def heatmap(svg: SVGFigure,
     if len(xticklabels) > 0:
         x1 = x
         xs1 = 0
+        y1 = y - 30
+
+        if color_height > 0 and len(col_colors) > 0:
+            y1 -= (color_height + 30)
+
         for xs2 in xsplits:
             labels = df.columns[xs1:xs2]
             
-            add_xticklabels(svg, labels, pos=(x1, y1), colors=xticklabelcolors)
+            add_xticklabels(svg, labels, pos=(x1, y1), colors=xticklabel_colors)
             
             x1 += cell[0] * labels.size + xsplitgap
             xs1 = xs2
 
         #add_xticklabels(svg, xticklabels, cell=cell, colors=xticklabelcolors)
 
+    if color_height > 0 and len(col_colors) > 0:
+        x1 = x
+        xs1 = 0
+        y1 = y - 30 - color_height
+
+        x1 = x
+        xs1 = 0
+        for xs2 in xsplits:
+            labels = df.columns[xs1:xs2]
+            x2 = x1
+            for i, c in enumerate(df.columns[xs1:xs2]):
+                for name in col_colors:
+                    if name in c:
+                        svg.add_rect(x2, y1, cell[0] * (labels.size - i), color_height,
+                                    fill=col_colors[name])
+                        break
+                x2 += cell[0]
+
+            svg.add_frame(x=x1, y=y1, w=x2-x1, h=color_height)
+            
+            x1 = x2 + xsplitgap
+            xs1 = xs2
+
     return (w, h, x_map, y_map)
 
 
-def add_xticklabels(svg,
+def add_xticklabels(svg: SVGFigure,
                     labels: Union[pd.DataFrame, list[str]],
                     colors: dict[str, str] = {},
                     pos: tuple[int, int] = (0, -30),
@@ -193,7 +222,7 @@ def add_xticklabels(svg,
         x1 += cell[0]
 
 
-def add_yticklabels(svg,
+def add_yticklabels(svg: SVGFigure,
                     labels: Union[pd.DataFrame, list[str]],
                     colors: dict[str, str] = {},
                     pos: tuple[int, int] = (0, 0),
@@ -222,7 +251,7 @@ def add_yticklabels(svg,
         y1 += cell[1]
 
 
-def add_col_colorbar(svg,
+def add_col_colorbar(svg: SVGFigure,
                      labels: list[str],
                      colormap: dict[str, str],
                      pos: tuple[int, int] = (0, 0),
@@ -260,7 +289,7 @@ def add_col_colorbar(svg,
     return (w, h)
 
 
-def add_grid(svg,
+def add_grid(svg: SVGFigure,
              pos: tuple[int, int] = (0, 0),
              size: tuple[int, int] = (0, 0),
              shape: tuple[int, int] = (0, 0),
@@ -272,12 +301,12 @@ def add_grid(svg,
     Add grid lines to a figure. Mostly used for enhancing heat maps.
 
     Args:
-        svg (_type_): _description_
+        svg (SVGFigure): _description_
         pos (tuple[int, int], optional): _description_. Defaults to (0, 0).
         size (tuple[int, int], optional): _description_. Defaults to (0, 0).
         shape (tuple[int, int], optional): _description_. Defaults to (0, 0).
-        color (_type_, optional): _description_. Defaults to svgplot.GRID_COLOR.
-        stroke (_type_, optional): _description_. Defaults to svgplot.GRID_STROKE.
+        color (str, optional): _description_. Defaults to svgplot.GRID_COLOR.
+        stroke (int, optional): _description_. Defaults to svgplot.GRID_STROKE.
         drawrows (bool, optional): _description_. Defaults to True.
         drawcols (bool, optional): _description_. Defaults to True.
     """

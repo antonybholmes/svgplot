@@ -475,10 +475,9 @@ class SVGFigureDraw(SVGFigureBase):
                    s=svgplot.BULLET_SIZE,
                    h=svgplot.LABEL_HEIGHT,
                    text_color=None,
-                   text_offset=10,
-                   font_size=svgplot.DEFAULT_FONT_SIZE,
                    shape='c',
                    outline=None,
+                   fill_opacity=1,
                    stroke=2):
         """
 
@@ -497,10 +496,10 @@ class SVGFigureDraw(SVGFigureBase):
 
         if shape == 'c':
             self.add_circle(x=x, y=y, w=s,
-                            color=outline, fill=color, stroke=stroke)
+                            color=outline, fill=color, stroke=stroke, fill_opacity=fill_opacity)
         else:
             self.add_rect(x=x, y=y-s/2, w=s,
-                          h=s, color=outline, fill=color, stroke=stroke)
+                          h=s, color=outline, fill=color, stroke=stroke, fill_opacity=fill_opacity)
 
         # For testing only
         #self.add_frame(x, y, 200, h)

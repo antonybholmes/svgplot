@@ -1,3 +1,4 @@
+from typing import Optional
 from .axis import Axis
 from .svgfigure import SVGFigure
 from . import svgplot
@@ -6,21 +7,21 @@ import numpy as np
 import matplotlib
 
 
-def add_colorbar(svg: SVGFigure,
-                 x=0,
-                 y=0,
-                 w=300,
-                 h=32,
+def add_h_colorbar(svg: SVGFigure,
+                 x:int=0,
+                 y:int=0,
+                 w:int=300,
+                 h:int=32,
                  steps=None,
                  cmap=matplotlib.cm.viridis,
                  ticks=None,
-                 ticklabels=None,
+                 ticklabels:Optional[list[str]]=None,
                  xaxis=None,
-                 norm=None,
-                 showframe=True,
-                 showaxis=True,
-                 stroke=2,
-                 align='c'):
+                 norm:matplotlib.colors.Normalize=None,
+                 showframe:bool=True,
+                 showaxis:bool=True,
+                 stroke:int=2,
+                 align:str='c'):
     if align == 'c':
         x -= w/2
 
@@ -50,7 +51,7 @@ def add_colorbar(svg: SVGFigure,
         steps = cmap.N // 2
 
     if isinstance(steps, int):
-        steps = np.array(list(range(0, steps)))
+        steps = np.array(range(0, steps))
         steps = steps / (steps.size - 1) * \
             (norm.vmax - norm.vmin) + norm.vmin
 
@@ -93,7 +94,7 @@ def add_colorbar(svg: SVGFigure,
         svg.add_frame(x, y=y, w=w, h=h, stroke=stroke)
 
 
-def add_vert_colorbar(svg,
+def add_v_colorbar(svg,
                       x=0,
                       y=0,
                       w=25,

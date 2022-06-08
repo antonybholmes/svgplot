@@ -1,13 +1,11 @@
 from typing import Mapping, Optional, Union
 from .axis import Axis
 from .svgfigure import SVGFigure
-from scipy.stats import zscore
-
+from . import graph
 
 def add_linegraph(svg: SVGFigure,
                   data,
-                  x: int = 0,
-                  y: int = 0,
+                  pos: tuple[float, float] = (0, 0),
                   stroke: int = 4,
                   title: Optional[str] = '',
                   axes: tuple[Axis, Axis] = None,
@@ -21,8 +19,8 @@ def add_linegraph(svg: SVGFigure,
     if axes is None:
         axes = (Axis(lim=(0, 100), w=200), Axis(lim=(0, 100), w=200))
 
-    xaxis = axes[0]
-    yaxis = axes[1]
+    x, y = pos
+    xaxis, yaxis = axes
 
     # set some defaults
     _show_axes = [{'show': True, 'label': True, 'stroke': 3, 'title_offset': 60, 'clip': False, 'label_pos': 'c', 'invert': False},
@@ -76,10 +74,10 @@ def add_linegraph(svg: SVGFigure,
 
             if _show_axes[1]['invert']:
                 points.append([x + xaxis.scale(d[0]), y +
-                              yaxis.trans(d[1], clip=_show_axes[1]['clip'])])
+                              yaxis.scale(d[1], clip=_show_axes[1]['clip'])])
             else:
                 points.append([x + xaxis.scale(d[0]), y + yaxis.w -
-                              yaxis.trans(d[1], clip=_show_axes[1]['clip'])])
+                              yaxis.scale(d[1], clip=_show_axes[1]['clip'])])
     else:
         for i in range(0, data.shape[0]):
             id = f'{data.iloc[i, 0]}:{data.iloc[i, 1]}'
@@ -115,78 +113,6 @@ def add_linegraph(svg: SVGFigure,
     if title is not None:
         svg.add_text_bb(title, x=xaxis.w/2, y=y-40, align='c')
 
-    return xaxis.w, yaxis.w
-
-
-def add_axes(svg: SVGFigure,
-             x: int = 0,
-             y: int = 0,
-             axes: tuple[Axis, Axis] = None,
-             xaxis_kws: Optional[Union[bool, str, Mapping[str,
-                                                          Union[int, float, str, bool]]]] = None,
-             yaxis_kws: Optional[Union[bool, str, Mapping[str, Union[int, float, str, bool]]]] = None) -> None:
-    if axes is None:
-        axes = (Axis(lim=(0, 100), w=200), Axis(lim=(0, 100), w=200))
-
-    xaxis = axes[0]
-    yaxis = axes[1]
-
-    # set some defaults
-    _show_axes = [{'show': True, 'label': True, 'stroke': 3, 'title_offset': 60, 'clip': False, 'label_pos': 'c', 'invert': False},
-                  {'show': True, 'label': True, 'stroke': 3, 'title_offset': 100, 'clip': False, 'invert': False}]
-
-    if isinstance(xaxis_kws, dict):
-        _show_axes[0].update(xaxis_kws)
-    elif isinstance(xaxis_kws, bool):
-        _show_axes[0]['show'] = xaxis_kws
-    elif isinstance(xaxis_kws, str):
-        _show_axes[0]['show'] = 'show' in xaxis_kws[0]
-    else:
-        pass
-
-    if isinstance(yaxis_kws, dict):
-        _show_axes[1].update(yaxis_kws)
-    elif isinstance(yaxis_kws, bool):
-        _show_axes[1]['show'] = yaxis_kws
-    elif isinstance(yaxis_kws, str):
-        _show_axes[1]['show'] = 'show' in yaxis_kws[0]
-    else:
-        pass
-
-    if _show_axes[0]['show']:
-        y1 = y
-
-        if not _show_axes[1]['invert']:
-            y1 = y + yaxis.w
-
-        svg.add_x_axis(x=x,
-                       y=y1,
-                       axis=xaxis,
-                       ticks=xaxis.ticks,
-                       ticklabels=xaxis.ticklabels,
-                       showticks=True,
-                       stroke=_show_axes[0]['stroke'],
-                       showlabel=_show_axes[0]['label'],
-                       title_offset=_show_axes[0]['title_offset'],
-                       label_pos=_show_axes[0]['label_pos'])
-
-        if _show_axes[0]['label']:
-            svg.add_text_bb(xaxis.label, x=xaxis.w/2, y=y1 +
-                            _show_axes[0]['title_offset'], align='c')
-
-    if _show_axes[1]['show']:
-        svg.add_y_axis(x=x,
-                       y=y,
-                       axis=yaxis,
-                       ticks=yaxis.ticks,
-                       ticklabels=yaxis.ticklabels,
-                       showticks=True,
-                       stroke=_show_axes[1]['stroke'],
-                       showlabel=_show_axes[1]['label'],
-                       title_offset=_show_axes[1]['title_offset'],
-                       invert=_show_axes[1]['invert'])
-
-        # if show_axes[1]['label']:
-        #    svg.add_text_bb(yaxis.label, x=-60, y=y+yaxis.w/2, align='c', orientation='v')
+    graph.add_axes(svg, pos=pos, axes=axes, xaxis_kws=xaxis_kws, yaxis_kws=yaxis_kws)
 
     return xaxis.w, yaxis.w

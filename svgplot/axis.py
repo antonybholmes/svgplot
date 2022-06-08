@@ -1,6 +1,36 @@
 from typing import Optional, Union
 import numpy as np
 
+def _calc_linear_scale(lim: tuple[float, float] = [0, 1], ticks=6):
+    if lim[0] == lim[1]:
+        lim[0] -= 10
+        lim[1] += 10
+
+
+    range = lim[1] - lim[0]
+
+    if ticks < 2:
+        ticks = 2
+    if ticks > 2:
+        ticks -= 1
+
+    tempStep = range/(ticks - 1)
+    #Calculate pretty step value
+    mag = np.floor(np.log10(tempStep))
+    magPow = np.power(10,mag)
+    magMsd = (int)(tempStep/magPow + 0.5)
+    stepSize = magMsd*magPow
+    upper = stepSize * np.ceil(1 + lim[1] / stepSize)
+    lower = stepSize * np.floor(lim[0] / stepSize)
+    
+    return (lower, upper)
+
+def auto_axis(lim: tuple[float, float] = [0, 1], label: str = '', ticks: int =6, dp: int = 2, w: int = 100):
+    lower, upper = _calc_linear_scale(lim, ticks=ticks)
+    ticks = [np.round(x, dp) for x in np.linspace(lower, upper, ticks)]
+
+    print(lim, lower, upper, ticks)
+    return Axis(lim=[lower, upper], ticks=ticks, label=label, w=w)
 
 class Axis:
     def __init__(self,
@@ -37,6 +67,10 @@ class Axis:
     @property
     def w(self) -> int:
         return self._w
+
+    @w.setter
+    def w(self, w):
+        self._w = w
 
     @property
     def range(self) -> Union[int, float]:

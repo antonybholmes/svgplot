@@ -1,29 +1,29 @@
-from typing import Optional, Union
+from typing import Any, Optional, Union
 import numpy as np
 import libplot
 import matplotlib
 import pandas as pd
 import lib10x
 from scipy.cluster.hierarchy import linkage, dendrogram
-from . import heatmap
+from . import matrix
 from . import svgplot
 from .svgfigure import SVGFigure
 
 
-def clustermap(svg: SVGFigure,
+def add_clustermap(svg: SVGFigure,
                    df: pd.DataFrame,
                    pos: tuple[int, int] = (0, 0),
-                   cell: tuple[int, int] = heatmap.DEFAULT_CELL,
-                   lim: tuple[int, int] = heatmap.DEFAULT_LIMITS,
+                   cell: tuple[int, int] = matrix.DEFAULT_CELL,
+                   lim: tuple[int, int] = matrix.DEFAULT_LIMITS,
                    cmap: matplotlib.colors.Colormap = libplot.BWR2_CMAP,
                    gridcolor=svgplot.GRID_COLOR,
                    showframe=True,
                    xticklabels: Optional[Union[list[str], bool]] = True,
-                   xticklabelcolors: dict[str, str] = {},
+                   xticklabel_colors: dict[str, str] = {},
                    yticklabels=True,
-                   zscore=True,
+                   zscore=False,
+                   rename_cols: dict[str, str] = {},
                    col_colors: dict[str, str] = {},
-                   show_col_colobar=True,
                    color_height=40,
                    tree_offset=15,
                    tree_height=180,
@@ -34,7 +34,7 @@ def clustermap(svg: SVGFigure,
                    xsplits=[],
                    xsplitgap=40,
                    ysplits=[],
-                   ysplitgap=40):
+                   ysplitgap=40) -> dict[str, Any]:
     """_summary_
 
     Args:
@@ -47,7 +47,7 @@ def clustermap(svg: SVGFigure,
         gridcolor (_type_, optional): _description_. Defaults to svgplot.GRID_COLOR.
         showframe (bool, optional): _description_. Defaults to True.
         xticklabels (bool, optional): _description_. Defaults to True.
-        xticklabelcolors (dict[str, str], optional): _description_. Defaults to {}.
+        xticklabel_colors (dict[str, str], optional): _description_. Defaults to {}.
         yticklabels (bool, optional): _description_. Defaults to True.
         zscore (bool, optional): _description_. Defaults to True.
         col_colors (dict[str, str], optional): _description_. Defaults to {}.
@@ -61,7 +61,7 @@ def clustermap(svg: SVGFigure,
         show_row_tree (bool, optional): _description_. Defaults to True.
 
     Returns:
-        _type_: _description_
+        tuple[int, int]: width and height of plot.
     """
 
     x, y = pos
@@ -84,6 +84,7 @@ def clustermap(svg: SVGFigure,
     if col_linkage is not None:
         dc = dendrogram(col_linkage, get_leaves=True, no_plot=True)
         # reorder columns
+        print(len(dc['leaves']))
         df = df.iloc[:, dc['leaves']]
 
     #df.to_csv('reordered.tsv', sep='\t', header=True, index=True)
@@ -98,7 +99,7 @@ def clustermap(svg: SVGFigure,
 
     # heatmap
 
-    w, h, x_map, y_map = heatmap.add_heatmap(svg=svg,
+    w, h, x_map, y_map = matrix.add_heatmap(svg=svg,
                                       df=df,
                                       pos=pos,
                                       cell=cell,
@@ -143,7 +144,7 @@ def clustermap(svg: SVGFigure,
         x1 = x + cell[0] / 2
         y1 = y - tree_offset
 
-        if show_col_colobar and len(col_colors) > 0:
+        if len(col_colors) > 0:
             y1 -= color_height + tree_offset
 
         n = df.shape[1] - 1
@@ -160,7 +161,7 @@ def clustermap(svg: SVGFigure,
 
     # col colors
 
-    if show_col_colobar and len(col_colors) > 0:
+    if len(col_colors) > 0:
         y1 = y - tree_offset - color_height
 
         x1 = x
@@ -236,20 +237,22 @@ def clustermap(svg: SVGFigure,
         x1 = x + cell[0] / 2
         y1 = y - 30
 
-        if show_col_tree:
+        if col_linkage is not None and show_col_tree:
             y1 -= (tree_offset + tree_height)
 
-        if show_col_colobar and len(col_colors) > 0:
+        if len(col_colors) > 0:
             y1 -= color_height + tree_offset
 
         x1 = x
         xs1 = 0
         for xs2 in xsplits:
             labels = df.columns[xs1:xs2]
+            # allow last minute renaming    
+            labels = np.array([rename_cols[x] if x in rename_cols else x for x in labels])
             
-            heatmap.add_xticklabels(svg, labels, pos=(x1, y1), colors=xticklabelcolors)
+            matrix.add_xticklabels(svg, labels, pos=(x1, y1), colors=xticklabel_colors)
             
             x1 += cell[0] * labels.size + xsplitgap
             xs1 = xs2
 
-    return (w, h)
+    return {'w':w, 'h':h}
