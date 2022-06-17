@@ -1,4 +1,4 @@
-from typing import Mapping, Optional, Union
+from typing import Mapping, Optional, Union, Any
 from .axis import Axis
 from .svgfigure import SVGFigure
 from . import svgfiguredraw
@@ -465,7 +465,7 @@ def add_y_axis(svg,
                pos: tuple[float, float] = (0, 0),
                axis: Axis = Axis(lim=[0, 100], w=200),
                ticks: Optional[list[float]] = None,
-               ticklabels: Optional[list[Union[int, float, str]]] = None,
+               ticklabels: Optional[list[Any]] = None,
                label: str = None,
                padding: int = TICK_SIZE,
                showticks: bool = True,
@@ -491,11 +491,14 @@ def add_y_axis(svg,
     if minortickstroke is None:
         minortickstroke = stroke
 
+    if ticklabels is None:
+        if ticks is not None:
+            ticklabels = ticks
+        else:
+            ticklabels = axis.ticklabels
+
     if ticks is None:
         ticks = axis.ticks
-
-    if ticklabels is None:
-        ticklabels = axis.ticklabels
 
     if label is None:
         label = axis.label
@@ -517,6 +520,7 @@ def add_y_axis(svg,
         else:
             ticky = y + axis.w - axis.scale(tick)
 
+        print(i, ticks, ticklabels)
         ticklabel = ticklabels[i]
 
         if not isinstance(ticklabel, str):

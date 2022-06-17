@@ -71,6 +71,7 @@ def add_gsea(svg,
             break
 
     for f in os.listdir(dir):
+        print(dir, f, name)
         if name in f and 'xls' in f:
             print(f'gene hits: {f}')
             df_hits = pd.read_csv(f'{dir}/{f}', sep='\t', header=0)
@@ -271,11 +272,10 @@ def add_gsea(svg,
     # else:
     #     ticks[0] = round(2 * ticks[1] - ticks[2], 1)
 
-    print(ymin, ymax)
+    print(ymin, ymax, ticks)
 
     graph.add_y_axis(svg,
-                     x=xoffset,
-                     y=y,
+                     pos=(xoffset, y),
                      axis=yaxis,
                      ticks=ticks,
                      padding=svgplot.TICK_SIZE,

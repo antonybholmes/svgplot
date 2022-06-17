@@ -24,7 +24,7 @@ def add_scatterplot(svg: SVGFigure,
                   axes: tuple[axis.Axis, axis.Axis] = None,
                   xaxis_kws: Mapping[str, Union[int, float, str, bool]] = {},
                   yaxis_kws: Mapping[str, Union[int, float, str, bool]] = {},
-                  show_legend: bool = True):
+                  show_legend: bool = False):
     
 
     if hue is None:
@@ -78,7 +78,7 @@ def add_scatterplot(svg: SVGFigure,
         yaxis = axis.auto_axis(lim=[data[y].min(), data[y].max()], w=dim[1], label=y)
 
 
-    # set some defaults
+    # set some axis display props
     _show_axes = graph._get_default_axes_kws(xaxis_kws, yaxis_kws)
     
     for ho in hue_order:
@@ -103,7 +103,7 @@ def add_scatterplot(svg: SVGFigure,
         points = np.array(points)
 
         for i, p in enumerate(points):
-            svg.add_circle(x=p[0], y=p[1], w=sizes[ho], fill=colors[ho], fill_opacity=opacity[ho])
+            svg.add_circle(x=p[0], y=p[1], w=sizes[ho], fill=colors[ho])
 
     # label axes
 

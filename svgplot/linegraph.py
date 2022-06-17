@@ -9,10 +9,10 @@ def add_linegraph(svg: SVGFigure,
                   stroke: int = 4,
                   title: Optional[str] = '',
                   axes: tuple[Axis, Axis] = None,
-                  xaxis_kws: Optional[Union[bool, str, Mapping[str,
-                                                               Union[int, float, str, bool]]]] = None,
-                  yaxis_kws: Optional[Union[bool, str, Mapping[str,
-                                                               Union[int, float, str, bool]]]] = None,
+                  xaxis_kws: Union[bool, str, Mapping[str,
+                                                               Union[int, float, str, bool]]] = {},
+                  yaxis_kws: Union[bool, str, Mapping[str,
+                                                               Union[int, float, str, bool]]] = {},
                   color: str = 'black',
                   fill: str = 'none',
                   fill_opacity: float = 0.2):
@@ -23,26 +23,7 @@ def add_linegraph(svg: SVGFigure,
     xaxis, yaxis = axes
 
     # set some defaults
-    _show_axes = [{'show': True, 'label': True, 'stroke': 3, 'title_offset': 60, 'clip': False, 'label_pos': 'c', 'invert': False},
-                  {'show': True, 'label': True, 'stroke': 3, 'title_offset': 100, 'clip': False, 'invert': False}]
-
-    if isinstance(xaxis_kws, dict):
-        _show_axes[0].update(xaxis_kws)
-    elif isinstance(xaxis_kws, bool):
-        _show_axes[0]['show'] = xaxis_kws
-    elif isinstance(xaxis_kws, str):
-        _show_axes[0]['show'] = 'show' in xaxis_kws[0]
-    else:
-        pass
-
-    if isinstance(yaxis_kws, dict):
-        _show_axes[1].update(yaxis_kws)
-    elif isinstance(yaxis_kws, bool):
-        _show_axes[1]['show'] = yaxis_kws
-    elif isinstance(yaxis_kws, str):
-        _show_axes[1]['show'] = 'show' in yaxis_kws[0]
-    else:
-        pass
+    _show_axes = graph._get_default_axes_kws(xaxis_kws, yaxis_kws)
 
     points = []
 
@@ -113,6 +94,6 @@ def add_linegraph(svg: SVGFigure,
     if title is not None:
         svg.add_text_bb(title, x=xaxis.w/2, y=y-40, align='c')
 
-    graph.add_axes(svg, pos=pos, axes=axes, xaxis_kws=xaxis_kws, yaxis_kws=yaxis_kws)
+    #graph.add_axes(svg, pos=pos, axes=axes, xaxis_kws=xaxis_kws, yaxis_kws=yaxis_kws)
 
     return xaxis.w, yaxis.w
