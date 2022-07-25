@@ -99,7 +99,7 @@ def add_clustermap(svg: SVGFigure,
 
     # heatmap
 
-    w, h, x_map, y_map = matrix.add_heatmap(svg=svg,
+    meta = matrix.add_heatmap(svg=svg,
                                       df=df,
                                       pos=pos,
                                       cell=cell,
@@ -116,8 +116,8 @@ def add_clustermap(svg: SVGFigure,
 
     # determine the offset of each cell relative to where it should be
     # on a normal heatmap this will be 0 for every row
-    x_offset_map = {x: x_map[x]-x*cell[0] for x in range(df.shape[1])}
-    y_offset_map = {x: y_map[x]-x*cell[1] for x in range(df.shape[0])}
+    x_offset_map = {x: meta['x_map'][x]-x*cell[0] for x in range(df.shape[1])}
+    y_offset_map = {x: meta['y_map'][x]-x*cell[1] for x in range(df.shape[0])}
 
     # col tree
     if col_linkage is not None and show_col_tree:

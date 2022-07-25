@@ -77,6 +77,8 @@ class SVGFigureGenes(SVGFigureHeatmap):
 
             if annotate_groups and ids.size >= min_group_size and group not in excludegroups:
                 color = clusters.get_block_color(group)
+
+
                 # len(set(clusters['Display Id'].values[np.where(clusters['Display Id'].str.contains(group))[0]])) * h
                 bh = (ids.size - 1) * h
 
@@ -133,10 +135,11 @@ class SVGFigureGenes(SVGFigureHeatmap):
                         names.append(id)
                         used.add(id)
             
-                print('asd', names)
-                
+
                 for n in names:
                     color = clusters.get_color(n)
+
+                    print('g', n, color)
                     
                     if index:
                         self.add_text_bb(str(pc), x=x-20, y=y, align='r')

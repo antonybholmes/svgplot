@@ -56,10 +56,12 @@ class Axis:
         if isinstance(ticklabels, list) or isinstance(ticklabels, np.ndarray):
             self._ticklabels.extend(ticklabels)
         else:
-            if self._ticks.size > 0:
-                self._ticklabels.append(self._ticks[0])
-            if self._ticks.size > 1:
-                self._ticklabels.append(self._ticks[-1])
+            # if self._ticks.size > 0:
+            #     self._ticklabels.append(self._ticks[0])
+            # if self._ticks.size > 1:
+            #     self._ticklabels.append(self._ticks[-1])
+
+            self._ticklabels.extend(self._ticks)
 
         self._ticklabels = np.array(self._ticklabels)
 

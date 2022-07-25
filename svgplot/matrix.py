@@ -188,7 +188,7 @@ def add_heatmap(svg: SVGFigure,
             x1 = x2 + xsplitgap
             xs1 = xs2
 
-    return (w, h, x_map, y_map)
+    return {'w':w, 'h':h, 'x_map':x_map, 'y_map':y_map}
 
 
 def add_xticklabels(svg: SVGFigure,

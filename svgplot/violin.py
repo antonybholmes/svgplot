@@ -127,7 +127,7 @@ def add_violinplot(svg: SVGFigure,
                    y: str = '',
                    hue: Optional[str] = None,
                    x_order: Optional[list[str]] = None,
-                   hue_order: Optional[list[str]] = None,
+                   hue_order: Optional[list[str]] = [''],
                    palette: Optional[list[str]] = None,
                    scale: str = 'area',
                    scale_hue: bool = True,
@@ -148,8 +148,8 @@ def add_violinplot(svg: SVGFigure,
 
     _x_kws = svgplot.kws({'show': True, 'show_labels': True, 'show_axis':True, 'label_pos':'axis', 'label_orientation': 'h'}, x_kws)
     _y_kws = svgplot.kws({'show': True, 'lim': None, 'ticks': None,
-                  'ticklabels': None, 'offset': None, 'title': None}, y_kws)
-    _violin_kws = svgplot.kws({'show': True, 'opacity': 0.3}, violin_kws)
+                  'ticklabels': None, 'offset': None, 'title': ''}, y_kws)
+    _violin_kws = svgplot.kws({'show': True, 'opacity': 0.4}, violin_kws)
     _swarm_kws = svgplot.kws({'show': True, 'dot_size': 10, 'opacity': 0.7, 'style': '^'}, swarm_kws)
     _box_kws = svgplot.kws({'show': True, 'width': 20, 'whisker_width': 20, 'stroke': 3, 'dot_size': 12,
                     'fill': 'white', 'opacity': 1, 'rounded': True, 'median_style': 'circle'}, box_kws)
@@ -203,9 +203,11 @@ def add_violinplot(svg: SVGFigure,
     if _y_kws['title'] is None:
         _y_kws['title'] = y
 
+    print('ticks', _y_kws['ticks'], _y_kws['ticklabels'])
+
     xaxis = Axis(lim=[0, 1], w=plot_width/2)
     yaxis = Axis(lim=_y_kws['lim'], ticks=_y_kws['ticks'],
-                 ticklabels=_y_kws['ticklabels'], label=y_kws['title'], w=height)
+                 ticklabels=_y_kws['ticklabels'], label=_y_kws['title'], w=height)
 
     densities = []
     data_points = []
@@ -311,8 +313,6 @@ def add_violinplot(svg: SVGFigure,
             x1 += plot_width #2 * xaxis.w
             colori += 1
 
-        
-
         x1 += x_gap
 
     if _x_kws['show_axis']:
@@ -324,6 +324,6 @@ def add_violinplot(svg: SVGFigure,
         _add_legend(svg,
                     hue_order,
                     palette,
-                    pos=(x1-plot_width, 0))
+                    pos=(x1-plot_width+40, 0))
 
-    return (x1, height)
+    return (x1 - x_gap - plot_width, height)

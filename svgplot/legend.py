@@ -4,18 +4,26 @@ from .svgfigure import SVGFigure
 
 def add_legend(svg: SVGFigure,
                hue_order: list[str],
-               palette: Union[str, Mapping[str, str]],
+               palette: Optional[Union[str, list[str], Mapping[str, str]]] = None,
                pos: tuple[int, int] = (0, 0),
-               fill_opacity: Optional[Union[float, str, Mapping[str, float]]] = 1):
+               fill_opacity: Optional[Union[float, str, Mapping[str, float]]] = 1,
+               style='bullet'):
     
-    if isinstance(palette, str):
-        colors = {ho:palette for ho in hue_order}
-    elif isinstance(palette, list):
-        colors = {ho:palette[i % len(palette)] for i, ho in enumerate(hue_order)}
-    elif isinstance(palette, dict):
-        colors = palette
-    else:
+    colors = None
+
+    if palette is not None:
+        if isinstance(palette, str):
+            colors = {ho:palette for ho in hue_order}
+        elif isinstance(palette, list):
+            colors = {ho:palette[i % len(palette)] for i, ho in enumerate(hue_order)}
+        elif isinstance(palette, dict):
+            colors = palette
+        else:
+            pass
+
+    if colors is None:
         colors = {ho:'black' for ho in hue_order}
+
 
     if isinstance(fill_opacity, str):
         opacity = {ho:fill_opacity for ho in hue_order}
@@ -27,6 +35,14 @@ def add_legend(svg: SVGFigure,
         opacity = {ho:1 for ho in hue_order}
 
     x, y = pos
-    for ho in hue_order:
-        svg.add_bullet(ho, x=x, y=y, color=colors[ho], fill_opacity=opacity[ho])
-        y += 40
+
+    match style:
+        case 'line':
+            for ho in hue_order:
+                svg.add_line(x2=50, y1=y, color=colors[ho], stroke=4)
+                svg.add_text_bb(ho, x=70, y=y)
+                y += 40
+        case _:
+            for ho in hue_order:
+                svg.add_bullet(ho, x=x, y=y, color=colors[ho], fill_opacity=opacity[ho])
+                y += 40

@@ -7,6 +7,7 @@ from .svgfiguremutationheatmap import *
 # from . import heatmap
 # from . import gsea
 from .matrix import *
+from .violin import *
 from .cluster import *
 from .colorbar import *
 from .graph import *

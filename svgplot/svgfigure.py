@@ -1,9 +1,9 @@
 from typing import Optional
-from .svgfiguredraw import SVGFigureDraw
+from .svgfiguregenes import SVGFigureGenes
 from enum import Enum
 
 
-class SVGFigure(SVGFigureDraw):
+class SVGFigure(SVGFigureGenes):
     def __init__(self,
                  file,
                  size: tuple[float, float] = (279, 216),
@@ -26,6 +26,18 @@ class Orientation(Enum):
     PORTRAIT = 1
     LANDSCAPE = 2
 
+def fig(file: str, size:[float, float]):
+    """
+    Create a new figure using inches for dimensions
+
+    Args:
+        file (str): name of svg to create.
+        size (float, float]): size in inches.
+
+    Returns:
+        SVGFigure: a new svg figure.
+    """    
+    return SVGFigure(file, size=(int(round(size[0]*25.4)), int(round(size[1]*25.4))))
 
 class FigureFactory:
     def create_figure(file: str,

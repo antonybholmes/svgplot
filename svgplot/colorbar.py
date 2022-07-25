@@ -81,6 +81,8 @@ def add_h_colorbar(svg: SVGFigure,
     #     col = svgplot.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
     #     self.add_rect(x=x+xoff, y=y, w=w1, h=h, fill=col)
 
+    print('ticks,', ticks)
+
     if showaxis:
         graph.add_x_axis(svg,
                          pos=(x, y+h+5),

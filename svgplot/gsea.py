@@ -45,7 +45,8 @@ def add_gsea(svg,
              show_gene_indices=True,
              label_pos='upper right',
              show_y_label=True,
-             stat='q'):
+             stat='q',
+             le_fill_opacity=0.3):
     """
     Add a gsea plot onto a page. This method adds axes labels to reduce
     scaling effect on fonts.
@@ -66,7 +67,8 @@ def add_gsea(svg,
             df_gene_ranks = pd.read_csv(f'{dir}/{f}', sep='\t', header=0)
 
             matcher = re.search('ranked_gene_list_(.+?)_versus_(.+?)_', f)
-            phens = [matcher.group(1), matcher.group(2)]
+            if phens is None:
+                phens = [matcher.group(1), matcher.group(2)]
 
             break
 
@@ -85,7 +87,8 @@ def add_gsea(svg,
 
             for i in range(df_rep.shape[0]):
                 nes_map[df_rep['NAME'][i]] = (
-                    df_rep['NES'][i], df_rep['FDR q-val'][i], df_rep['NOM p-val'][i])
+                df_rep['NES'][i], df_rep['FDR q-val'][i], df_rep['NOM p-val'][i])
+
 
     starty = y
 
@@ -199,7 +202,7 @@ def add_gsea(svg,
     points = [[xoffset + xaxis.scale(px), y + scaleh - yaxis.scale(py)]
               for px, py in zip(xlead, ylead)]
     svg.add_polyline(points, color='none',
-                     fill=LINE_GREEN, stroke=stroke, fill_opacity=0.2)
+                     fill=LINE_GREEN, stroke=stroke, fill_opacity=le_fill_opacity)
 
     # scale points
     points = [[xoffset + xaxis.scale(px), y + scaleh - yaxis.scale(py)]

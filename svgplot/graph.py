@@ -370,11 +370,18 @@ def add_x_axis(svg,
 
     # svg.set_font_size(9)
 
+    print('what', ticks)
+
+    if ticklabels is None:
+        if ticks is not None:
+            ticklabels = ticks
+        else:
+            ticklabels = axis.ticklabels
+
     if ticks is None:
         ticks = axis.ticks
 
-    if ticklabels is None:
-        ticklabels = axis.ticklabels
+    print('what', ticklabels)
 
     if invert:
         x1 = x - stroke / 2
@@ -385,6 +392,9 @@ def add_x_axis(svg,
 
     if showline:
         svg.add_line(x1=x1, y1=y, x2=x2, y2=y, stroke=stroke)
+
+
+    print('what3', ticklabels)
 
     for i in range(0, len(ticks)):
         tick = ticks[i]
@@ -398,6 +408,8 @@ def add_x_axis(svg,
             tickx = x + axis.scale(tick)  # (tick - ylim[0]) / yrange * h
 
         ticklabel = ticklabels[i]
+
+        print('tl', ticklabel, i, tickx)
 
         if not isinstance(ticklabel, str):
             ticklabel = str(ticklabel)
@@ -493,17 +505,25 @@ def add_y_axis(svg,
 
     if ticklabels is None:
         if ticks is not None:
+            # if ticks specified, use these as labels
             ticklabels = ticks
         else:
+            # pick the labels from the axis object
             ticklabels = axis.ticklabels
 
     if ticks is None:
+        # use the axis ticks by default
         ticks = axis.ticks
+
+    if ticklabels is None:
+        ticklabels = ticks
 
     if label is None:
         label = axis.label
 
     mw = 0
+
+    print(ticklabels)
 
     if showline:
         svg.add_line(x1=x, y1=y-stroke/2, y2=y+axis.w +
@@ -520,7 +540,6 @@ def add_y_axis(svg,
         else:
             ticky = y + axis.w - axis.scale(tick)
 
-        print(i, ticks, ticklabels)
         ticklabel = ticklabels[i]
 
         if not isinstance(ticklabel, str):
