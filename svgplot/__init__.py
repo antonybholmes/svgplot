@@ -17,3 +17,6 @@ from .scatterplot import *
 from .dotplot import *
 from .svgplot import *
 from .gsea import *
+from .genes import *
+from .coo import *
+from .motifs import *

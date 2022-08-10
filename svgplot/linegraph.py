@@ -58,11 +58,14 @@ def add_linegraph(svg: SVGFigure,
         x_g1d = ndimage.gaussian_filter1d(xd, sigma)
         y_g1d = ndimage.gaussian_filter1d(yd, sigma)
         
+        y_g1d[0] = yd[0]
+        y_g1d[-1] = yd[-1]
+
         xd = x_g1d
         yd = y_g1d
 
-        yd[0] = yaxis.lim[0]
-        yd[-1] = yaxis.lim[0]
+        #yd[0] = yaxis.lim[0]
+        #yd[-1] = yaxis.lim[0]
 
         #xd = X_
         #yd = Y_

@@ -339,3 +339,139 @@ def add_grid(svg: SVGFigure,
                          color=color, stroke=stroke)
 
             x += dx
+
+
+def cluster_label_rows(svg: SVGFigure,
+                           row_labels,
+                           clusters,
+                           x=0,
+                           y=0,
+                           h=0,
+                           w=svgplot.LABEL_COLOR_BLOCK_SIZE,
+                           padding=5,
+                           showgroups=True,
+                           frame=True,
+                           framecolor='white',
+                           stroke=svgplot.STROKE_SIZE,
+                           showlabels=True,
+                           showblocks=True,
+                           mingroupsize=2,
+                           weight='normal',
+                           invert_x=False,
+                           align='left'):
+        startx = x
+        starty = y
+
+        c = 0
+
+        for group in row_labels:
+            c += len(group['items'])
+
+        yd = h / c
+
+        y = 0
+
+        if invert_x:
+            x = startx + 30 - w
+        else:
+            x = startx - 30
+
+        mtw = 0
+
+        c = 0
+
+        for group in row_labels:
+            h = yd * len(group['items'])
+
+            for item in group['items']:
+                color = clusters.get_color(item)
+
+                if showblocks:
+                    svg.add_rect(x, y, w, yd, fill=color)
+
+                    if frame:
+                        #svg.add_frame(x, y, w, yd, color=framecolor)
+
+                        if c > 0:
+                            svg.add_line(x1=x-padding,
+                                          y1=y,
+                                          x2=x+w+padding,
+                                          y2=y,
+                                          color=framecolor,
+                                          stroke=stroke)
+
+                if showlabels:
+                    tw = svg.get_string_width(item)
+
+                    mtw = max(mtw, tw)
+
+                    if align == 'left':
+                        svg.add_text_bb(item,
+                                        x=x - tw - 10,
+                                        y=y,
+                                        h=yd,
+                                        color=color)
+                    else:
+                        svg.add_text_bb(item,
+                                        x=x + w + 10,
+                                        y=y,
+                                        h=yd,
+                                        color=color)
+
+                y += yd
+
+                c += 1
+
+        if showgroups:
+            y = starty + yd / 2
+
+            for group in row_labels:
+                n = len(group['items'])
+
+                x = -mtw - 50
+                h = (n - 1) * yd
+                color = clusters.get_block_color(group['name'])
+
+                if n > 1:
+                    svg.add_line(x,
+                                  y - svg.get_font_h() / 2 + padding / 2,
+                                  x,
+                                  y + h + svg.get_font_h() / 2 - padding / 2,
+                                  color=color)
+
+#                svg.add_line(x,
+#                              y,
+#                              x + svgplot.BRACKET_SIZE,
+#                              y,
+#                              color=color)
+#
+#                svg.add_line(x,
+#                              y + h,
+#                              x + svgplot.BRACKET_SIZE,
+#                              y + h,
+#                              color=color)
+
+                names = group['name'].split(' ')
+
+                if group['name'] == 'Plasmablasts':
+                    names = ['Plasma', 'blasts']
+
+                if n >= mingroupsize:
+                    if len(names) == 2:
+                        tw = svg.get_string_width(names[0])
+                        svg.add_text(names[0], x=x-60, y=y + h / 2 + tw/2, h=yd,
+                                      color=color, rotate=-90, weight=weight)
+                        tw = svg.get_string_width(names[1])
+                        svg.add_text(names[1], x=x-20, y=y + h / 2 + tw/2, h=yd,
+                                      color=color, rotate=-90, weight=weight)
+                    else:
+                        tw = svg.get_string_width(group['name'])
+                        svg.add_text(names[0],
+                                      x=x-20,
+                                      y=y + h / 2 + tw/2,
+                                      h=yd,
+                                      color=color,
+                                      rotate=-90,
+                                      weight=weight)
+
+                y += n * yd

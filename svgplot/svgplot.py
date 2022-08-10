@@ -66,13 +66,11 @@ LABEL_S_G2_M = 'S+G2+M'
 LABEL_G0_G1 = 'G0+G1'
 
 PADDING = 10
-LEGEND_DOT_SIZE = 10
 LEGEND_TEXT_OFFSET = 10
 LEGEND_BRACKET_OFFSET = 140
 LEGEND_GROUP_OFFSET = LEGEND_BRACKET_OFFSET + 10
 BRACKET_SIZE = 15
-LEGEND_ROW_H = 40
-LEGEND_DOT_Y_OFFSET = (LEGEND_ROW_H - LEGEND_DOT_SIZE) / 2
+
 
 COLOR_WHITE = 'white'
 COLOR_BLACK = 'black'
@@ -123,7 +121,6 @@ ABC_COLORS = {'ABC':'red', 'GCB':'green', 'Unclass':'blue'}
 
 
 CMAP = matplotlib.cm.get_cmap('tab10', 10)
-SUB_TYPE_COLORS = {'MCD':CMAP(4), 'BN2':CMAP(0), 'N1':CMAP(5), 'EZB':CMAP(2), 'Other':'gray'}
 SHIPP_COLORS = {'C1':CMAP(0), 'C2':CMAP(1), 'C3':CMAP(2), 'C4':CMAP(3), 'C5':CMAP(4), 'Unclassified':'gray'}
 
 DHIT_COLORS = {'DHITsig-pos':rgbatohex(matplotlib.cm.get_cmap('tab20c')(16)), 

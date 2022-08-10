@@ -13,13 +13,13 @@ class SVGFigureBase:
                  file,
                  # size=('279mm', '216mm'),
                  size: tuple[float, float] = (279, 216),
-                 view: Optional[tuple[int, int]] = None, #(2790, 2160),
+                 view: Optional[tuple[int, int]] = None,  # (2790, 2160),
                  grid: tuple[int, int] = (12, 12),
                  border: int = 100):
 
         if view is None:
             view = (int(size[0] * 10), int(size[1] * 10))
-        
+
         size = (f'{size[0]}mm', f'{size[1]}mm')
 
         self._svg = svgwrite.Drawing(
@@ -31,7 +31,8 @@ class SVGFigureBase:
         self._view = view
         self._scale_xy = (1, 1)  # (view[0] / 2790, view[1] / 2160)
         self._border = (border * self._scale_xy[0], border * self._scale_xy[1])
-        self._grid = grid #(int(12 * self._scale_xy[0]), int(12 * self._scale_xy[1]))
+        # (int(12 * self._scale_xy[0]), int(12 * self._scale_xy[1]))
+        self._grid = grid
         self._int_view = (view[0] - 2 * self._border[0],
                           view[1] - 2 * self._border[1])
         self._grid_xy = (self._int_view[0] / grid[1],
@@ -150,6 +151,27 @@ class SVGFigureBase:
         g.add(elem)
         return g
 
+    def format_scale(self, x: int = 0, y: int = 0) -> str:
+        return f'scale({x} {y})'
+
+
+    def scale(self, elem=None, x: float = 1, y: float = 1, css: Optional[Mapping[str, str]] = None) -> None:
+        css = self.css_map(css)
+
+        #print(x, y)
+
+        g = self._svg.g(transform=self.format_scale(x, y), style=svgplot.format_css_params(css))
+
+        if elem is not None:
+            g.add(elem)
+            
+        return g
+
+    def add_scale(self, elem=None, x: float = 0, y: float = 0, css=None) -> None:
+        g = self.scale(elem=elem, x=x, y=y, css=css)
+        self.add(g)
+        return g
+
     def trans(self, elem=None, x: float = 0, y: float = 0, css: Optional[Mapping[str, str]] = None) -> None:
         css = self.css_map(css)
 
@@ -160,6 +182,7 @@ class SVGFigureBase:
 
         if elem is not None:
             g.add(elem)
+
         return g
 
     def add_trans(self, elem=None, x: float = 0, y: float = 0, css=None) -> None:
@@ -173,7 +196,7 @@ class SVGFigureBase:
     def trans_rot(self, elem, x: float = 0, y: float = 0, rotate: float = 0) -> None:
         return self.rot(self.trans(elem, x=x, y=y), rotate=rotate)
 
-    def add_rot_trans(self, elem, x: float=0, y: float=0, rotate=0) -> None:
+    def add_rot_trans(self, elem, x: float = 0, y: float = 0, rotate=0) -> None:
         self.add(self.rot_trans(elem, x, y, rotate))
 
     def set_font_size(self, size: int) -> None:
@@ -243,7 +266,7 @@ class SVGFigureBase:
         return y + h - (h - self.get_font_h(family=family, size=size, weight=weight)) / 2
 
     def text(self,
-             text:str,
+             text: str,
              x: float = 0,
              y: float = 0,
              color=svgplot.COLOR_BLACK,
@@ -251,33 +274,24 @@ class SVGFigureBase:
              size=None,
              spacing=0,
              weight=svgplot.DEFAULT_FONT_WEIGHT,
-             css=None) -> None:
+             css: Optional[Mapping[str, str]] = None) -> None:
+
+        if size is None:
+            size = self._font_size
+
+        _css = {'fill': color,
+                'font-family': family,
+                'font-size': '{}px'.format(
+                    self.get_scale_font_size(size)),
+                'font-weight': weight,
+                'letter-spacing': spacing}
 
         if css is not None:
-            css = self.css_map(css)
+            _css.update(css)
 
-            return self._svg.text(text,
-                                  insert=(x, y),
-                                  style=svgplot.format_css_params(css))
-        else:
-            if size is None:
-                size = self._font_size
-
-            # print(svgplot.css_params('fill', color,
-            #                                               'font-family', family,
-            #                                               'font-size', '{}px'.format(self.get_scale_font_size(size)),
-            #                                               'font-weight', weight,
-            #                                               'letter-spacing', spacing))
-
-            return self._svg.text(text,
-                                  insert=(x, y),
-                                  class_='text',
-                                  style=svgplot.css_params('fill', color,
-                                                           'font-family', family,
-                                                           'font-size', '{}px'.format(
-                                                               self.get_scale_font_size(size)),
-                                                           'font-weight', weight,
-                                                           'letter-spacing', spacing))
+        return self._svg.text(text,
+                              insert=(x, y),
+                              style=svgplot.format_css_params(_css))
 
     def add_text(self,
                  label,
@@ -289,7 +303,7 @@ class SVGFigureBase:
                  size: int = None,
                  weight: str = svgplot.DEFAULT_FONT_WEIGHT,
                  rotate: float = 0,
-                 css=None) -> None:
+                 css: Optional[Mapping[str, str]] = None) -> None:
         return self.add_rot_trans(self.text(label,
                                             color=color,
                                             family=family,
