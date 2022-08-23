@@ -12,6 +12,7 @@ from .cluster import *
 from .colorbar import *
 from .graph import *
 from .legend import *
+from .bar import *
 from .linegraph import *
 from .scatterplot import *
 from .dotplot import *

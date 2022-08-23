@@ -9,7 +9,7 @@ import svgplot
 
 BASE_IDS = {0: 'A', 1: 'C', 2: 'G', 3: 'T'}
 BASE_COLORS = {'A': 'mediumseagreen', 'G': 'orange',
-               'C': 'cornflowerblue', 'T': 'red'}
+               'C': 'royalblue', 'T': 'red'}
 
 # tweak letters to appear the same height
 Y_SCALE_FACTORS = {'A': 1.04, 'C': 1, 'G': 1, 'T': 1.04}
@@ -23,6 +23,11 @@ class Mode(Enum):
     PROB = 0
     BITS = 1
 
+class TitlePos(Enum):
+    NONE = 0
+    TOP = 1
+    RIGHT = 2
+
 
 def plot_homer_motifs_by_range(svg: SVGFigure,
                                ids: list[int],
@@ -31,15 +36,16 @@ def plot_homer_motifs_by_range(svg: SVGFigure,
                                pos: [int, int] = (0, 0),
                                height: int = 100,
                                letter_width: int = 48,
-                               has_title: bool = True,
-                               offset=250):
+                               title_pos = TitlePos.TOP,
+                               offset=220,
+                               prefix='motif'):
 
     x, y = pos
     y1 = y
 
     for i in ids:
-        plot_homer_motif(svg, f'motif{i}.motif', mode=mode, rev_comp=rev_comp, pos=(
-            x, y1), height=height, letter_width=letter_width, has_title=has_title)
+        plot_homer_motif(svg, f'{prefix}{i}.motif', mode=mode, rev_comp=rev_comp, pos=(
+            x, y1), height=height, letter_width=letter_width, title_pos=title_pos)
         y1 += offset
 
 
@@ -49,16 +55,18 @@ def plot_homer_motif(svg: SVGFigure,
                      rev_comp=False,
                      pos: [int, int] = (0, 0),
                      height: int = 100,
-                     has_title: bool = True,
+                     title_pos = TitlePos.TOP,
                      letter_width: int = 48):
     x, y = pos
 
     scale_factor = height / H
 
+    
     rc = 1
 
+    print(file)
     with open(file, 'r') as f:
-        name = f.readline().split('\t')[1].split(':')[1]
+        name = re.sub(r'^.+BestGuess:', '', f.readline().split('\t')[1]).split('/')[0]
 
     df = pd.read_csv(file, sep='\t', skiprows=1, header=None)
 
@@ -72,10 +80,15 @@ def plot_homer_motif(svg: SVGFigure,
         dfrc['t'] = df.iloc[:, 0].values
         df = dfrc
 
-    print(df)
+    w = letter_width * df.shape[0]
 
-    if has_title:
-        svg.add_text_bb(name, x=letter_width*df.shape[0]/2, y=y-40, align='c')
+    match title_pos:
+        case TitlePos.TOP:
+            svg.add_text_bb(name, x=letter_width*df.shape[0]/2, y=y-40, align='c')
+        case TitlePos.RIGHT:
+            svg.add_text_bb(name, x=w + 50, y=y+height/2)
+        case _:
+            pass
 
     svgplot.add_x_axis(svg, pos=(x, y+height), axis=svgplot.Axis(lim=[0, df.shape[0]], ticks=[
         x+0.5 for x in range(df.shape[0])], ticklabels=[x+1 for x in range(df.shape[0])], w=letter_width*df.shape[0]))

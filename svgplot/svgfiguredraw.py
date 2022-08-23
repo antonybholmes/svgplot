@@ -77,7 +77,8 @@ class SVGFigureDraw(SVGFigureBase):
              y2:Optional[float]=None,
              color:str='black',
              stroke:int=svgplot.STROKE_SIZE,
-             dashed:bool=False):
+             dashed:bool=False,
+             clip_path:str = 'none'):
 
         if x2 is None:
             x2 = x1
@@ -93,7 +94,8 @@ class SVGFigureDraw(SVGFigureBase):
 
         return self._svg.line((self.x(x1), self.y(y1)),
                               (self.x(x2), self.y(y2)),
-                              style=style)
+                              style=style,
+                              clip_path=clip_path)
 
     def add_line(self,
                  x1:float=0,
@@ -102,9 +104,10 @@ class SVGFigureDraw(SVGFigureBase):
                  y2:Optional[float]=None,
                  color:str='black',
                  stroke:int=svgplot.STROKE_SIZE,
-                 dashed:bool=False):
+                 dashed:bool=False,
+                 clip_path:str = 'none'):
         self.add(self.line(x1, y1, x2, y2, color=color,
-                 stroke=stroke, dashed=dashed))
+                 stroke=stroke, dashed=dashed, clip_path=clip_path))
 
     def polyline(self, points,
                  color='black',
