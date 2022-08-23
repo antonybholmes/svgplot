@@ -13,6 +13,7 @@ from .colorbar import *
 from .graph import *
 from .legend import *
 from .bar import *
+from .hatch import *
 from .linegraph import *
 from .scatterplot import *
 from .dotplot import *
