@@ -97,9 +97,27 @@ class SVGFigureBase:
             col * self._subgrid_xy[0], row * self._subgrid_xy[1])
 
     def x(self, x: float) -> float:
+        """
+        Translates x to canvas x
+
+        Args:
+            x (float): x position in dimensionless units
+
+        Returns:
+            float: x translated relative to current canvas offsets.
+        """
         return self.unit(x + self._offset[0] + self._sub_offset[0] + self._trans[-1][0] + self._border[0])
 
     def y(self, y: float) -> float:
+        """
+        Translates y to canvas y
+
+        Args:
+            y (float): y position in dimensionless units
+
+        Returns:
+            float: y translated relative to current canvas offsets.
+        """
         return self.unit(y + self._offset[1] + self._sub_offset[1] + self._trans[-1][1] + self._border[1])
 
     def pos(self, pos: tuple[float, float]) -> tuple[float, float]:
@@ -154,17 +172,17 @@ class SVGFigureBase:
     def format_scale(self, x: int = 0, y: int = 0) -> str:
         return f'scale({x} {y})'
 
-
     def scale(self, elem=None, x: float = 1, y: float = 1, css: Optional[Mapping[str, str]] = None) -> None:
         css = self.css_map(css)
 
         #print(x, y)
 
-        g = self._svg.g(transform=self.format_scale(x, y), style=svgplot.format_css_params(css))
+        g = self._svg.g(transform=self.format_scale(x, y),
+                        style=svgplot.format_css_params(css))
 
         if elem is not None:
             g.add(elem)
-            
+
         return g
 
     def add_scale(self, elem=None, x: float = 0, y: float = 0, css=None) -> None:
@@ -175,7 +193,7 @@ class SVGFigureBase:
     def trans(self, elem=None, x: float = 0, y: float = 0, css: Optional[Mapping[str, str]] = None) -> None:
         css = self.css_map(css)
 
-        #print(x, y)
+        print(x, y)
 
         g = self._svg.g(transform=self.format_translate(
             self.x(x), self.y(y)), style=svgplot.format_css_params(css))

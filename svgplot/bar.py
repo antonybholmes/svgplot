@@ -46,12 +46,15 @@ def add_barplot(svg: SVGFigure,
     order = np.array(order)
 
     if hue is None:
-      hue = x
-
+        hue = x
+        hue_order = ['']
+ 
     if hue_order is None:
-      hue_order = sorted(data[hue].unique())
+      hue_order = order #sorted(data[hue].unique())
 
     hue_order = np.array(hue_order)
+
+
 
 
     # draw bars
@@ -59,6 +62,7 @@ def add_barplot(svg: SVGFigure,
     x1 = xp
 
     for xo in order:
+      print('xo', xo)
       dfx = data[data[x] == xo]
 
       color = ''
@@ -77,7 +81,10 @@ def add_barplot(svg: SVGFigure,
       svg.add_text_bb(rename.get(xo, xo), x=x1+w/2, y=y2, orientation='v', align='r')
 
       for ho in hue_order:
-        dfh = dfx[dfx[hue] == ho]
+        if ho != '':
+          dfh = dfx[dfx[hue] == ho]
+        else:
+          dfh = dfx
 
         mean = dfh[y].mean()
         sd = dfh[y].std()
@@ -87,9 +94,9 @@ def add_barplot(svg: SVGFigure,
         h1 = h - sdh
         h2 = h + sdh
 
-  
         if ho in hue_palette:
           p = hue_palette[ho]
+
           if ':' in p:
             c1, hatch = p.split(':')[0:2]
           else:
@@ -98,55 +105,14 @@ def add_barplot(svg: SVGFigure,
           if c1 != '':
             color = c1
 
-        if color == '':
-          color = bar_color
+          if color == '':
+            color = bar_color
 
         y1 = y2 - h
 
-
         phatch.add_hatch(svg, x1, y1, bar_width, h, hatch=hatch, color=color)
 
-        # dh = [50, 20]
-
-        # match hatch:
-        #   case 'x':
-        #     clip_path = svg.svg.defs.add(svg.svg.clipPath(id=str(x1)))
-        #     clip_path.add(svg.svg.rect(insert=(svg.x(x1), svg.y(y1)), size=(bar_width, h))) #things inside this shape will be drawn
-            
-        #     yh1 = y2 + dh[0]
-        #     yh2 = yh1 - dh[0]
-
-        #     while yh1 > y1:
-        #       svg.add_line(x1=x1, x2=x1+bar_width,y1=yh1, y2=yh2, color=color, clip_path=f"url(#{x1})")
-        #       yh1 -= dh[1]
-        #       yh2 -= dh[1]
-
-        #     yh1 = y2
-        #     yh2 = yh1 + dh[0]
-
-        #     while yh2 > y1:
-        #       svg.add_line(x1=x1, x2=x1+bar_width,y1=yh1, y2=yh2, color=color, clip_path=f"url(#{x1})")
-        #       yh1 -= dh[1]
-        #       yh2 -= dh[1]
-        #   case '/':
-        #     clip_path = svg.svg.defs.add(svg.svg.clipPath(id=str(x1)))
-        #     clip_path.add(svg.svg.rect(insert=(svg.x(x1), svg.y(y1)), size=(bar_width, h))) #things inside this shape will be drawn
-            
-            
-        #     yh1 = y2 + dh[0]
-        #     yh2 = yh1 - dh[0]
-
-        #     while yh1 > y1:
-        #       svg.add_line(x1=x1, x2=x1+bar_width,y1=yh1, y2=yh2, color=color, clip_path=f"url(#{x1})")
-        #       yh1 -= dh[1]
-        #       yh2 -= dh[1]
-
-        #   case _:  
-        #     svg.add_rect(x1, y1, bar_width, h, fill=color)
-        
         svg.add_rect(x1, y1, bar_width, h, color='black')
-
-        
 
         x1 += bar_width + hue_gap
       

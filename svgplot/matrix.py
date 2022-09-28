@@ -3,6 +3,7 @@
 """
 @author: antony
 """
+import numpy as np
 from typing import Optional, Union
 import libplot
 import matplotlib
@@ -30,6 +31,7 @@ def add_heatmap(svg: SVGFigure,
                 yticklabel_colors: dict[str, str] = {},
                 col_colors: dict[str, str] = {},
                 color_height=0,
+                rename_cols: dict[str, str] = {},
                 row_zscore: bool = False,
                 xsplits=[],
                 xsplitgap=40,
@@ -147,6 +149,7 @@ def add_heatmap(svg: SVGFigure,
             y1 += cell[1] * len(labels) + ysplitgap
 
 
+    
     if len(xticklabels) > 0:
         x1 = x
         xs1 = 0
@@ -157,8 +160,9 @@ def add_heatmap(svg: SVGFigure,
 
         for xs2 in xsplits:
             labels = df.columns[xs1:xs2]
-            
-            add_xticklabels(svg, labels, pos=(x1, y1), colors=xticklabel_colors)
+            #labels = np.array([rename_cols[x] if x in rename_cols else x for x in labels])
+
+            add_xticklabels(svg, labels, pos=(x1, y1), colors=xticklabel_colors, rename_cols=rename_cols)
             
             x1 += cell[0] * labels.size + xsplitgap
             xs1 = xs2
@@ -174,8 +178,10 @@ def add_heatmap(svg: SVGFigure,
         xs1 = 0
         for xs2 in xsplits:
             labels = df.columns[xs1:xs2]
+            #labels = np.array([rename_cols[x] if x in rename_cols else x for x in labels])
+
             x2 = x1
-            for i, c in enumerate(df.columns[xs1:xs2]):
+            for i, c in enumerate(labels):
                 for name in col_colors:
                     if name in c:
                         svg.add_rect(x2, y1, cell[0] * (labels.size - i), color_height,
@@ -196,7 +202,8 @@ def add_xticklabels(svg: SVGFigure,
                     colors: dict[str, str] = {},
                     pos: tuple[int, int] = (0, -30),
                     cell: tuple[int, int] = DEFAULT_CELL,
-                    default_color: str = 'black'):
+                    default_color: str = 'black',
+                    rename_cols: dict[str, str] = {}):
     if isinstance(labels, pd.DataFrame):
         labels = labels.columns
 
@@ -218,7 +225,8 @@ def add_xticklabels(svg: SVGFigure,
                     color = c
                     break
 
-        svg.add_text_bb(name, x=x1, y=y, orientation='v', color=color)
+
+        svg.add_text_bb(rename_cols.get(name, name), x=x1, y=y, orientation='v', color=color)
         x1 += cell[0]
 
 
