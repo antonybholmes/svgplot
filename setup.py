@@ -8,10 +8,10 @@ setuptools.setup(
     version="1.0.0",
     author="Antony Holmes",
     author_email="antony@antonyholmes.com",
-    description="A small example package",
+    description="A library for creating plots directly onto an SVG canvas.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/antonybholmees/svgplot",
+    url="https://github.com/antonybholmes/svgplot",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

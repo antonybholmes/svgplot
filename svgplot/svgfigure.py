@@ -23,11 +23,13 @@ class FigureSize(Enum):
     JEM = 2
     FRONTIER = 3
 
+
 class Orientation(Enum):
     PORTRAIT = 1
     LANDSCAPE = 2
 
-def fig(file: str, size:[float, float]):
+
+def fig(file: str, size: tuple[float, float]):
     """
     Create a new figure using inches for dimensions
 
@@ -37,13 +39,14 @@ def fig(file: str, size:[float, float]):
 
     Returns:
         SVGFigure: a new svg figure.
-    """    
+    """
     return SVGFigure(file, size=(int(round(size[0]*25.4)), int(round(size[1]*25.4))))
+
 
 class FigureFactory:
     def create_figure(file: str,
-        size: FigureSize = FigureSize.LETTER, 
-        orientation: Orientation = Orientation.LANDSCAPE) -> SVGFigure:
+                      size: FigureSize = FigureSize.LETTER,
+                      orientation: Orientation = Orientation.LANDSCAPE) -> SVGFigure:
 
         match size:
             case FigureSize.JEM:
@@ -59,7 +62,7 @@ class FigureFactory:
 
         return SVGFigure(file, size=size)
 
-    def letter(file: str, landscape:bool=False):
+    def letter(file: str, landscape: bool = False):
         return FigureFactory.create_figure(file, orientation=Orientation.LANDSCAPE if landscape else Orientation.PORTRAIT)
 
     def portrait(file: str):
