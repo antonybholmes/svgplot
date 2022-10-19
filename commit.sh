@@ -1,4 +1,4 @@
-git add --all .
-git commit -m "Updates and bug fixes." -a
-git push
-
+# commit
+git add -A .
+git commit -m "Bug fixes and updates."
+git push -u origin dev
