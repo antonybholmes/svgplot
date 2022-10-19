@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 import pandas as pd
 import numpy as np
 from . import svgplot
@@ -8,15 +9,28 @@ from . import axis
 from matplotlib import cm
 
 
-def add_if(svg,
-           group,
-           name,
+def add_if(svg:svgfigure.SVGFigure,
+           group:str,
+           name:str,
            pos: tuple[int, int] = (0, 0),
-           h=200,
-           ih=None,
-           color=svgplot.COLOR_BLACK,
-           padding=5,
-           iscale=0.5):
+           h:int=200,
+           ih:Optional[float] = None,
+           color:str=svgplot.COLOR_BLACK,
+           padding:int=5,
+           iscale:float=0.5):
+    """Add immunoflourence plot.
+
+    Args:
+        svg (svgfigure.SVGFigure): _description_
+        group (str): _description_
+        name (str): _description_
+        pos (tuple[int, int], optional): _description_. Defaults to (0, 0).
+        h (int, optional): _description_. Defaults to 200.
+        ih (Optional[float], optional): _description_. Defaults to None.
+        color (str, optional): _description_. Defaults to svgplot.COLOR_BLACK.
+        padding (int, optional): _description_. Defaults to 5.
+        iscale (float, optional): _description_. Defaults to 0.5.
+    """        
     x, y = pos
 
     if ih is None:

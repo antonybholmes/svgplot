@@ -93,7 +93,6 @@ def plot_gene_diagrams(svg: SVGFigure,
         s2 = s * 2
 
         if strand:
-            print('strand')
             svg.add_line(x1=x1, y1=-BIG_ARROW_SIZE, x2=x1 +
                          BIG_ARROW_SIZE/2, y2=-BIG_ARROW_SIZE)
 
@@ -228,8 +227,6 @@ def add_vert_cluster_legend(svg: SVGFigure,
             for n in names:
                 color = clusters.get_color(n)
 
-                print('g', n, color)
-
                 if index:
                     svg.add_text_bb(str(pc), x=x-20, y=y, align='r')
 
@@ -263,7 +260,6 @@ def add_vert_cluster_legend(svg: SVGFigure,
                             svg.add_text_bb(
                                 mcid, x=x + bracket_offset + 20, y=y1, color=color)
                             y1 += h
-
                 else:
                     svg.add_bullet('', x, y, color=color, h=h, shape=shape)
                     bh = h

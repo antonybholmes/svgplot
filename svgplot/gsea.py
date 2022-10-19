@@ -9,6 +9,7 @@ from matplotlib.colors import Normalize
 from . import svgplot
 from . import graph
 from .axis import Axis
+from .svgfigure import SVGFigure
 
 LINE_GREEN = '#00b359'  # '#90EE90'
 
@@ -25,28 +26,28 @@ class _MidpointNormalize(Normalize):
         return np.ma.masked_array(np.interp(value, x, y))
 
 
-def add_gsea(svg,
-             name,
-             dir,
+def add_gsea(svg: SVGFigure,
+             name: str,
+             dir: str,
              pos: tuple[float, float] = (0, 0),
-             w:int=400,
-             h:Optional[float]=None,
-             xoffset=80,
-             title=None,
+             w: int = 400,
+             h: Optional[float] = None,
+             xoffset: int = 80,
+             title: Optional[str] = None,
              phens=None,
              cmap=plt.cm.seismic,
-             mode='up',
-             stroke=4,
-             scale_factor=0.7,
-             n=-1,
-             weight='normal',
-             titleoffset=20,
-             showsnr=True,
-             show_gene_indices=True,
-             label_pos='upper right',
-             show_y_label=True,
-             stat='q',
-             le_fill_opacity=0.3):
+             mode: str = 'up',
+             stroke: int = 4,
+             scale_factor: float = 0.7,
+             n: int = -1,
+             weight: str = 'normal',
+             titleoffset: int = 20,
+             showsnr: bool = True,
+             show_gene_indices: bool = True,
+             label_pos: str = 'upper right',
+             show_y_label: bool = True,
+             stat: str = 'q',
+             le_fill_opacity: float = 0.3):
     """
     Add a gsea plot onto a page. This method adds axes labels to reduce
     scaling effect on fonts.
@@ -87,8 +88,7 @@ def add_gsea(svg,
 
             for i in range(df_rep.shape[0]):
                 nes_map[df_rep['NAME'][i]] = (
-                df_rep['NES'][i], df_rep['FDR q-val'][i], df_rep['NOM p-val'][i])
-
+                    df_rep['NES'][i], df_rep['FDR q-val'][i], df_rep['NOM p-val'][i])
 
     starty = y
 
@@ -409,7 +409,6 @@ def add_gsea(svg,
     if showsnr:
 
         m = round(int(max(abs(snr)) * 10) / 10, 1)
-        print('snr', m)
         ymin = -m
         ymax = m
         scaleh = h * 0.3

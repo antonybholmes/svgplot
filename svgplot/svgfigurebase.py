@@ -75,9 +75,18 @@ class SVGFigureBase:
     # def grid_block(self, row, col, name=None):
     #    return SVGGridBlock(self, row, col, name=name)
 
-    def unit(self, num):
+    def unit(self, num:float)->float:
+        """Returns number with 5 dp to reduce size of svg
+
+        Args:
+            num float: number
+
+        Returns:
+            float: number rounded to 5 dp.
+        """        
         # * 10 #self.units #'{}{}'.format(num, self.units)
         return round(num, 5)
+
 
     def set_offset(self, x: int = 0, y: int = 0):
         self._offset = (x, y)
@@ -85,18 +94,18 @@ class SVGFigureBase:
     def set_sub_offset(self, x: int = 0, y: int = 0):
         self._sub_offset = (x, y)
 
-    def set_cell(self, row: int, col: int):
+    def set_cell(self, row: int = 0, col: int = 0):
         self.set_offset(col * self._grid_xy[0], row * self._grid_xy[1])
         self.set_sub_cell(0, 0)
         self.t(0, 0)
 
         return self
 
-    def set_sub_cell(self, row: int, col: int):
+    def set_sub_cell(self, row: int = 0, col: int = 0):
         self.set_sub_offset(
             col * self._subgrid_xy[0], row * self._subgrid_xy[1])
 
-    def x(self, x: float) -> float:
+    def x(self, x: float = 0) -> float:
         """
         Translates x to canvas x
 
@@ -108,7 +117,7 @@ class SVGFigureBase:
         """
         return self.unit(x + self._offset[0] + self._sub_offset[0] + self._trans[-1][0] + self._border[0])
 
-    def y(self, y: float) -> float:
+    def y(self, y: float = 0) -> float:
         """
         Translates y to canvas y
 
@@ -120,7 +129,7 @@ class SVGFigureBase:
         """
         return self.unit(y + self._offset[1] + self._sub_offset[1] + self._trans[-1][1] + self._border[1])
 
-    def pos(self, pos: tuple[float, float]) -> tuple[float, float]:
+    def pos(self, pos: tuple[float, float] = (0, 0)) -> tuple[float, float]:
         """
         Adjusts a position tuple to be relative to the current figure coordinates.
 
@@ -161,7 +170,7 @@ class SVGFigureBase:
         if len(self._trans) > 1:
             loc = self._trans.pop()
 
-    def rot(self, elem, rotate=None) -> None:
+    def rot(self, elem, rotate:Optional[float]=None) -> None:
         if rotate is None or (isinstance(rotate, int) and rotate == 0):
             return elem
 
@@ -185,7 +194,7 @@ class SVGFigureBase:
 
         return g
 
-    def add_scale(self, elem=None, x: float = 0, y: float = 0, css=None) -> None:
+    def add_scale(self, elem=None, x: float = 0, y: float = 0, css: Optional[Mapping[str, str]] =None) -> None:
         g = self.scale(elem=elem, x=x, y=y, css=css)
         self.add(g)
         return g
@@ -203,7 +212,7 @@ class SVGFigureBase:
 
         return g
 
-    def add_trans(self, elem=None, x: float = 0, y: float = 0, css=None) -> None:
+    def add_trans(self, elem=None, x: float = 0, y: float = 0, css: Optional[Mapping[str, str]]=None) -> None:
         g = self.trans(elem=elem, x=x, y=y, css=css)
         self.add(g)
         return g
@@ -214,7 +223,7 @@ class SVGFigureBase:
     def trans_rot(self, elem, x: float = 0, y: float = 0, rotate: float = 0) -> None:
         return self.rot(self.trans(elem, x=x, y=y), rotate=rotate)
 
-    def add_rot_trans(self, elem, x: float = 0, y: float = 0, rotate=0) -> None:
+    def add_rot_trans(self, elem, x: float = 0, y: float = 0, rotate:float=0) -> None:
         self.add(self.rot_trans(elem, x, y, rotate))
 
     def set_font_size(self, size: int) -> None:

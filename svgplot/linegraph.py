@@ -6,9 +6,10 @@ from . import graph
 from scipy.interpolate import make_interp_spline
 from scipy import interpolate
 from scipy import ndimage
+from pandas import DataFrame
 
 def add_linegraph(svg: SVGFigure,
-                  data,
+                  data: DataFrame,
                   pos: tuple[float, float] = (0, 0),
                   stroke: int = 4,
                   title: Optional[str] = '',
@@ -21,6 +22,25 @@ def add_linegraph(svg: SVGFigure,
                   fill: str = 'none',
                   fill_opacity: float = 0.2,
                   smooth=False):
+    """_summary_
+
+    Args:
+        svg (SVGFigure): _description_
+        data (DataFrame): _description_
+        pos (tuple[float, float], optional): _description_. Defaults to (0, 0).
+        stroke (int, optional): _description_. Defaults to 4.
+        title (Optional[str], optional): _description_. Defaults to ''.
+        axes (tuple[Axis, Axis], optional): _description_. Defaults to None.
+        xaxis_kws (Union[bool, str, Mapping[str, Union[int, float, str, bool]]], optional): _description_. Defaults to {}.
+        yaxis_kws (Union[bool, str, Mapping[str, Union[int, float, str, bool]]], optional): _description_. Defaults to {}.
+        color (str, optional): _description_. Defaults to 'black'.
+        fill (str, optional): _description_. Defaults to 'none'.
+        fill_opacity (float, optional): _description_. Defaults to 0.2.
+        smooth (bool, optional): _description_. Defaults to False.
+
+    Returns:
+        _type_: _description_
+    """                  
     if axes is None:
         axes = (Axis(lim=(0, 100), w=200), Axis(lim=(0, 100), w=200))
 

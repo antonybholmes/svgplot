@@ -1,3 +1,4 @@
+from turtle import pos
 from typing import List, Optional, Union
 from . import svgplot
 from .svgfigurebase import SVGFigureBase
@@ -19,11 +20,11 @@ TWO_PI_RADS = 2 * math.pi
 
 class SVGFigureDraw(SVGFigureBase):
     def __init__(self,
-                 file,
+                 file:str,
                  size: tuple[float, float] = (279, 216),
                  view: Optional[tuple[int, int]] = None, #(2790, 2160),
-                 grid=(12, 12),
-                 border=100):
+                 grid: tuple[int, int] = (12, 12),
+                 border:int=100):
         super().__init__(file,
                          size=size,
                          view=view,
@@ -309,17 +310,19 @@ class SVGFigureDraw(SVGFigureBase):
 
     def add_label_axis(self,
                        label,
-                       x=0,
-                       y=0,
-                       dim='x',
-                       size=svgplot.DEFAULT_FONT_SIZE,
-                       color=svgplot.COLOR_BLACK,
-                       w=svgplot.ARROW_LENGTH,
-                       padding=20,
-                       margin=10,
-                       position='middle',
-                       arrow=True,
-                       weight='normal'):
+                       pos:tuple[int, int] = (0, 0),
+                       dim:str='x',
+                       size:int=svgplot.DEFAULT_FONT_SIZE,
+                       color:str=svgplot.COLOR_BLACK,
+                       w:int=svgplot.ARROW_LENGTH,
+                       padding:int=20,
+                       margin:int=10,
+                       position:str='middle',
+                       arrow:bool=True,
+                       weight:str='normal'):
+
+        x, y = pos
+
         dim = dim.lower()
 
         sw = self.get_string_width(label, weight=weight)

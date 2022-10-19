@@ -8,7 +8,16 @@ def add_legend(svg: SVGFigure,
                pos: tuple[int, int] = (0, 0),
                fill_opacity: Optional[Union[float, str, Mapping[str, float]]] = 1,
                style='bullet'):
-    
+    """Adds a legend to the plot
+
+    Args:
+        svg (SVGFigure): _description_
+        hue_order (list[str]): _description_
+        palette (Optional[Union[str, list[str], Mapping[str, str]]], optional): _description_. Defaults to None.
+        pos (tuple[int, int], optional): _description_. Defaults to (0, 0).
+        fill_opacity (Optional[Union[float, str, Mapping[str, float]]], optional): _description_. Defaults to 1.
+        style (str, optional): Legend style, either 'line' or 'bullet'. Defaults to 'bullet'.
+    """    
     colors = None
 
     if palette is not None:
