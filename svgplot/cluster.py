@@ -6,7 +6,7 @@ import pandas as pd
 import lib10x
 from scipy.cluster.hierarchy import linkage, dendrogram
 from . import matrix
-from . import svgplot
+from . import core
 from .svgfigure import SVGFigure
 
 
@@ -16,7 +16,7 @@ def add_clustermap(svg: SVGFigure,
                    cell: tuple[int, int] = matrix.DEFAULT_CELL,
                    lim: tuple[int, int] = matrix.DEFAULT_LIMITS,
                    cmap: matplotlib.colors.Colormap = libplot.BWR2_CMAP,
-                   gridcolor=svgplot.GRID_COLOR,
+                   gridcolor=core.GRID_COLOR,
                    showframe=True,
                    xticklabels: Optional[Union[list[str], bool]] = True,
                    xticklabel_colors: dict[str, str] = {},
@@ -44,7 +44,7 @@ def add_clustermap(svg: SVGFigure,
         cell (tuple[int, int], optional): _description_. Defaults to heatmap.DEFAULT_CELL.
         lim (tuple[int, int], optional): _description_. Defaults to heatmap.DEFAULT_LIMITS.
         cmap (_type_, optional): _description_. Defaults to libplot.BWR2_CMAP.
-        gridcolor (_type_, optional): _description_. Defaults to svgplot.GRID_COLOR.
+        gridcolor (_type_, optional): _description_. Defaults to core.GRID_COLOR.
         showframe (bool, optional): _description_. Defaults to True.
         xticklabels (bool, optional): _description_. Defaults to True.
         xticklabel_colors (dict[str, str], optional): _description_. Defaults to {}.

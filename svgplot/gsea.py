@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
-from . import svgplot
+from . import core
 from . import graph
 from .axis import Axis
 from .svgfigure import SVGFigure
@@ -220,9 +220,9 @@ def add_gsea(svg: SVGFigure,
     #
 
     # if smallfont:
-    #     svg.set_font_size(svgplot.FIGURE_FONT_SIZE)
+    #     svg.set_font_size(core.FIGURE_FONT_SIZE)
     # else:
-    #     svg.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+    #     svg.set_font_size(core.DEFAULT_FONT_SIZE)
 
     #svg.add_text_bb(subtitle, x=x+xoffset, y=y, w=w, align='c')
     #y += svg.get_font_h()
@@ -258,7 +258,7 @@ def add_gsea(svg: SVGFigure,
 
     # yaxis
     # if smallfont:
-    #     svg.set_font_size(svgplot.FIGURE_FONT_SIZE)
+    #     svg.set_font_size(core.FIGURE_FONT_SIZE)
 
     #ticks = [ymin, round((((ymax+ymin) / 2) * 10) / 10, 1), ymax]
     ticks = [ymin, ymax]
@@ -281,7 +281,7 @@ def add_gsea(svg: SVGFigure,
                      pos=(xoffset, y),
                      axis=yaxis,
                      ticks=ticks,
-                     padding=svgplot.TICK_SIZE,
+                     padding=core.TICK_SIZE,
                      showticks=True,
                      stroke=stroke)
 
@@ -334,7 +334,7 @@ def add_gsea(svg: SVGFigure,
     #
     # heat bar
     #
-    # col = svgplot.rgbtohex(cmap(int(norm(snr[0]) * cmap.N - 1)))
+    # col = core.rgbtohex(cmap(int(norm(snr[0]) * cmap.N - 1)))
 
     # svg.add_rect(x=xoffset, y=y-25, w=w, h=20, fill=col)
 
@@ -342,7 +342,7 @@ def add_gsea(svg: SVGFigure,
     #     v = snr[hit]
     #     x1 = xaxis.scale(hit)
     #     w1 = w - x1
-    #     col = svgplot.rgbtohex(cmap(int(norm(v) * cmap.N - 1)))
+    #     col = core.rgbtohex(cmap(int(norm(v) * cmap.N - 1)))
     #     svg.add_rect(x=xoffset+x1, y=y-25, w=w1, h=20, fill=col)
 
     # svg.add_frame(xoffset, y=y-25, w=w, h=20)
@@ -369,9 +369,9 @@ def add_gsea(svg: SVGFigure,
     #
 
     # if smallfont:
-    #     svg.set_font_size(svgplot.FIGURE_FONT_SIZE)
+    #     svg.set_font_size(core.FIGURE_FONT_SIZE)
     # else:
-    #     svg.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+    #     svg.set_font_size(core.DEFAULT_FONT_SIZE)
 
     y += sh + svg.get_font_h()
 
@@ -418,7 +418,7 @@ def add_gsea(svg: SVGFigure,
                        y=y,
                        axis=yaxis,
                        ticks=[-m, 0, m],
-                       padding=svgplot.TICK_SIZE,
+                       padding=core.TICK_SIZE,
                        showticks=True,
                        stroke=stroke)
 
@@ -437,7 +437,7 @@ def add_gsea(svg: SVGFigure,
 
         # draw line at y =0
         y1 = y + scaleh - yaxis.scale(0)
-        #svg.add_line(x1=xoffset, y1=y1, x2=xoffset+w, y2=y1, stroke=svgplot.AXIS_STROKE)
+        #svg.add_line(x1=xoffset, y1=y1, x2=xoffset+w, y2=y1, stroke=core.AXIS_STROKE)
 
         y += scaleh + 40
 

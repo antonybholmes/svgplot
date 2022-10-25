@@ -1,7 +1,7 @@
 from typing import Optional
 from .axis import Axis
 from .svgfigure import SVGFigure
-from . import svgplot
+from . import core
 from . import graph
 import numpy as np
 import matplotlib
@@ -55,21 +55,21 @@ def add_h_colorbar(svg: SVGFigure,
         steps = steps / (steps.size - 1) * \
             (norm.vmax - norm.vmin) + norm.vmin
 
-    svg.add_rect(x=x, y=y, w=w, h=h, fill=svgplot.rgbtohex(cmap(0)))
-    svg.add_rect(x=x+w/4, y=y, w=w/2, h=h, fill=svgplot.rgbtohex(
+    svg.add_rect(x=x, y=y, w=w, h=h, fill=core.rgbtohex(cmap(0)))
+    svg.add_rect(x=x+w/4, y=y, w=w/2, h=h, fill=core.rgbtohex(
         cmap((cmap.N-1 if cmap.N % 2 == 0 else cmap.N)//2)))
 
     for step in steps:
         xoff = xaxis.scale(step)
         w1 = w - xoff
-        col = svgplot.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
+        col = core.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
         svg.add_rect(x=x+xoff, y=y, w=w1, h=h, fill=col)
         #self.add_line(x1=x+xoff, y1=y, x2=x+xoff, y2=y+h)
 
     # for step in reversed(steps[0:steps.size//2]):
     #     xoff = xaxis.scale(step)
     #     w1 = xoff #w/2 - xoff
-    #     col = svgplot.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
+    #     col = core.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
     #     self.add_rect(x=x, y=y, w=w1, h=h, fill=col)
     #     #self.add_line(x1=x+xoff, y1=y, x2=x+xoff, y2=y+h)
 
@@ -78,7 +78,7 @@ def add_h_colorbar(svg: SVGFigure,
     # for step in steps[steps.size//2:]:
     #     xoff = xaxis.scale(step)
     #     w1 = w - xoff #w/2 - xoff
-    #     col = svgplot.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
+    #     col = core.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
     #     self.add_rect(x=x+xoff, y=y, w=w1, h=h, fill=col)
 
     print('ticks,', ticks)
@@ -142,13 +142,13 @@ def add_v_colorbar(svg,
         steps = steps / (steps.size - 1) * \
             (norm.vmax - norm.vmin) + norm.vmin
 
-    #self.add_rect(x=x, y=y, w=w, h=h, fill=svgplot.rgbtohex(cmap(0)))
-    #self.add_rect(x=x, y=y+h/4, w=w, h=h/2, fill=svgplot.rgbtohex(cmap((cmap.N-1 if cmap.N % 2 == 0 else cmap.N)//2)))
+    #self.add_rect(x=x, y=y, w=w, h=h, fill=core.rgbtohex(cmap(0)))
+    #self.add_rect(x=x, y=y+h/4, w=w, h=h/2, fill=core.rgbtohex(cmap((cmap.N-1 if cmap.N % 2 == 0 else cmap.N)//2)))
 
     for step in steps:
         yoff = axis.scale(step)
         h1 = h - yoff
-        col = svgplot.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
+        col = core.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
         svg.add_rect(x=x, y=y, w=w, h=h1, fill=col)
         #self.add_line(x1=x+xoff, y1=y, x2=x+xoff, y2=y+h)
 
@@ -158,7 +158,7 @@ def add_v_colorbar(svg,
     # for step in reversed(steps[0:steps.size//2]):
     #     xoff = xaxis.scale(step)
     #     w1 = xoff #w/2 - xoff
-    #     col = svgplot.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
+    #     col = core.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
     #     self.add_rect(x=x, y=y, w=w1, h=h, fill=col)
     #     #self.add_line(x1=x+xoff, y1=y, x2=x+xoff, y2=y+h)
 
@@ -167,7 +167,7 @@ def add_v_colorbar(svg,
     # for step in steps[steps.size//2:]:
     #     xoff = xaxis.scale(step)
     #     w1 = w - xoff #w/2 - xoff
-    #     col = svgplot.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
+    #     col = core.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
     #     self.add_rect(x=x+xoff, y=y, w=w1, h=h, fill=col)
 
     if showaxis:

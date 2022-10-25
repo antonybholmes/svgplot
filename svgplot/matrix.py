@@ -9,7 +9,7 @@ import libplot
 import matplotlib
 import pandas as pd
 import lib10x
-from . import svgplot
+from . import core
 from .svgfigure import SVGFigure
 
 DEFAULT_CELL = (50, 50)
@@ -23,7 +23,7 @@ def add_heatmap(svg: SVGFigure,
                 cell: tuple[int, int] = DEFAULT_CELL,
                 lim: tuple[int, int] = DEFAULT_LIMITS,
                 cmap = libplot.BWR2_CMAP,
-                gridcolor=svgplot.GRID_COLOR,
+                gridcolor=core.GRID_COLOR,
                 showframe: bool = True,
                 xticklabels: Optional[Union[list[str], bool]] = True,
                 xticklabel_colors: dict[str, str] = {},
@@ -47,7 +47,7 @@ def add_heatmap(svg: SVGFigure,
         cell (tuple[int, int], optional): Size of heat map cell. Defaults to DEFAULT_CELL.
         lim (tuple[int, int], optional): _description_. Defaults to DEFAULT_LIMITS.
         cmap (_type_, optional): _description_. Defaults to libplot.BWR2_CMAP.
-        gridcolor (_type_, optional): _description_. Defaults to svgplot.GRID_COLOR.
+        gridcolor (_type_, optional): _description_. Defaults to core.GRID_COLOR.
         showframe (bool, optional): _description_. Defaults to True.
         xticklabels (Optional[Union[list[str], bool]], optional): _description_. Defaults to True.
         xticklabel_colors (dict[str, str], optional): _description_. Defaults to {}.
@@ -111,7 +111,7 @@ def add_heatmap(svg: SVGFigure,
 
                 for yi in range(ys1, ys2):
                     v = df.iloc[yi, xi]
-                    color = svgplot.rgbatohex(mapper.to_rgba(v))
+                    color = core.rgbatohex(mapper.to_rgba(v))
                     svg.add_rect(x2, y2, cell[0], cell[1], fill=color)
 
                     y_map[yi] = y2
@@ -264,7 +264,7 @@ def add_col_colorbar(svg: SVGFigure,
                      colormap: dict[str, str],
                      pos: tuple[int, int] = (0, 0),
                      cell: tuple[int, int] = DEFAULT_COLORBAR_CELL,
-                     gridcolor: str = svgplot.GRID_COLOR,
+                     gridcolor: str = core.GRID_COLOR,
                      showgrid: bool = False,
                      showframe: bool = False,
                      default_color: str = '#cccccc'):
@@ -301,8 +301,8 @@ def add_grid(svg: SVGFigure,
              pos: tuple[int, int] = (0, 0),
              size: tuple[int, int] = (0, 0),
              shape: tuple[int, int] = (0, 0),
-             color: str = svgplot.GRID_COLOR,
-             stroke: int = svgplot.GRID_STROKE,
+             color: str = core.GRID_COLOR,
+             stroke: int = core.GRID_STROKE,
              drawrows: bool = True,
              drawcols: bool = True):
     """
@@ -313,8 +313,8 @@ def add_grid(svg: SVGFigure,
         pos (tuple[int, int], optional): _description_. Defaults to (0, 0).
         size (tuple[int, int], optional): _description_. Defaults to (0, 0).
         shape (tuple[int, int], optional): _description_. Defaults to (0, 0).
-        color (str, optional): _description_. Defaults to svgplot.GRID_COLOR.
-        stroke (int, optional): _description_. Defaults to svgplot.GRID_STROKE.
+        color (str, optional): _description_. Defaults to core.GRID_COLOR.
+        stroke (int, optional): _description_. Defaults to core.GRID_STROKE.
         drawrows (bool, optional): _description_. Defaults to True.
         drawcols (bool, optional): _description_. Defaults to True.
     """
@@ -355,12 +355,12 @@ def cluster_label_rows(svg: SVGFigure,
                            x=0,
                            y=0,
                            h=0,
-                           w=svgplot.LABEL_COLOR_BLOCK_SIZE,
+                           w=core.LABEL_COLOR_BLOCK_SIZE,
                            padding=5,
                            showgroups=True,
                            frame=True,
                            framecolor='white',
-                           stroke=svgplot.STROKE_SIZE,
+                           stroke=core.STROKE_SIZE,
                            showlabels=True,
                            showblocks=True,
                            mingroupsize=2,
@@ -449,13 +449,13 @@ def cluster_label_rows(svg: SVGFigure,
 
 #                svg.add_line(x,
 #                              y,
-#                              x + svgplot.BRACKET_SIZE,
+#                              x + core.BRACKET_SIZE,
 #                              y,
 #                              color=color)
 #
 #                svg.add_line(x,
 #                              y + h,
-#                              x + svgplot.BRACKET_SIZE,
+#                              x + core.BRACKET_SIZE,
 #                              y + h,
 #                              color=color)
 

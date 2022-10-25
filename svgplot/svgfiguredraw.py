@@ -1,6 +1,6 @@
 from turtle import pos
 from typing import List, Optional, Union
-from . import svgplot
+from . import core
 from .svgfigurebase import SVGFigureBase
 from .axis import Axis
 
@@ -40,7 +40,7 @@ class SVGFigureDraw(SVGFigureBase):
             h=200,
             color='black',
             fill='red',
-            stroke=svgplot.STROKE_SIZE):
+            stroke=core.STROKE_SIZE):
 
         # angle1 = math.pi/4 #- PIE_START_ANGLE
         # angle2 = math.pi/4 # - PIE_START_ANGLE
@@ -77,7 +77,7 @@ class SVGFigureDraw(SVGFigureBase):
              x2:Optional[float]=None,
              y2:Optional[float]=None,
              color:str='black',
-             stroke:int=svgplot.STROKE_SIZE,
+             stroke:int=core.STROKE_SIZE,
              dashed:bool=False,
              clip_path:str = 'none'):
 
@@ -88,10 +88,10 @@ class SVGFigureDraw(SVGFigureBase):
             y2 = y1
 
         if dashed:
-            style = svgplot.css_params(
+            style = core.css_params(
                 'stroke', color, 'stroke-width', stroke, 'stroke-dasharray', 10)
         else:
-            style = svgplot.css_params('stroke', color, 'stroke-width', stroke)
+            style = core.css_params('stroke', color, 'stroke-width', stroke)
 
         return self._svg.line((self.x(x1), self.y(y1)),
                               (self.x(x2), self.y(y2)),
@@ -104,7 +104,7 @@ class SVGFigureDraw(SVGFigureBase):
                  x2:Optional[float]=None,
                  y2:Optional[float]=None,
                  color:str='black',
-                 stroke:int=svgplot.STROKE_SIZE,
+                 stroke:int=core.STROKE_SIZE,
                  dashed:bool=False,
                  clip_path:str = 'none'):
         self.add(self.line(x1, y1, x2, y2, color=color,
@@ -112,16 +112,16 @@ class SVGFigureDraw(SVGFigureBase):
 
     def polyline(self, points,
                  color='black',
-                 stroke=svgplot.STROKE_SIZE,
+                 stroke=core.STROKE_SIZE,
                  fill='none',
                  fill_opacity=1):
         points = [[self.x(point[0]), self.y(point[1])] for point in points]
-        style = svgplot.css_params(
+        style = core.css_params(
             'stroke', color, 'stroke-width', stroke, 'fill', fill, 'fill-opacity', fill_opacity)
 
         return self._svg.polyline(points, style=style)
 
-    def add_polyline(self, points, color='black', stroke=svgplot.STROKE_SIZE, fill_opacity=1, fill='none'):
+    def add_polyline(self, points, color='black', stroke=core.STROKE_SIZE, fill_opacity=1, fill='none'):
         self.add(self.polyline(points, color=color, stroke=stroke,
                                fill=fill, fill_opacity=fill_opacity))
 
@@ -133,15 +133,15 @@ class SVGFigureDraw(SVGFigureBase):
              color='none',
              fill='none',
              fill_opacity=1,
-             stroke=svgplot.STROKE_SIZE,
+             stroke=core.STROKE_SIZE,
              dashed=False,
              rounding=0):
 
         if dashed:
-            style = svgplot.css_params('fill', fill, 'fill-opacity', fill_opacity,
+            style = core.css_params('fill', fill, 'fill-opacity', fill_opacity,
                                        'stroke', color, 'stroke-width', stroke, 'stroke-dasharray', 10)
         else:
-            style = svgplot.css_params(
+            style = core.css_params(
                 'fill', fill, 'fill-opacity', fill_opacity, 'stroke', color, 'stroke-width', stroke)
 
         return self.trans(self._svg.rect(insert=(0, 0),
@@ -155,7 +155,7 @@ class SVGFigureDraw(SVGFigureBase):
         #                      size=(self.unit(w), self.unit(h)),
         #                      style=SVGFigureDraw.polygon_params(color=color, fill=fill, stroke=stroke))
 
-    def add_rect(self, x=0, y=0, w=0, h=0, color='none', fill='none', fill_opacity=1, stroke=svgplot.STROKE_SIZE, dashed=False, rounding: int = 0):
+    def add_rect(self, x=0, y=0, w=0, h=0, color='none', fill='none', fill_opacity=1, stroke=core.STROKE_SIZE, dashed=False, rounding: int = 0):
         self.add(self.rect(x, y, w, h, color=color, fill=fill,
                  fill_opacity=fill_opacity, stroke=stroke, dashed=dashed, rounding=rounding))
 
@@ -166,7 +166,7 @@ class SVGFigureDraw(SVGFigureBase):
                color='none',
                fill='none',
                fill_opacity=1,
-               stroke=svgplot.STROKE_SIZE):
+               stroke=core.STROKE_SIZE):
         r = w / 2
 
         return self.trans(self._svg.circle(center=(0, 0),
@@ -182,7 +182,7 @@ class SVGFigureDraw(SVGFigureBase):
                    color='none',
                    fill='none',
                    fill_opacity=1,
-                   stroke=svgplot.STROKE_SIZE):
+                   stroke=core.STROKE_SIZE):
         self.add(self.circle(x, y, w, color=color, fill=fill,
                  fill_opacity=fill_opacity, stroke=stroke))
 
@@ -193,7 +193,7 @@ class SVGFigureDraw(SVGFigureBase):
                 h=0,
                 color='none',
                 fill='none',
-                stroke=svgplot.STROKE_SIZE):
+                stroke=core.STROKE_SIZE):
 
         return self.trans(self._svg.ellipse(center=(0, 0),
                                             r=(self.unit(w/2), self.unit(h/2)),
@@ -208,23 +208,23 @@ class SVGFigureDraw(SVGFigureBase):
                     h=0,
                     color='none',
                     fill='none',
-                    stroke=svgplot.STROKE_SIZE):
+                    stroke=core.STROKE_SIZE):
         self.add(self.ellipse(x, y, w, h, color=color, fill=fill, stroke=stroke))
 
     @staticmethod
-    def polygon_params(color='none', fill='none', fill_opacity=1, stroke=svgplot.STROKE_SIZE):
+    def polygon_params(color='none', fill='none', fill_opacity=1, stroke=core.STROKE_SIZE):
         if color is None:
             stroke = 0
 
-        return svgplot.css_params('fill', fill, 'fill-opacity', fill_opacity, 'stroke', color, 'stroke-width', stroke)
+        return core.css_params('fill', fill, 'fill-opacity', fill_opacity, 'stroke', color, 'stroke-width', stroke)
 
-    def base_polygon(self, points, color='none', fill='none', fill_opacity=1, stroke=svgplot.STROKE_SIZE):
+    def base_polygon(self, points, color='none', fill='none', fill_opacity=1, stroke=core.STROKE_SIZE):
         return self._svg.polygon(points=points, style=SVGFigureDraw.polygon_params(color=color, fill=fill, stroke=stroke, fill_opacity=fill_opacity))
 
-    def polygon(self, points, x=0, y=0, color='none', fill='none', fill_opacity=1, stroke=svgplot.STROKE_SIZE):
+    def polygon(self, points, x=0, y=0, color='none', fill='none', fill_opacity=1, stroke=core.STROKE_SIZE):
         return self.trans(self.base_polygon(points=points, color=color, fill=fill, fill_opacity=fill_opacity, stroke=stroke), x=x, y=y)
 
-    def add_polygon(self, points, x=0, y=0, color='none', fill='none', fill_opacity=1, stroke=svgplot.STROKE_SIZE):
+    def add_polygon(self, points, x=0, y=0, color='none', fill='none', fill_opacity=1, stroke=core.STROKE_SIZE):
         return self.add(self.polygon(points, x, y, color=color, fill=fill, fill_opacity=fill_opacity, stroke=stroke))
 
     def lr_triangle(self, x=0, y=0, w=0, h=0, color='none', fill='none'):
@@ -296,7 +296,7 @@ class SVGFigureDraw(SVGFigureBase):
         self.add(self.arrow(x=x, y=y, color=color,
                  fill=fill, rotate=rotate, scale=scale))
 
-    def _axis_arrow_head(self, stroke=svgplot.STROKE_SIZE, color=svgplot.COLOR_BLACK):
+    def _axis_arrow_head(self, stroke=core.STROKE_SIZE, color=core.COLOR_BLACK):
         """
         Adds an arrow tip onto an axis line.
 
@@ -312,9 +312,9 @@ class SVGFigureDraw(SVGFigureBase):
                        label,
                        pos:tuple[int, int] = (0, 0),
                        dim:str='x',
-                       size:int=svgplot.DEFAULT_FONT_SIZE,
-                       color:str=svgplot.COLOR_BLACK,
-                       w:int=svgplot.ARROW_LENGTH,
+                       size:int=core.DEFAULT_FONT_SIZE,
+                       color:str=core.COLOR_BLACK,
+                       w:int=core.ARROW_LENGTH,
                        padding:int=20,
                        margin:int=10,
                        position:str='middle',
@@ -399,21 +399,21 @@ class SVGFigureDraw(SVGFigureBase):
                  x=0,
                  y=0,
                  dim='x',
-                 size=svgplot.DEFAULT_FONT_SIZE,
-                 color=svgplot.COLOR_BLACK,
-                 w=svgplot.ARROW_LENGTH,
-                 stroke=svgplot.AXIS_STROKE):
+                 size=core.DEFAULT_FONT_SIZE,
+                 color=core.COLOR_BLACK,
+                 w=core.ARROW_LENGTH,
+                 stroke=core.AXIS_STROKE):
         dim = dim.lower()
 
         if dim == 'x':
-            #svg = self.svgplot.add(self.svgplot.svg(x=self.unit(x), y=self.unit(y + 5), width=w, height=w, viewBox='0 0 10 10'))
+            #svg = self.core.add(self.core.svg(x=self.unit(x), y=self.unit(y + 5), width=w, height=w, viewBox='0 0 10 10'))
             self.add_line(x, y, x + w, y, color=color, stroke=stroke)
             self.add_trans(self._axis_arrow_head(
                 color=color, stroke=stroke), x=x+w, y=y)
             self.add_text(label, x, y + self.get_font_h(size=size) +
                           10, color=color, size=size)  # , rotate=(-90, 0, 0))
         else:
-            #svg = self.svgplot.add(self.svgplot.svg(x=self.unit(x - 5), y=self.unit(y), width=w, height=w, viewBox='0 0 10 10'))
+            #svg = self.core.add(self.core.svg(x=self.unit(x - 5), y=self.unit(y), width=w, height=w, viewBox='0 0 10 10'))
             self.add_line(x, y, x, y - w, color=color, stroke=stroke)
             self.add_rot_trans(self._axis_arrow_head(
                 color=color, stroke=stroke), x, y - w, rotate=-90)
@@ -425,9 +425,9 @@ class SVGFigureDraw(SVGFigureBase):
                  labely='',
                  x=0,
                  y=0,
-                 color=svgplot.COLOR_BLACK,
-                 w=svgplot.ARROW_LENGTH,
-                 size=svgplot.DEFAULT_FONT_SIZE):
+                 color=core.COLOR_BLACK,
+                 w=core.ARROW_LENGTH,
+                 size=core.DEFAULT_FONT_SIZE):
         self.add_axis(labelx, x, y, dim='x', color=color, size=size, w=w)
         self.add_axis(labely, x, y, dim='y', color=color, size=size, w=w)
 
@@ -437,10 +437,10 @@ class SVGFigureDraw(SVGFigureBase):
                   w=0,
                   h=0,
                   padding=0,
-                  color=svgplot.COLOR_BLACK,
+                  color=core.COLOR_BLACK,
                   fill='none',
                   shape='rect',
-                  stroke=svgplot.STROKE_SIZE):
+                  stroke=core.STROKE_SIZE):
         """
         Print a frame either outlined or filled.
         """
@@ -477,9 +477,9 @@ class SVGFigureDraw(SVGFigureBase):
                    label,
                    x=0,
                    y=0,
-                   color=svgplot.COLOR_BLACK,
-                   s=svgplot.BULLET_SIZE,
-                   h=svgplot.LABEL_HEIGHT,
+                   color=core.COLOR_BLACK,
+                   s=core.BULLET_SIZE,
+                   h=core.LABEL_HEIGHT,
                    text_color=None,
                    shape='c',
                    outline=None,
@@ -520,10 +520,10 @@ class SVGFigureDraw(SVGFigureBase):
             return
 
         if w is None:
-            w = svgplot.scaled_image_w(file, h)
+            w = core.scaled_image_w(file, h)
 
         if h is None:
-            h = svgplot.scaled_image_h(file, w)
+            h = core.scaled_image_h(file, w)
 
         image = self._svg.image(href=file,
                                 insert=(0, 0),
@@ -537,10 +537,10 @@ class SVGFigureDraw(SVGFigureBase):
             return
 
         if w is None:
-            w = svgplot.scaled_image_w(file, h)
+            w = core.scaled_image_w(file, h)
 
         if h is None:
-            h = svgplot.scaled_image_h(file, w)
+            h = core.scaled_image_h(file, w)
 
         w, h, image = self.base_image(file, w=self.unit(w), h=self.unit(h))
 
@@ -799,7 +799,7 @@ class SVGFigureDraw(SVGFigureBase):
 
             self.inc(y=self.get_font_h() * 1.6)
 
-        self.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+        self.set_font_size(core.DEFAULT_FONT_SIZE)
 
 
 

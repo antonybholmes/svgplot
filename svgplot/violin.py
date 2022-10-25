@@ -5,7 +5,7 @@ from pandas import DataFrame
 from .svgfigure import SVGFigure
 import matplotlib
 import numpy as np
-from . import svgplot
+from . import core
 from .axis import Axis
 from . import graph
 from . import swarm
@@ -144,21 +144,21 @@ def add_violinplot(svg: SVGFigure,
                    swarm_kws: Optional[dict[str, Any]] = None,
                    box_kws: Optional[dict[str, Any]] = None) -> None:
 
-    _bw_kws = svgplot.kws({'bw': 'scott', 'cut': 2, 'gridsize': 100}, bw_kws)
+    _bw_kws = core.kws({'bw': 'scott', 'cut': 2, 'gridsize': 100}, bw_kws)
 
-    _x_kws = svgplot.kws({'show': True, 'show_labels': True, 'show_axis':True, 'label_pos':'axis', 'label_orientation': 'h'}, x_kws)
-    _y_kws = svgplot.kws({'show': True, 'lim': None, 'ticks': None,
+    _x_kws = core.kws({'show': True, 'show_labels': True, 'show_axis':True, 'label_pos':'axis', 'label_orientation': 'h'}, x_kws)
+    _y_kws = core.kws({'show': True, 'lim': None, 'ticks': None,
                   'ticklabels': None, 'offset': None, 'title': ''}, y_kws)
-    _violin_kws = svgplot.kws({'show': True, 'opacity': 0.4}, violin_kws)
-    _swarm_kws = svgplot.kws({'show': True, 'dot_size': 10, 'opacity': 0.7, 'style': '^'}, swarm_kws)
-    _box_kws = svgplot.kws({'show': True, 'width': 20, 'whisker_width': 20, 'stroke': 3, 'dot_size': 12,
+    _violin_kws = core.kws({'show': True, 'opacity': 0.4}, violin_kws)
+    _swarm_kws = core.kws({'show': True, 'dot_size': 10, 'opacity': 0.7, 'style': '^'}, swarm_kws)
+    _box_kws = core.kws({'show': True, 'width': 20, 'whisker_width': 20, 'stroke': 3, 'dot_size': 12,
                     'fill': 'white', 'opacity': 1, 'rounded': True, 'median_style': 'circle'}, box_kws)
 
     if palette is None:
         palette = matplotlib.cm.Set2
 
     if isinstance(palette, matplotlib.colors.ListedColormap):
-        palette = [svgplot.rgbtohex(c) for c in palette.colors]
+        palette = [core.rgbtohex(c) for c in palette.colors]
 
     if isinstance(palette, list):
         palette = np.array(palette)

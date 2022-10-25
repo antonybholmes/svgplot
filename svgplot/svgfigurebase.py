@@ -1,7 +1,7 @@
 from optparse import Option
 from typing import Mapping, Optional, Union
 import svgwrite
-from . import svgplot
+from . import core
 import re
 
 # inches to mm
@@ -43,8 +43,8 @@ class SVGFigureBase:
         self._sub_offset = (0, 0)
         self._trans = [(0, 0)]
         self._mode = 'grid'
-        self._font_size = svgplot.DEFAULT_FONT_SIZE
-        self._heading_font_size = svgplot.HEADING_FONT_SIZE
+        self._font_size = core.DEFAULT_FONT_SIZE
+        self._heading_font_size = core.HEADING_FONT_SIZE
 
     @property
     def svg(self) -> svgwrite.Drawing:
@@ -75,7 +75,7 @@ class SVGFigureBase:
     # def grid_block(self, row, col, name=None):
     #    return SVGGridBlock(self, row, col, name=name)
 
-    def unit(self, num:float)->float:
+    def unit(self, num: float) -> float:
         """Returns number with 5 dp to reduce size of svg
 
         Args:
@@ -83,10 +83,9 @@ class SVGFigureBase:
 
         Returns:
             float: number rounded to 5 dp.
-        """        
+        """
         # * 10 #self.units #'{}{}'.format(num, self.units)
         return round(num, 5)
-
 
     def set_offset(self, x: int = 0, y: int = 0):
         self._offset = (x, y)
@@ -170,11 +169,11 @@ class SVGFigureBase:
         if len(self._trans) > 1:
             loc = self._trans.pop()
 
-    def rot(self, elem, rotate:Optional[float]=None) -> None:
+    def rot(self, elem, rotate: Optional[float] = None) -> None:
         if rotate is None or (isinstance(rotate, int) and rotate == 0):
             return elem
 
-        g = self._svg.g(transform=svgplot.format_rotate(rotate))
+        g = self._svg.g(transform=core.format_rotate(rotate))
         g.add(elem)
         return g
 
@@ -187,14 +186,14 @@ class SVGFigureBase:
         #print(x, y)
 
         g = self._svg.g(transform=self.format_scale(x, y),
-                        style=svgplot.format_css_params(css))
+                        style=core.format_css_params(css))
 
         if elem is not None:
             g.add(elem)
 
         return g
 
-    def add_scale(self, elem=None, x: float = 0, y: float = 0, css: Optional[Mapping[str, str]] =None) -> None:
+    def add_scale(self, elem=None, x: float = 0, y: float = 0, css: Optional[Mapping[str, str]] = None) -> None:
         g = self.scale(elem=elem, x=x, y=y, css=css)
         self.add(g)
         return g
@@ -205,14 +204,14 @@ class SVGFigureBase:
         print(x, y)
 
         g = self._svg.g(transform=self.format_translate(
-            self.x(x), self.y(y)), style=svgplot.format_css_params(css))
+            self.x(x), self.y(y)), style=core.format_css_params(css))
 
         if elem is not None:
             g.add(elem)
 
         return g
 
-    def add_trans(self, elem=None, x: float = 0, y: float = 0, css: Optional[Mapping[str, str]]=None) -> None:
+    def add_trans(self, elem=None, x: float = 0, y: float = 0, css: Optional[Mapping[str, str]] = None) -> None:
         g = self.trans(elem=elem, x=x, y=y, css=css)
         self.add(g)
         return g
@@ -223,7 +222,7 @@ class SVGFigureBase:
     def trans_rot(self, elem, x: float = 0, y: float = 0, rotate: float = 0) -> None:
         return self.rot(self.trans(elem, x=x, y=y), rotate=rotate)
 
-    def add_rot_trans(self, elem, x: float = 0, y: float = 0, rotate:float=0) -> None:
+    def add_rot_trans(self, elem, x: float = 0, y: float = 0, rotate: float = 0) -> None:
         self.add(self.rot_trans(elem, x, y, rotate))
 
     def set_font_size(self, size: int) -> None:
@@ -234,7 +233,7 @@ class SVGFigureBase:
 
     @property
     def font_scale_factor(self) -> float:
-        return svgplot.FONT_SCALE_FACTOR
+        return core.FONT_SCALE_FACTOR
 
     def get_scale_font_size(self, size: int) -> float:
         return size * self.font_scale_factor  # / self.font_scale_factor
@@ -244,21 +243,21 @@ class SVGFigureBase:
 
     def get_string_width(self,
                          label: str,
-                         family: str = svgplot.DEFAULT_FONT_FAMILY,
+                         family: str = core.DEFAULT_FONT_FAMILY,
                          size: Optional[int] = None,
-                         weight: str = svgplot.DEFAULT_FONT_WEIGHT) -> float:
+                         weight: str = core.DEFAULT_FONT_WEIGHT) -> float:
         if size is None:
             size = self._font_size
 
-        return svgplot.get_text_metrics(label, family=family, size=size, weight=weight)[0] * PX_TO_SVG
+        return core.get_text_metrics(label, family=family, size=size, weight=weight)[0] * PX_TO_SVG
 
     def _get_font_center_x(self,
                            label,
                            x,
                            w,
-                           family=svgplot.DEFAULT_FONT_FAMILY,
+                           family=core.DEFAULT_FONT_FAMILY,
                            size=None,
-                           weight=svgplot.DEFAULT_FONT_WEIGHT) -> float:
+                           weight=core.DEFAULT_FONT_WEIGHT) -> float:
         if size is None:
             size = self._font_size
 
@@ -268,21 +267,21 @@ class SVGFigureBase:
         return x + (w - sw) / 2
 
     def get_font_h(self,
-                   family: str = svgplot.DEFAULT_FONT_FAMILY,
+                   family: str = core.DEFAULT_FONT_FAMILY,
                    size: Optional[int] = None,
-                   weight: str = svgplot.DEFAULT_FONT_WEIGHT) -> float:
+                   weight: str = core.DEFAULT_FONT_WEIGHT) -> float:
         if size is None:
             size = self._font_size
 
         # / self.font_scale_factor
-        return svgplot.get_text_metrics('A', family=family, size=size, weight=weight)[1] * 2.7
+        return core.get_text_metrics('A', family=family, size=size, weight=weight)[1] * 2.7
 
     def get_font_y(self,
                    y: float = 0,
                    h: float = 0,
-                   family: str = svgplot.DEFAULT_FONT_FAMILY,
+                   family: str = core.DEFAULT_FONT_FAMILY,
                    size: Optional[int] = None,
-                   weight: str = svgplot.DEFAULT_FONT_WEIGHT) -> float:
+                   weight: str = core.DEFAULT_FONT_WEIGHT) -> float:
         if size is None:
             size = self._font_size
 
@@ -296,11 +295,11 @@ class SVGFigureBase:
              text: str,
              x: float = 0,
              y: float = 0,
-             color=svgplot.COLOR_BLACK,
-             family=svgplot.DEFAULT_FONT_FAMILY,
+             color=core.COLOR_BLACK,
+             family=core.DEFAULT_FONT_FAMILY,
              size=None,
              spacing=0,
-             weight=svgplot.DEFAULT_FONT_WEIGHT,
+             weight=core.DEFAULT_FONT_WEIGHT,
              css: Optional[Mapping[str, str]] = None) -> None:
 
         if size is None:
@@ -318,17 +317,17 @@ class SVGFigureBase:
 
         return self._svg.text(text,
                               insert=(x, y),
-                              style=svgplot.format_css_params(_css))
+                              style=core.format_css_params(_css))
 
     def add_text(self,
                  label,
                  x: float = 0,
                  y: float = 0,
                  color: str = 'black',
-                 h: float = svgplot.LABEL_HEIGHT,
-                 family: str = svgplot.DEFAULT_FONT_FAMILY,
+                 h: float = core.LABEL_HEIGHT,
+                 family: str = core.DEFAULT_FONT_FAMILY,
                  size: int = None,
-                 weight: str = svgplot.DEFAULT_FONT_WEIGHT,
+                 weight: str = core.DEFAULT_FONT_WEIGHT,
                  rotate: float = 0,
                  css: Optional[Mapping[str, str]] = None) -> None:
         return self.add_rot_trans(self.text(label,
@@ -348,12 +347,12 @@ class SVGFigureBase:
         if 'fill' not in css:
             css['fill'] = 'black'
         if 'font-family' not in css:
-            css['font-family'] = svgplot.DEFAULT_FONT_FAMILY
+            css['font-family'] = core.DEFAULT_FONT_FAMILY
         if 'font-size' not in css:
             css['font-size'] = '{}px'.format(
                 self.get_scale_font_size(self._font_size))
         if 'font-weight' not in css:
-            css['font-weight'] = svgplot.DEFAULT_FONT_WEIGHT
+            css['font-weight'] = core.DEFAULT_FONT_WEIGHT
         if 'letter-spacing' not in css:
             css['letter-spacing'] = 0
         if 'word-spacing' not in css:
@@ -364,10 +363,10 @@ class SVGFigureBase:
         return css
 
     def group(self, css=None):
-        return self._svg.g(style=svgplot.format_css_params(self.css_map(css)))
+        return self._svg.g(style=core.format_css_params(self.css_map(css)))
 
     def tspan(self, text, css=None):
-        return self._svg.tspan(text, style=svgplot.format_css_params(self.css_map(css)))
+        return self._svg.tspan(text, style=core.format_css_params(self.css_map(css)))
 
     def add_group(self, css=None):
         g = self.group(css)
@@ -375,15 +374,15 @@ class SVGFigureBase:
         return g
 
     def add_title(self,
-                  text,
-                  subtext=None,
-                  x=0,
-                  y=0,
-                  w=500,
-                  padding=10,
-                  color='black',
-                  twolines=True,
-                  weight='normal') -> None:
+                  text: str,
+                  subtext: Optional[str] = None,
+                  x: int = 0,
+                  y: int = 0,
+                  w: int = 500,
+                  padding: int = 10,
+                  color: str = 'black',
+                  twolines: bool = True,
+                  weight: str = 'normal') -> None:
         self.add_text_bb(text,
                          x=x,
                          y=y,
@@ -406,10 +405,10 @@ class SVGFigureBase:
                              color=color)
 
     def add_section(self,
-                    label,
+                    label:str,
                     x=0,
                     y=0,
-                    h=svgplot.LABEL_HEIGHT,
+                    h=core.LABEL_HEIGHT,
                     indent=True,
                     mode='upper',
                     weight='normal') -> None:
@@ -441,7 +440,7 @@ class SVGFigureBase:
             self.add_fig_title('Figure {}.'.format(
                 id), align=align, weight=weight)
 
-    def add_fig_title(self, title, align='l', size=10, weight='normal') -> None:
+    def add_fig_title(self, title, align:str='l', size:int=10, weight:str='normal') -> None:
         """
         Add a bolded figure name to a page.
 
@@ -465,10 +464,10 @@ class SVGFigureBase:
                     w: float = 0,
                     h: float = 0,
                     align: str = 'l',
-                    color: str = svgplot.COLOR_BLACK,
-                    family: str = svgplot.DEFAULT_FONT_FAMILY,
+                    color: str = core.COLOR_BLACK,
+                    family: str = core.DEFAULT_FONT_FAMILY,
                     size: Optional[int] = None,
-                    weight: str = svgplot.DEFAULT_FONT_WEIGHT,
+                    weight: str = core.DEFAULT_FONT_WEIGHT,
                     orientation: str = 'h',
                     frameargs={}) -> None:
 

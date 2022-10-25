@@ -10,7 +10,7 @@ import numpy as np
 import libplot
 import matplotlib
 import pandas as pd
-from . import svgplot
+from . import core
 from .svgfigure import SVGFigure
 from .axis import Axis
 from scipy.stats import zscore
@@ -37,7 +37,7 @@ def add_dot_plot(svg: SVGFigure,
              label_colors: dict[str, str] = {},
              row_color: str = "black",
              frac_file: str = "fractions.txt",
-             stroke: int = svgplot.STROKE_SIZE,
+             stroke: int = core.STROKE_SIZE,
              showframe: bool = True,
              frac_filter={},
              mode: str = 'exp',
@@ -67,7 +67,7 @@ def add_dot_plot(svg: SVGFigure,
         label_colors (dict[str, str], optional): _description_. Defaults to {}.
         row_color (str, optional): _description_. Defaults to "black".
         frac_file (str, optional): _description_. Defaults to "fractions.txt".
-        stroke (int, optional): _description_. Defaults to svgplot.STROKE_SIZE.
+        stroke (int, optional): _description_. Defaults to core.STROKE_SIZE.
         showframe (bool, optional): _description_. Defaults to True.
         frac_filter (dict, optional): _description_. Defaults to {}.
         mode (str, optional): _description_. Defaults to 'exp'.
@@ -276,7 +276,7 @@ def add_dot_plot(svg: SVGFigure,
 
                 # use mean for color
                 # m[gene_index]))
-                color = svgplot.rgbatohex(mapper.to_rgba(v))
+                color = core.rgbatohex(mapper.to_rgba(v))
 
                 dot_size = max(
                     dot_sizes[0], fracs[gene_index] * dot_sizes[1])
@@ -312,7 +312,7 @@ def add_dot_plot(svg: SVGFigure,
                        tickcolor=row_color)
 
     # if showframe:
-    #    svg.add_rect(x=x-gap[0], y=y-gap[0], w=x1, h=yaxis.w+gap[0], color='black', stroke=svgplot.AXIS_STROKE)
+    #    svg.add_rect(x=x-gap[0], y=y-gap[0], w=x1, h=yaxis.w+gap[0], color='black', stroke=core.AXIS_STROKE)
 
         # for gene in tables[0].index:
         #    svg.add_text_bb(gene, x1+label_offset, y1, color=row_color)
@@ -336,7 +336,7 @@ def add_dot_plot(svg: SVGFigure,
 
         # svg.add_svg_colorbar(x=x1, y=y1, cmap=libplot.BWR2_CMAP, ticks=[0, 0.5, 1], ticklabels=[vlim[0], 0.0, vlim[1]], align='l')
 
-    # svg.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+    # svg.set_font_size(core.DEFAULT_FONT_SIZE)
 
     tables = []
     for group in groups:
@@ -374,4 +374,4 @@ def add_dot_plot_legend(svg: SVGFigure,
                         y+dot_sizes[1]+10, align='c')
         x1 += 70
 
-    # svg.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+    # svg.set_font_size(core.DEFAULT_FONT_SIZE)

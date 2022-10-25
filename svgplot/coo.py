@@ -1,5 +1,5 @@
 import numpy as np
-from . import svgplot
+from . import core
 from .axis import Axis
 from .svgfigure import SVGFigure
 from .svgfiguremod import SVGFigureModule
@@ -29,15 +29,15 @@ def add_enrichment_plot(svg,
                         showxaxis=True,
                         showlabels=True,
                         showblocks=True,
-                        colormap=svgplot.ABC_COLORS,
+                        colormap=core.ABC_COLORS,
                         frame=False,
                         framecolor='black',
-                        stroke=svgplot.STROKE_SIZE,
+                        stroke=core.STROKE_SIZE,
                         sigqcolor='#ffffff',
                         invert_x=False,
                         xlabel='-log10(q)'):
     # if smallfont:
-    #    svg.set_font_size(svgplot.FIGURE_FONT_SIZE)
+    #    svg.set_font_size(core.FIGURE_FONT_SIZE)
 
     x, y = pos
 
@@ -116,7 +116,7 @@ def add_enrichment_plot(svg,
                 color = colormap[col]
 
                 if isinstance(color, tuple):
-                    color = svgplot.rgbtohex(color)
+                    color = core.rgbtohex(color)
 
                 v = df_coo.iloc[i, j]
 
@@ -144,7 +144,7 @@ def add_enrichment_plot(svg,
 
             y2 += yd
 
-    svg.add_line(x1=0, y1=y, x2=0, y2=y2, stroke=svgplot.AXIS_STROKE)
+    svg.add_line(x1=0, y1=y, x2=0, y2=y2, stroke=core.AXIS_STROKE)
 
     if showxaxis:
         graph.add_x_axis(svg,
@@ -155,7 +155,7 @@ def add_enrichment_plot(svg,
                          label=xlabel,
                          invert=invert_x)
 
-    # svg.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+    # svg.set_font_size(core.DEFAULT_FONT_SIZE)
 
     matrix.cluster_label_rows(svg, row_labels,
                            clusters,
@@ -183,16 +183,16 @@ def add_hits_plot(svg,
                   yticks=[0, 10, 20, 30],
                   padding=10,
                   whisker_size=20,
-                  tick_size=svgplot.TICK_SIZE,
+                  tick_size=core.TICK_SIZE,
                   sigq=0.05,
                   showyaxis=True,
                   showlabels=True,
-                  colormap=svgplot.ABC_COLORS,
+                  colormap=core.ABC_COLORS,
                   smallfont=False,
                   frame=False,
-                  stroke=svgplot.STROKE_SIZE):
+                  stroke=core.STROKE_SIZE):
     # if smallfont:
-    #    svg.set_font_size(svgplot.FIGURE_FONT_SIZE)
+    #    svg.set_font_size(core.FIGURE_FONT_SIZE)
 
     classes = np.array(list(sorted(set(df_coo['Classification'].values))))
 
@@ -234,7 +234,7 @@ def add_hits_plot(svg,
                 color = colormap[col]
 
                 if isinstance(color, tuple):
-                    color = svgplot.rgbtohex(color)
+                    color = core.rgbtohex(color)
 
                 v = df_coo['% Class'][idx[j]]
 
@@ -264,7 +264,7 @@ def add_hits_plot(svg,
                                  stroke=stroke)
 
                 if sig:
-                    # svg.set_font_size(svgplot.HEADING_FONT_SIZE)
+                    # svg.set_font_size(core.HEADING_FONT_SIZE)
                     svg.add_text_bb('*',
                                     x=x3,
                                     w=bar_width,
@@ -272,7 +272,7 @@ def add_hits_plot(svg,
                                     svg.get_font_h() / 2,
                                     align='c')
 
-                    # svg.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+                    # svg.set_font_size(core.DEFAULT_FONT_SIZE)
 
                 x3 += bar_width + bar_gap
 
@@ -281,12 +281,12 @@ def add_hits_plot(svg,
         # For testing
         #svg.add_line(x1=x, y1=y2, x2=x+100, y2=y2)
 
-    svg.add_line(x1=0, y1=y2, x2=w, y2=y2, stroke=svgplot.AXIS_STROKE)
+    svg.add_line(x1=0, y1=y2, x2=w, y2=y2, stroke=core.AXIS_STROKE)
 
     if showyaxis:
         svg.add_y_axis(axis=yaxis, y=y2, ticks=yticks, label='% Class')
 
-    # svg.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+    # svg.set_font_size(core.DEFAULT_FONT_SIZE)
 
     if showlabels:
         svg.cluster_label_cols(row_labels, clusters,
@@ -313,20 +313,20 @@ def add_enrich_dep_plot(svg,
                         yminorticks=[],
                         padding=10,
                         whisker_size=20,
-                        tick_size=svgplot.TICK_SIZE,
+                        tick_size=core.TICK_SIZE,
                         sigq=0.05,
                         showyaxis=True,
                         showlabels=True,
                         showblocks=True,
-                        colormap=svgplot.ABC_COLORS,
+                        colormap=core.ABC_COLORS,
                         smallfont=False,
                         frame=False,
                         framecolor='black',
-                        stroke=svgplot.STROKE_SIZE,
+                        stroke=core.STROKE_SIZE,
                         sigqcolor='#ffffff',
                         cluster_group_gap=50):
     # if smallfont:
-    #    svg.set_font_size(svgplot.FIGURE_FONT_SIZE)
+    #    svg.set_font_size(core.FIGURE_FONT_SIZE)
 
     # enrich
 
@@ -394,7 +394,7 @@ def add_enrich_dep_plot(svg,
                 color = colormap[col]
 
                 if isinstance(color, tuple):
-                    color = svgplot.rgbtohex(color)
+                    color = core.rgbtohex(color)
 
                 v = df_coo.iloc[i, j]
 
@@ -422,9 +422,9 @@ def add_enrich_dep_plot(svg,
             bx = x2
 
             # break
-        svg.add_line(x1=x1, y1=y, x2=x2, y2=y, stroke=svgplot.AXIS_STROKE)
+        svg.add_line(x1=x1, y1=y, x2=x2, y2=y, stroke=core.AXIS_STROKE)
         svg.add_line(x1=x1, y1=y2, x2=x2, y2=y2,
-                     dashed=True, stroke=svgplot.AXIS_STROKE)
+                     dashed=True, stroke=core.AXIS_STROKE)
         x2 += cluster_group_gap
         x1 = x2
         bx = x2
@@ -433,7 +433,7 @@ def add_enrich_dep_plot(svg,
     #svg.add_rect(x, y2, x2-x, h, fill=sigqcolor)
     #svg.add_line(x1=x, y1=y2, x2=x2, y2=y2, dashed=True)
 
-    #svg.add_line(x1=x, y1=y, x2=x2, y2=y, stroke=svgplot.AXIS_STROKE)
+    #svg.add_line(x1=x, y1=y, x2=x2, y2=y, stroke=core.AXIS_STROKE)
 
     if showyaxis:
         yticklabels1 = yticklabels.copy()
@@ -448,7 +448,7 @@ def add_enrich_dep_plot(svg,
                        title_offset=90)
 
     svg.add_text_bb('Enrichment', x=x2-20, y=y-height/2,
-                    size=svgplot.FIGURE_FONT_SIZE, orientation='v', align='c')
+                    size=core.FIGURE_FONT_SIZE, orientation='v', align='c')
 
     # dep
 
@@ -517,7 +517,7 @@ def add_enrich_dep_plot(svg,
                 color = colormap[col]
 
                 if isinstance(color, tuple):
-                    color = svgplot.rgbtohex(color)
+                    color = core.rgbtohex(color)
 
                 v = df_coo.iloc[i, j]
 
@@ -544,7 +544,7 @@ def add_enrich_dep_plot(svg,
             bx = x2
 
             # break
-        svg.add_line(x1=x1, y1=y, x2=x2, y2=y, stroke=svgplot.AXIS_STROKE)
+        svg.add_line(x1=x1, y1=y, x2=x2, y2=y, stroke=core.AXIS_STROKE)
         svg.add_line(x1=x1, y1=y2, x2=x2, y2=y2, dashed=True)
         x2 += cluster_group_gap
         x1 = x2
@@ -553,7 +553,7 @@ def add_enrich_dep_plot(svg,
     # dashed line
     #svg.add_rect(x, y2, x2-x, h, fill=sigqcolor)
     #svg.add_line(x1=x, y1=y2, x2=x2, y2=y2, dashed=True)
-    #svg.add_line(x1=x, y1=y, x2=x2, y2=y, stroke=svgplot.AXIS_STROKE)
+    #svg.add_line(x1=x, y1=y, x2=x2, y2=y, stroke=core.AXIS_STROKE)
 
     if showyaxis:
         graph.add_y_axis(svg, axis=yaxis,
@@ -566,7 +566,7 @@ def add_enrich_dep_plot(svg,
                          title_offset=90)
 
     svg.add_text_bb('Depletion', x=x2-20, y=y+height/2,
-                    size=svgplot.FIGURE_FONT_SIZE, orientation='v', align='c')
+                    size=core.FIGURE_FONT_SIZE, orientation='v', align='c')
 
     # svg.cluster_label_rows(row_labels,
     #                         clusters,
@@ -596,11 +596,11 @@ def add_enrich_stack_plot(svg,
                           yticklabels=None,
                           yminorticks=None,
                           showyaxis=True,
-                          colormap=svgplot.ABC_COLORS,
-                          stroke=svgplot.STROKE_SIZE,
+                          colormap=core.ABC_COLORS,
+                          stroke=core.STROKE_SIZE,
                           cluster_group_gap=50):
     # if smallfont:
-    #    svg.set_font_size(svgplot.FIGURE_FONT_SIZE)
+    #    svg.set_font_size(core.FIGURE_FONT_SIZE)
 
     # enrich
 
@@ -659,7 +659,7 @@ def add_enrich_stack_plot(svg,
                 color = colormap[col]
 
                 if isinstance(color, tuple):
-                    color = svgplot.rgbtohex(color)
+                    color = core.rgbtohex(color)
 
                 v = df_coo.iloc[i, j]
 
@@ -692,7 +692,7 @@ def add_enrich_stack_plot(svg,
 
             # break
         svg.add_line(x1=x1, y1=y+height, x2=x2, y2=y +
-                     height, stroke=svgplot.AXIS_STROKE)
+                     height, stroke=core.AXIS_STROKE)
         x2 += cluster_group_gap
         x1 = x2
 
@@ -700,7 +700,7 @@ def add_enrich_stack_plot(svg,
     #svg.add_rect(x, y2, x2-x, h, fill=sigqcolor)
     #svg.add_line(x1=x, y1=y2, x2=x2, y2=y2, dashed=True)
 
-    #svg.add_line(x1=x, y1=y, x2=x2, y2=y, stroke=svgplot.AXIS_STROKE)
+    #svg.add_line(x1=x, y1=y, x2=x2, y2=y, stroke=core.AXIS_STROKE)
 
     if showyaxis:
         svg.add_y_axis(axis=yaxis,

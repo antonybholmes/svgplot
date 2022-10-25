@@ -21,7 +21,7 @@ import pandas as pd
 import itertools
 import random
 
-from . import svgplot
+from . import core
 from . import svgfigureheatmap
 from scipy.cluster.hierarchy import dendrogram, linkage
 from scipy.spatial.distance import pdist
@@ -725,7 +725,7 @@ class SVGFigureMutationHeatmap(svgfigureheatmap.SVGFigureHeatmap):
                 hx += tables[j].shape[1] * cell[0] + gap[0]
             
             
-            color = svgplot.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['n/a']))
+            color = core.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['n/a']))
             self.add_rect(hx, hy, w, h, fill=color)
             
             #print(i, x, hx, len(tables))
@@ -784,7 +784,7 @@ class SVGFigureMutationHeatmap(svgfigureheatmap.SVGFigureHeatmap):
                 colorId = df_colors['Color Id'].values[idx]
                 print(colorId)
                 color = df_color_table['Color'].values[np.where(df_color_table['Cluster Name'] == colorId)[0][0]]
-                #color = svgplot.rgbatohex(color)
+                #color = core.rgbatohex(color)
                 
                 self.add_rect(hx, hy1 - titleoffset[1], table.shape[1] * cell[0], titleoffset[1], fill=color)
                 
@@ -801,11 +801,11 @@ class SVGFigureMutationHeatmap(svgfigureheatmap.SVGFigureHeatmap):
                         mut_types = np.array(v.split(','))
                         mut_types = mut_types[0:min(len(mut_types), 2)]
                         
-                        color = svgplot.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP[mut_types[0]]))
+                        color = core.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP[mut_types[0]]))
                         self.add_rect(hx1, hy, cell[0], cell[1], fill=color)
                         
                         if len(mut_types) > 1:
-                            color = svgplot.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP[mut_types[1]]))
+                            color = core.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP[mut_types[1]]))
                             #self.add_lr_triangle(hx1, hy, cell[0], cell[1], fill=color)
      
                             h = cell[1] / mut_types.size
@@ -813,7 +813,7 @@ class SVGFigureMutationHeatmap(svgfigureheatmap.SVGFigureHeatmap):
                             hy2 = hy + h
                             
                             #for mut_type in mut_types:
-                            #    color = svgplot.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP[mut_type]))
+                            #    color = core.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP[mut_type]))
                             
                             self.add_rect(hx1, hy, cell[0], h, fill=color)
                             hy2 += h
@@ -872,32 +872,32 @@ class SVGFigureMutationHeatmap(svgfigureheatmap.SVGFigureHeatmap):
         hx = x
         hy = y
         
-        color = svgplot.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['MISSENSE']))
+        color = core.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['MISSENSE']))
         self.add_bullet('Missense mutation', color=color, shape='s')
         self.inc(y=40)
-        color = svgplot.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['TRUNC']))
+        color = core.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['TRUNC']))
         self.add_bullet('Truncating mutation', color=color, shape='s')
         self.inc(y=40)
-        color = svgplot.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['INFRAME']))
+        color = core.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['INFRAME']))
         self.add_bullet('Inframe ins/del', color=color, shape='s')
         self.inc(y=80)
         
         
-        # color = svgplot.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['MISSENSE']))
+        # color = core.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['MISSENSE']))
         # self.add_rect(hx, hy, LEGEND_SIZE, LEGEND_SIZE, fill=color)
         # #self.add_rect(hx, hy, LEGEND_SIZE, LEGEND_SIZE, color='black', stroke=2)
         # self.add_text_bb('Missense mutation', x=hx+2*LEGEND_SIZE, y=hy+LEGEND_SIZE/2, color=color)
         
         # hy += 40
         
-        # color = svgplot.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['TRUNC']))
+        # color = core.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['TRUNC']))
         # self.add_rect(hx, hy, LEGEND_SIZE, LEGEND_SIZE, fill=color)
         # #self.add_rect(hx, hy, LEGEND_SIZE, LEGEND_SIZE, color='black', stroke=2)
         # self.add_text_bb('Truncating mutation', x=hx+2*LEGEND_SIZE, y=hy+LEGEND_SIZE/2, color=color)
         
         # hy += 40
         
-        # color = svgplot.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['INFRAME']))
+        # color = core.rgbatohex(mapper.to_rgba(MUTATION_INDEX_MAP['INFRAME']))
         # self.add_rect(hx, hy, LEGEND_SIZE, LEGEND_SIZE, fill=color)
         # #self.add_rect(hx, hy, LEGEND_SIZE, LEGEND_SIZE, color='black', stroke=2)
         # self.add_text_bb('Inframe ins/del', x=hx+2*LEGEND_SIZE, y=hy+LEGEND_SIZE/2, color=color)
