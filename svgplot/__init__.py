@@ -20,3 +20,4 @@ from .gsea import *
 from .genes import *
 from .coo import *
 from .motifs import *
+from .singlecell import *

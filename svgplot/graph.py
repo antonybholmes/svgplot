@@ -69,8 +69,6 @@ def add_pie_chart(svg: SVGFigure,
     fracs = np.array(values)
     fracs = fracs / fracs.sum()
 
-    print(fracs)
-
     angle1 = 0
     angle2 = 0
     labelradius = r * labelradius
@@ -237,8 +235,6 @@ def add_x_axis(svg,
 
     # svg.set_font_size(9)
 
-    print('what', ticks)
-
     if ticklabels is None:
         if ticks is not None:
             ticklabels = ticks
@@ -247,8 +243,6 @@ def add_x_axis(svg,
 
     if ticks is None:
         ticks = axis.ticks
-
-    print('what', ticklabels)
 
     if invert:
         x1 = x - stroke / 2
@@ -259,9 +253,6 @@ def add_x_axis(svg,
 
     if showline:
         svg.add_line(x1=x1, y1=y, x2=x2, y2=y, stroke=stroke)
-
-
-    print('what3', ticklabels)
 
     for i in range(0, len(ticks)):
         tick = ticks[i]
@@ -275,8 +266,6 @@ def add_x_axis(svg,
             tickx = x + axis.scale(tick)  # (tick - ylim[0]) / yrange * h
 
         ticklabel = ticklabels[i]
-
-        print('tl', ticklabel, i, tickx)
 
         if not isinstance(ticklabel, str):
             ticklabel = str(ticklabel)
@@ -389,8 +378,6 @@ def add_y_axis(svg,
         label = axis.label
 
     mw = 0
-
-    print(ticklabels)
 
     if showline:
         svg.add_line(x1=x, y1=y-stroke/2, y2=y+axis.w +

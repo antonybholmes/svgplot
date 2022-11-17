@@ -1,10 +1,11 @@
 from typing import Optional
 #from .svgfiguregenes import SVGFigureGenes
-from .svgfiguredraw import SVGFigureDraw
+#from .svgfiguredraw import SVGFigureDraw
+from .svgfigureheatmap import SVGFigureHeatmap
 from enum import Enum
 
 
-class SVGFigure(SVGFigureDraw):
+class SVGFigure(SVGFigureHeatmap):
     def __init__(self,
                  file,
                  size: tuple[float, float] = (279, 216),

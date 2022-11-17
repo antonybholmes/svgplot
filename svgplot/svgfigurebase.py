@@ -201,7 +201,7 @@ class SVGFigureBase:
     def trans(self, elem=None, x: float = 0, y: float = 0, css: Optional[Mapping[str, str]] = None) -> None:
         css = self.css_map(css)
 
-        print(x, y)
+        #print(x, y)
 
         g = self._svg.g(transform=self.format_translate(
             self.x(x), self.y(y)), style=core.format_css_params(css))

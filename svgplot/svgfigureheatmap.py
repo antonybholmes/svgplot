@@ -15,7 +15,7 @@ import yaml
 import lib10x
 import pandas as pd
 
-from . import svgplot
+from . import core
 from .svgfigureplot import SVGFigurePlot
 
 
@@ -56,7 +56,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
 
         group_map = collections.defaultdict(set)
 
-        gy = y - 2 * svgplot.LABEL_COLOR_BLOCK_SIZE
+        gy = y - 2 * core.LABEL_COLOR_BLOCK_SIZE
 
         for i in range(0, df_heatmap.shape[1]):
             name = df_heatmap.columns[i]
@@ -71,19 +71,19 @@ class SVGFigureHeatmap(SVGFigurePlot):
             color = clusters.get_color(altId)
 
             self.add_rect(x + i * xs, gy, xs,
-                          svgplot.LABEL_COLOR_BLOCK_SIZE, fill=color)
+                          core.LABEL_COLOR_BLOCK_SIZE, fill=color)
 
             if i > 0:
                 x1 = x + i * xs
                 self.add_line(x1=x1,
                               y1=gy,
                               x2=x1,
-                              y2=gy+svgplot.LABEL_COLOR_BLOCK_SIZE,
+                              y2=gy+core.LABEL_COLOR_BLOCK_SIZE,
                               color='white')
 
             if frame:
                 self.add_frame(x + i * xs, gy, xs,
-                               svgplot.LABEL_COLOR_BLOCK_SIZE,
+                               core.LABEL_COLOR_BLOCK_SIZE,
                                color='black')
 
             group = altId  # re.sub(r' .+', '', altId)
@@ -98,8 +98,8 @@ class SVGFigureHeatmap(SVGFigurePlot):
             group_map[group].add(i)
 
         if labels:
-            gy = y - 4 * svgplot.LABEL_COLOR_BLOCK_SIZE
-            gy2 = y - 2.5 * svgplot.LABEL_COLOR_BLOCK_SIZE
+            gy = y - 4 * core.LABEL_COLOR_BLOCK_SIZE
+            gy2 = y - 2.5 * core.LABEL_COLOR_BLOCK_SIZE
 
             for g in group_map:
                 if g in ignore:
@@ -168,12 +168,12 @@ class SVGFigureHeatmap(SVGFigurePlot):
 
             self.add_rect(x,
                           y + i * xs,
-                          svgplot.LABEL_COLOR_BLOCK_SIZE,
+                          core.LABEL_COLOR_BLOCK_SIZE,
                           xs,
                           fill=color)
             self.add_frame(x,
                            y + i * xs,
-                           svgplot.LABEL_COLOR_BLOCK_SIZE,
+                           core.LABEL_COLOR_BLOCK_SIZE,
                            xs,
                            color='black')
 
@@ -197,7 +197,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                 gw = (e - s + 1) * xs
                 color = clusters.get_color(g)
 
-                self.add_text_bb(g, x=x + 2 * svgplot.LABEL_COLOR_BLOCK_SIZE,
+                self.add_text_bb(g, x=x + 2 * core.LABEL_COLOR_BLOCK_SIZE,
                                  y=gx, w=gw, color=color, weight=weight)
 
     def heatmap_color_rows(self,
@@ -211,7 +211,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                            gap=10,
                            framecolor=None):
         if h is None:
-            h = svgplot.scaled_image_h(file, w)
+            h = core.scaled_image_h(file, w)
 
         ys = h / df.shape[0]
 
@@ -225,7 +225,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                 ids.append(cluster)
                 used.add(cluster)
 
-        gx = x  # - 2 * svgplot.LABEL_COLOR_BLOCK_SIZE
+        gx = x  # - 2 * core.LABEL_COLOR_BLOCK_SIZE
 
         c = 0
 
@@ -243,17 +243,17 @@ class SVGFigureHeatmap(SVGFigurePlot):
 
             self.add_rect(gx,
                           y,
-                          svgplot.LABEL_COLOR_BLOCK_SIZE,
+                          core.LABEL_COLOR_BLOCK_SIZE,
                           hc,
                           fill=color)
 
             if c > 0 and gap == 0:
                 y2 = y + hc
                 self.add_line(
-                    x1=gx, y1=y2, x2=gx+svgplot.LABEL_COLOR_BLOCK_SIZE, y2=y2, color='white')
+                    x1=gx, y1=y2, x2=gx+core.LABEL_COLOR_BLOCK_SIZE, y2=y2, color='white')
 
             if framecolor is not None:
-                self.add_frame(gx, y, svgplot.LABEL_COLOR_BLOCK_SIZE,
+                self.add_frame(gx, y, core.LABEL_COLOR_BLOCK_SIZE,
                                hc, color=framecolor)
 
             y += hc + gap
@@ -275,14 +275,14 @@ class SVGFigureHeatmap(SVGFigurePlot):
             return
 
         if w is None:
-            w = svgplot.scaled_image_w(file, h)
+            w = core.scaled_image_w(file, h)
 
         if h is None:
-            h = svgplot.scaled_image_h(file, w)
+            h = core.scaled_image_h(file, w)
 
         ys = h / df.shape[0]
 
-        #self.set_font_size(svgplot.FIGURE_FONT_SIZE)
+        #self.set_font_size(core.FIGURE_FONT_SIZE)
 
         gx = x
 
@@ -320,7 +320,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
 
                 gy += self.get_font_h() + padding
 
-        #self.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+        #self.set_font_size(core.DEFAULT_FONT_SIZE)
 
 
     def add_heatmap(self,
@@ -330,7 +330,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                     cell=DEFAULT_CELL,
                     lim=DEFAULT_LIMITS,
                     cmap=libplot.BWR2_CMAP,
-                    gridcolor=svgplot.GRID_COLOR,
+                    gridcolor=core.GRID_COLOR,
                     showgrid=True,
                     showframe=True):
 
@@ -345,7 +345,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
 
             for j in range(0, df.shape[1]):
                 v = df.iloc[i, j]
-                color = svgplot.rgbatohex(mapper.to_rgba(v))
+                color = core.rgbatohex(mapper.to_rgba(v))
 
                 self.add_rect(hx, hy, cell[0], cell[1], fill=color)
 
@@ -380,7 +380,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                            lim=DEFAULT_LIMITS,
                            gap=10,
                            cmap=libplot.BWR2_CMAP,
-                           gridcolor=svgplot.GRID_COLOR,
+                           gridcolor=core.GRID_COLOR,
                            framecolor='black'):
 
         #df_heatmap = df.iloc[:, 0:-1]
@@ -427,7 +427,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
 
                 for j in range(0, dfc.shape[1]):
                     v = dfc.iloc[i, j]
-                    color = svgplot.rgbatohex(mapper.to_rgba(v))
+                    color = core.rgbatohex(mapper.to_rgba(v))
 
                     self.add_rect(hx, hy, cw, ch, fill=color)
 
@@ -474,7 +474,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
 
         group_map = collections.defaultdict(set)
 
-        gy = y - 2 * svgplot.LABEL_COLOR_BLOCK_SIZE
+        gy = y - 2 * core.LABEL_COLOR_BLOCK_SIZE
 
         for i in range(0, df.shape[1]):
             name = df.columns[i]
@@ -488,19 +488,19 @@ class SVGFigureHeatmap(SVGFigurePlot):
             color = clusters.get_color(altId)
 
             self.add_rect(x + i * xs, gy, xs,
-                          svgplot.LABEL_COLOR_BLOCK_SIZE, fill=color)
+                          core.LABEL_COLOR_BLOCK_SIZE, fill=color)
 
             if i > 0:
                 x1 = x + i * xs
                 self.add_line(x1=x1,
                               y1=gy,
                               x2=x1,
-                              y2=gy+svgplot.LABEL_COLOR_BLOCK_SIZE,
+                              y2=gy+core.LABEL_COLOR_BLOCK_SIZE,
                               color='white')
 
             if frame:
                 self.add_frame(x + i * xs, gy, xs,
-                               svgplot.LABEL_COLOR_BLOCK_SIZE,
+                               core.LABEL_COLOR_BLOCK_SIZE,
                                color='black')
 
             group = altId  # re.sub(r' .+', '', altId)
@@ -515,8 +515,8 @@ class SVGFigureHeatmap(SVGFigurePlot):
             group_map[group].add(i)
 
         if labels:
-            gy = y - 4 * svgplot.LABEL_COLOR_BLOCK_SIZE
-            gy2 = y - 2.5 * svgplot.LABEL_COLOR_BLOCK_SIZE
+            gy = y - 4 * core.LABEL_COLOR_BLOCK_SIZE
+            gy2 = y - 2.5 * core.LABEL_COLOR_BLOCK_SIZE
 
             for g in group_map:
                 if g in ignore:
@@ -575,17 +575,17 @@ class SVGFigureHeatmap(SVGFigurePlot):
             return
 
         if w is None:
-            w = svgplot.scaled_image_w(file, h)
+            w = core.scaled_image_w(file, h)
 
         if h is None:
-            h = svgplot.scaled_image_h(file, w)
+            h = core.scaled_image_h(file, w)
 
         #df_heatmap = df.iloc[:, 0:-1]
         df_heatmap = df.iloc[:, np.where(df.columns.str.contains('fold'))[0]]
 
         ys = h / df_heatmap.shape[0]
 
-        #self.set_font_size(svgplot.FIGURE_FONT_SIZE)
+        #self.set_font_size(core.FIGURE_FONT_SIZE)
 
         gx = x
 
@@ -656,7 +656,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
 
                 #gy += self.get_font_h() + padding
 
-        #self.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+        #self.set_font_size(core.DEFAULT_FONT_SIZE)
 
     def add_split_heatmap(self,
                           expfiles,
@@ -670,7 +670,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                           indexmatch='Gene',
                           colmatch='tpm',
                           cmap=libplot.BWR2_CMAP,
-                          gridcolor=svgplot.GRID_COLOR,
+                          gridcolor=core.GRID_COLOR,
                           hspace=10,
                           block_gap=160,
                           splits={},
@@ -778,18 +778,18 @@ class SVGFigureHeatmap(SVGFigurePlot):
                         color = cluster_pairs[1].get_color(search)
 
                     self.add_rect(
-                        hx2, hy, cell[0], svgplot.LABEL_COLOR_BLOCK_SIZE, fill=color)
+                        hx2, hy, cell[0], core.LABEL_COLOR_BLOCK_SIZE, fill=color)
 
                     if c > 0 or (i > 0 and 'nospace-after' in headings[i - 1]):
                         self.add_line(x1=hx2,
                                       y1=hy-2,
                                       x2=hx2,
-                                      y2=hy+svgplot.LABEL_COLOR_BLOCK_SIZE+2,
+                                      y2=hy+core.LABEL_COLOR_BLOCK_SIZE+2,
                                       color='white')
 
                     if frame:
                         self.add_frame(
-                            x=hx2, y=hy, w=cell[0], h=svgplot.LABEL_COLOR_BLOCK_SIZE)
+                            x=hx2, y=hy, w=cell[0], h=core.LABEL_COLOR_BLOCK_SIZE)
 
                     hx2 += cell[0]
 
@@ -807,7 +807,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                         #                        self.add_line(x1=hx+w/2,
                         #                                      y1=hy2,
                         #                                      x2=hx+w/2,
-                        #                                      y2=hy2+svgplot.BRACKET_SIZE,
+                        #                                      y2=hy2+core.BRACKET_SIZE,
                         #                                      color=color)
                         pass
                     else:
@@ -819,12 +819,12 @@ class SVGFigureHeatmap(SVGFigurePlot):
 #                        self.add_line(x1=hx + padding,
 #                                      y1=hy2,
 #                                      x2=hx + padding,
-#                                      y2=hy2+svgplot.BRACKET_SIZE,
+#                                      y2=hy2+core.BRACKET_SIZE,
 #                                      color=color)
 #                        self.add_line(x1=hx + w - padding,
 #                                      y1=hy2,
 #                                      x2=hx + w - padding,
-#                                      y2=hy2 + svgplot.BRACKET_SIZE,
+#                                      y2=hy2 + core.BRACKET_SIZE,
 #                                      color=color)
 
                     hy2 -= 2 * padding
@@ -906,7 +906,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                                 df2.columns == 'C{}'.format(cluster))[0][0]
                             v = df2.iloc[ri, ci]
 
-                        color = svgplot.rgbatohex(mapper.to_rgba(v))
+                        color = core.rgbatohex(mapper.to_rgba(v))
                         self.add_rect(hx3, hy2, cell[0], cell[1], fill=color)
 
                         hy2 += cell[1]
@@ -931,7 +931,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                 else:
                     if 'nospace-after' in headings[j - 1]:
                         self.add_line(x1=hx2, y1=hy, x2=hx2, y2=hy+h,
-                                      stroke=svgplot.GRID_STROKE, color=gridcolor)
+                                      stroke=core.GRID_STROKE, color=gridcolor)
                         hx3 = hx2 - len(col_sets[j - 1]) * cell[0]
                         w2 = len(col_sets[j - 1]) * cell[0] + w
                         self.add_frame(x=hx3, y=hy, w=w2, h=h)
@@ -952,7 +952,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
         # Row labels
         #
 
-        #self.set_font_size(svgplot.FIGURE_FONT_SIZE)
+        #self.set_font_size(core.FIGURE_FONT_SIZE)
 
         hy = y
         hx = x
@@ -988,7 +988,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                 ri = np.where(df1.index == gene)[0][0]
                 labels.append(df1.index[ri])
 
-            hy2 = hy + svgplot.LABEL_COLOR_BLOCK_SIZE
+            hy2 = hy + core.LABEL_COLOR_BLOCK_SIZE
 
             for label in labels:
                 self.add_text_bb(label, x=hx, y=hy2)
@@ -1000,7 +1000,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
         # block labels
         #
 
-        #self.set_font_size(svgplot.FIGURE_FONT_SIZE)
+        #self.set_font_size(core.FIGURE_FONT_SIZE)
 
         hy = y
         hx = x - 2 * padding
@@ -1026,7 +1026,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
 
             hy += h + padding
 
-        #self.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+        #self.set_font_size(core.DEFAULT_FONT_SIZE)
 
         return (w, h)
 
@@ -1046,7 +1046,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                                  colmatch='fold change',  # 'tpm',
                                  norm='none',  # 'z-score',
                                  cmap=libplot.BWR2_CMAP,
-                                 gridcolor=svgplot.GRID_COLOR,
+                                 gridcolor='black', #core.GRID_COLOR,
                                  padding=10,
                                  showgrid=True,
                                  showframe=True,
@@ -1090,7 +1090,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
         if 'remap' not in labelargs:
             labelargs['remap'] = {}
         if 'rowfontsize' not in labelargs:
-            labelargs['rowfontsize'] = svgplot.FIGURE_FONT_SIZE
+            labelargs['rowfontsize'] = core.FIGURE_FONT_SIZE
 
         row_sets = yaml.load(open(rf), Loader=yaml.SafeLoader)
         col_sets = yaml.load(open(cf), Loader=yaml.SafeLoader)
@@ -1182,7 +1182,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                             df1.columns == 'C{}'.format(col)))[0][0]
                         v = df1.iloc[ri, ci]
 
-                        color = svgplot.rgbatohex(mapper.to_rgba(v))
+                        color = core.rgbatohex(mapper.to_rgba(v))
                         self.add_rect(hx2, hy2, cell[0], cell[1], fill=color)
 
                         hy2 += cell[1]
@@ -1254,7 +1254,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
         # block labels
         #
 
-        #self.set_font_size(svgplot.FIGURE_FONT_SIZE)
+        #self.set_font_size(core.FIGURE_FONT_SIZE)
 
         hy = y
         hx = x - 2 * padding
@@ -1280,7 +1280,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
 
             hy += h + padding
 
-        #self.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+        #self.set_font_size(core.DEFAULT_FONT_SIZE)
 
         return (w, h)
 
@@ -1302,7 +1302,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                            showsinglegroups=False,
                            bold=False,
                            remap={},
-                           size=svgplot.HEATMAP_HEADING_FONT_SIZE,
+                           size=core.HEATMAP_HEADING_FONT_SIZE,
                            weight='normal'):
         """
         Label a heat map
@@ -1328,7 +1328,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
         hx = x
         hy = y
 
-        h = svgplot.LABEL_COLOR_BLOCK_SIZE  # cell[1] / 2
+        h = core.LABEL_COLOR_BLOCK_SIZE  # cell[1] / 2
 
 
         for col_set in col_sets:
@@ -1451,7 +1451,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
             #
 
             if 'short' in group_map:
-                gy2 = gy  # - svgplot.BRACKET_SIZE
+                gy2 = gy  # - core.BRACKET_SIZE
                 gy = gy2 - 2 * padding
 
                 for g in group_map['short']:
@@ -1546,7 +1546,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                            showsinglegroups=False,
                            bold=False,
                            remap={},
-                           size=svgplot.HEATMAP_HEADING_FONT_SIZE,
+                           size=core.HEATMAP_HEADING_FONT_SIZE,
                            weight='normal'):
         """
         Label a heat map
@@ -1572,7 +1572,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
         hx = x
         hy = y
 
-        w = svgplot.LABEL_COLOR_BLOCK_SIZE  # cell[1] / 2
+        w = core.LABEL_COLOR_BLOCK_SIZE  # cell[1] / 2
 
 
         for col_set in col_sets:
@@ -1693,7 +1693,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
             #
 
             if 'short' in group_map:
-                gx2 = gx  # - svgplot.BRACKET_SIZE
+                gx2 = gx  # - core.BRACKET_SIZE
                 gx = gx2 + 2 * padding
 
                 for g in group_map['short']:
@@ -1775,7 +1775,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                         cell=DEFAULT_CELL,
                         lim=DEFAULT_LIMITS,
                         cluster_sets=None,
-                        gridcolor='black',  # svgplot.GRID_COLOR,
+                        gridcolor='black',  # core.GRID_COLOR,
                         # 'red', #'#aaaaaa',
                         pathwaycolor=['darkgray', 'dimgray'],
                         padding=10,
@@ -1882,11 +1882,11 @@ class SVGFigureHeatmap(SVGFigurePlot):
                 v = d[i, j]
 
                 if v == 1:
-                    # svgplot.rgbatohex(mapper.to_rgba(v))
+                    # core.rgbatohex(mapper.to_rgba(v))
                     color = pathwaycolor[0]
                     self.add_rect(hx, hy, cell[0], cell[1], fill=color)
                 elif v == 2:
-                    # svgplot.rgbatohex(mapper.to_rgba(v))
+                    # core.rgbatohex(mapper.to_rgba(v))
                     color = pathwaycolor[1]
                     self.add_rect(hx, hy, cell[0], cell[1], fill=color)
                 elif v == 3:
@@ -1923,7 +1923,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
         #
 
         if labelrows:
-            #self.set_font_size(svgplot.FIGURE_FONT_SIZE)
+            #self.set_font_size(core.FIGURE_FONT_SIZE)
 
             hx = w + padding
             hy = y + cell[1] / 2
@@ -1949,7 +1949,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                 self.add_text_bb(gene_set, x=hx, y=hy)
                 hy += cell[1]
 
-            #self.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+            #self.set_font_size(core.DEFAULT_FONT_SIZE)
 
         return (w, h)
 
@@ -1963,7 +1963,7 @@ class SVGFigureHeatmap(SVGFigurePlot):
                             cell=DEFAULT_CELL,
                             lim=DEFAULT_LIMITS,
                             cluster_sets=None,
-                            gridcolor='black',  # svgplot.GRID_COLOR,
+                            gridcolor='black',  # core.GRID_COLOR,
                             # 'red', #'#aaaaaa',
                             pathwaycolor=['darkgray', 'dimgray'],
                             padding=10,
@@ -2058,11 +2058,11 @@ class SVGFigureHeatmap(SVGFigurePlot):
                 v = d[i, j]
 
                 if v == 1:
-                    # svgplot.rgbatohex(mapper.to_rgba(v))
+                    # core.rgbatohex(mapper.to_rgba(v))
                     color = pathwaycolor[0]
                     self.add_rect(hx, hy, cell[0], cell[1], fill=color)
                 elif v == 2:
-                    # svgplot.rgbatohex(mapper.to_rgba(v))
+                    # core.rgbatohex(mapper.to_rgba(v))
                     color = pathwaycolor[1]
                     self.add_rect(hx, hy, cell[0], cell[1], fill=color)
                 elif v == 3:
@@ -2149,12 +2149,12 @@ class SVGFigureHeatmap(SVGFigurePlot):
                            x=0,
                            y=0,
                            h=0,
-                           w=svgplot.LABEL_COLOR_BLOCK_SIZE,
+                           w=core.LABEL_COLOR_BLOCK_SIZE,
                            padding=5,
                            showgroups=True,
                            frame=True,
                            framecolor='white',
-                           stroke=svgplot.STROKE_SIZE,
+                           stroke=core.STROKE_SIZE,
                            showlabels=True,
                            showblocks=True,
                            mingroupsize=2,
@@ -2243,13 +2243,13 @@ class SVGFigureHeatmap(SVGFigurePlot):
 
 #                self.add_line(x,
 #                              y,
-#                              x + svgplot.BRACKET_SIZE,
+#                              x + core.BRACKET_SIZE,
 #                              y,
 #                              color=color)
 #
 #                self.add_line(x,
 #                              y + h,
-#                              x + svgplot.BRACKET_SIZE,
+#                              x + core.BRACKET_SIZE,
 #                              y + h,
 #                              color=color)
 
@@ -2340,8 +2340,8 @@ class SVGFigureHeatmap(SVGFigurePlot):
                  h=0,
                  rows=0,
                  cols=0,
-                 color=svgplot.GRID_COLOR,
-                 stroke=svgplot.GRID_STROKE,
+                 color=core.GRID_COLOR,
+                 stroke=core.GRID_STROKE,
                  drawrows=True,
                  drawcols=True):
         """

@@ -7,7 +7,7 @@ Created on Sat May  8 21:12:57 2021
 from typing import Mapping, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
-from . import svgplot
+from . import core
 from .svgfiguredraw import SVGFigureDraw
 from .axis import Axis
 import libplot
@@ -52,12 +52,12 @@ class SVGFigurePlot(SVGFigureDraw):
                  label_colors={},
                  row_color="black",
                  frac_file="fractions.txt",
-                 stroke=svgplot.STROKE_SIZE,
+                 stroke=core.STROKE_SIZE,
                  showframe=True,
                  frac_filter=None,
                  mode='exp',
                  df_exp=None):
-        # self.set_font_size(svgplot.FIGURE_FONT_SIZE)
+        # self.set_font_size(core.FIGURE_FONT_SIZE)
         
         if frac_filter is None:
             frac_filter = {g:0 for g in groups}
@@ -272,7 +272,7 @@ class SVGFigurePlot(SVGFigureDraw):
 
                     # use mean for color
                     # m[gene_index]))
-                    color = svgplot.rgbatohex(mapper.to_rgba(v))
+                    color = core.rgbatohex(mapper.to_rgba(v))
 
                     dot_size = max(
                         dot_sizes[0], fracs[gene_index] * dot_sizes[1])
@@ -308,7 +308,7 @@ class SVGFigurePlot(SVGFigureDraw):
                         tickcolor=row_color)
         
         #if showframe:
-        #    self.add_rect(x=x-gap[0], y=y-gap[0], w=x1, h=yaxis.w+gap[0], color='black', stroke=svgplot.AXIS_STROKE)
+        #    self.add_rect(x=x-gap[0], y=y-gap[0], w=x1, h=yaxis.w+gap[0], color='black', stroke=core.AXIS_STROKE)
 
             #for gene in tables[0].index:
             #    self.add_text_bb(gene, x1+label_offset, y1, color=row_color)
@@ -332,7 +332,7 @@ class SVGFigurePlot(SVGFigureDraw):
 
             #self.add_svg_colorbar(x=x1, y=y1, cmap=libplot.BWR2_CMAP, ticks=[0, 0.5, 1], ticklabels=[vlim[0], 0.0, vlim[1]], align='l')
 
-        # self.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+        # self.set_font_size(core.DEFAULT_FONT_SIZE)
 
         tables = []
         for group in groups:
@@ -369,7 +369,7 @@ class SVGFigurePlot(SVGFigureDraw):
                              y+dot_sizes[1]+10, align='c')
             x1 += 70
 
-        # self.set_font_size(svgplot.DEFAULT_FONT_SIZE)
+        # self.set_font_size(core.DEFAULT_FONT_SIZE)
 
     
 
@@ -382,7 +382,7 @@ class SVGFigurePlot(SVGFigureDraw):
                      y=0,
                      w=5,
                      h=None,
-                     padding=svgplot.TICK_SIZE,
+                     padding=core.TICK_SIZE,
                      xoffset=0,
                      stroke=4,
                      title='',
@@ -434,7 +434,7 @@ class SVGFigurePlot(SVGFigureDraw):
                             axis=xaxis,
                             ticks=xticks,
                             ticklabels=xticklabels,
-                            padding=svgplot.TICK_SIZE,
+                            padding=core.TICK_SIZE,
                             showticks=True)
 
         if xlabel != '':
@@ -446,7 +446,7 @@ class SVGFigurePlot(SVGFigureDraw):
                             axis=yaxis,
                             ticks=yticks,
                             ticklabels=yticklabels,
-                            padding=svgplot.TICK_SIZE,
+                            padding=core.TICK_SIZE,
                             showticks=True)
 
         if ylabel != '':
@@ -471,7 +471,7 @@ class SVGFigurePlot(SVGFigureDraw):
                      colmatch='fold change',  # 'tpm',
                      norm='none',  # 'z-score',
                      cmap=libplot.BWR2_CMAP,
-                     gridcolor=svgplot.GRID_COLOR,
+                     gridcolor=core.GRID_COLOR,
                      padding=10,
                      showgrid=True,
                      showframe=True,
@@ -515,7 +515,7 @@ class SVGFigurePlot(SVGFigureDraw):
         if 'remap' not in labelargs:
             labelargs['remap'] = {}
         if 'rowfontsize' not in labelargs:
-            labelargs['rowfontsize'] = svgplot.FIGURE_FONT_SIZE
+            labelargs['rowfontsize'] = core.FIGURE_FONT_SIZE
 
         if norm == 'z-score':
             df_z = lib10x.scale(df)
@@ -544,7 +544,7 @@ class SVGFigurePlot(SVGFigureDraw):
 
             for j in range(0, df1.shape[1]):
                 v = df1.iloc[i, j]
-                color = svgplot.rgbatohex(mapper.to_rgba(v))
+                color = core.rgbatohex(mapper.to_rgba(v))
                 self.add_rect(hx, hy, cell[0], cell[1], fill=color)
 
                 hx += cell[0]
