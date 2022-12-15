@@ -286,9 +286,7 @@ def add_single_cell_col_labels(svg: SVGFigure,
 	split: bool, optional
 			True if labels should be split on space to form newlines
 	"""
-
-	print('eeee')
-
+	
 	x, y = pos
 
 	if isinstance(modes, str):
@@ -309,8 +307,6 @@ def add_single_cell_col_labels(svg: SVGFigure,
 	h = core.LABEL_COLOR_BLOCK_SIZE  # cell[1] / 2
 
 	for col_set in col_sets:
-		print('aaaa')
-
 		w = len(col_set) * cell[0]
 		hx2 = hx
 
@@ -348,10 +344,6 @@ def add_single_cell_col_labels(svg: SVGFigure,
 			hx2 += cell[0]
 
 		gy = hy - padding
-
-		print('aaaa2')
-
-		print(group_map)
 
 		#
 		# plot color bar
@@ -509,5 +501,3 @@ def add_single_cell_col_labels(svg: SVGFigure,
 								 color=color)
 
 		hx += w + padding
-
-	print('fffff')

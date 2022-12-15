@@ -12,8 +12,6 @@ from . import swarm
 from . import boxplot
 
 
-
-
 def _add_violin(svg: SVGFigure,
                 df: DataFrame,
                 max_density: float,
@@ -43,7 +41,8 @@ def _add_violin(svg: SVGFigure,
     points1 = []
 
     for i in range(0, df.shape[0]):
-        p = (x - xaxis.scale(df['x'][i]/max_density), y + yaxis.w - yaxis.scale(df['y'][i], clip=clip))
+        p = (x - xaxis.scale(df['x'][i]/max_density),
+             y + yaxis.w - yaxis.scale(df['y'][i], clip=clip))
 
         id = f'{p[0]}:{p[1]}'
 
@@ -85,16 +84,7 @@ def _add_violin(svg: SVGFigure,
     svg.add_polygon(points, fill=color, fill_opacity=opacity)
 
 
-def _add_legend(svg: SVGFigure,
-                hue_order: Optional[list[str]] = None,
-                colors: Optional[list[str]] = None,
-                pos: tuple[int, int] = (0, 0)):
-    x, y = pos
 
-    for huei, hue in enumerate(hue_order):
-        svg.add_bullet(
-            hue, x=x, y=y, color=colors[huei % colors.size], shape='s')
-        y += 50
 
 
 def _fit_kde(x, bw):
@@ -146,13 +136,15 @@ def add_violinplot(svg: SVGFigure,
 
     _bw_kws = core.kws({'bw': 'scott', 'cut': 2, 'gridsize': 100}, bw_kws)
 
-    _x_kws = core.kws({'show': True, 'show_labels': True, 'show_axis':True, 'label_pos':'axis', 'label_orientation': 'h'}, x_kws)
+    _x_kws = core.kws({'show': True, 'show_labels': True, 'show_axis': True,
+                      'label_pos': 'axis', 'label_orientation': 'h'}, x_kws)
     _y_kws = core.kws({'show': True, 'lim': None, 'ticks': None,
-                  'ticklabels': None, 'offset': None, 'title': ''}, y_kws)
+                       'ticklabels': None, 'offset': None, 'title': None}, y_kws)
     _violin_kws = core.kws({'show': True, 'opacity': 0.4}, violin_kws)
-    _swarm_kws = core.kws({'show': True, 'dot_size': 10, 'opacity': 0.7, 'style': '^'}, swarm_kws)
+    _swarm_kws = core.kws({'show': True, 'dot_size': 10,
+                          'opacity': 0.7, 'style': swarm.PlotStyle.TRIANGLE}, swarm_kws)
     _box_kws = core.kws({'show': True, 'width': 20, 'whisker_width': 20, 'stroke': 3, 'dot_size': 12,
-                    'fill': 'white', 'opacity': 1, 'rounded': True, 'median_style': 'circle'}, box_kws)
+                         'fill': 'white', 'opacity': 1, 'rounded': True, 'median_style': boxplot.MedianStyle.CIRCLE}, box_kws)
 
     if palette is None:
         palette = matplotlib.cm.Set2
@@ -167,7 +159,7 @@ def add_violinplot(svg: SVGFigure,
         palette = palette[0:2]
 
     if x_order is None:
-        x_order = []    
+        x_order = []
         used = set()
 
         for n in data[x]:
@@ -176,11 +168,11 @@ def add_violinplot(svg: SVGFigure,
 
             x_order.append(n)
             used.add(n)
-    
+
     x_order = np.array(x_order)
 
     if hue_order is None:
-        hue_order = []    
+        hue_order = []
         used = set()
 
         for n in data[hue]:
@@ -209,16 +201,14 @@ def add_violinplot(svg: SVGFigure,
     yaxis = Axis(lim=_y_kws['lim'], ticks=_y_kws['ticks'],
                  ticklabels=_y_kws['ticklabels'], label=_y_kws['title'], w=height)
 
+    if _y_kws['show']:
+        graph.add_y_axis(svg, axis=yaxis, pos=(_y_kws['offset'], 0))
+
     densities = []
     data_points = []
 
     global_max_density = 0
     max_densities = np.zeros(x_order.size)
-
-    colori = 0
-
-    if _y_kws['show']:
-        graph.add_y_axis(svg, axis=yaxis, pos=(_y_kws['offset'], 0))
 
     for labeli, x_label in enumerate(x_order):
         for huei, hue_label in enumerate(hue_order):
@@ -244,19 +234,20 @@ def add_violinplot(svg: SVGFigure,
             max_densities[labeli] = max(max_densities[labeli], density.max())
 
     colori = 0
+    w = (hue_order.size - 1) * plot_width
 
     for labeli, label in enumerate(x_order):
-        w = (hue_order.size - 1) * plot_width
-
         if _x_kws['show_labels']:
             match _x_kws['label_pos']:
                 case 'title':
                     svg.add_text_bb(label, x=x1+w/2, y=title_offset, align='c')
                 case _:
                     if _x_kws['label_orientation'] == 'v':
-                        svg.add_text_bb(label, x=x1+w/2, y=y1+yaxis.w+10, orientation='v', align='r')
+                        svg.add_text_bb(label, x=x1+w/2, y=y1 +
+                                        yaxis.w+10, orientation='v', align='r')
                     else:
-                        svg.add_text_bb(label, x=x1+w/2, y=y1+yaxis.w+50, align='c')
+                        svg.add_text_bb(label, x=x1+w/2, y=y1 +
+                                        yaxis.w+50, align='c')
 
         for huei, hue_label in enumerate(hue_order):
             color = palette[colori % palette.size]
@@ -265,6 +256,8 @@ def add_violinplot(svg: SVGFigure,
 
             df = densities[colori]
 
+            # determines how violin appears and whether
+            # violins are scaled relative to each other
             match scale:
                 case 'area':
                     if scale_hue:
@@ -286,17 +279,17 @@ def add_violinplot(svg: SVGFigure,
             # iqr line
 
             if _swarm_kws['show']:
-                swarm.add_swarm(svg,
-                           dp,
-                           axes=(xaxis, yaxis),
-                           dot_size=_swarm_kws['dot_size'],
-                           color=color,
-                           opacity=_swarm_kws['opacity'],
-                           pos=(x1, y1),
-                           style=_swarm_kws['style'])
+                swarm._add_swarm(svg,
+                                dp,
+                                axes=(xaxis, yaxis),
+                                dot_size=_swarm_kws['dot_size'],
+                                color=color,
+                                opacity=_swarm_kws['opacity'],
+                                pos=(x1, y1),
+                                style=_swarm_kws['style'])
 
             if _box_kws['show']:
-                boxplot.add_boxplot(svg,
+                boxplot._add_boxplot(svg,
                                     dp,
                                     axes=(xaxis, yaxis),
                                     width=_box_kws['width'],
@@ -310,18 +303,17 @@ def add_violinplot(svg: SVGFigure,
                                     pos=(x1, y1),
                                     rounded=_box_kws['rounded'])
 
-            x1 += plot_width #2 * xaxis.w
+            x1 += plot_width  # 2 * xaxis.w
             colori += 1
 
         x1 += x_gap
 
     if _x_kws['show_axis']:
-        print(x, x1, y1+yaxis.w)
-        svg.add_line(x1=pos[0]-plot_width/2-x_gap, x2=x1-plot_width/2-x_gap, y1=y1+yaxis.w)
-
+        svg.add_line(x1=pos[0]-plot_width/2-x_gap, x2=x1 -
+                     plot_width/2-x_gap, y1=y1+yaxis.w)
 
     if show_legend:
-        _add_legend(svg,
+        boxplot._add_legend(svg,
                     hue_order,
                     palette,
                     pos=(x1-plot_width+40, 0))

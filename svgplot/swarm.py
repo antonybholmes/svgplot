@@ -1,10 +1,15 @@
+from enum import Enum
 from typing import Any, Optional
 from .svgfigure import SVGFigure
 import numpy as np
 from .axis import Axis
 
+class PlotStyle(Enum):
+    CIRCLE = 0
+    TRIANGLE = 1
+    CROSS = 2
 
-def add_swarm(svg: SVGFigure,
+def _add_swarm(svg: SVGFigure,
                data_points: np.array,
                axes: tuple[Axis, Axis],
                dot_size: int = 8,
@@ -12,7 +17,7 @@ def add_swarm(svg: SVGFigure,
                fill: Optional[str] = None,
                opacity: float = 0.3,
                pos: tuple[int, int] = (0, 0),
-               style: str = '.'):
+               style: PlotStyle = PlotStyle.CIRCLE):
     """Add a swarm plot
 
     Args:
@@ -74,10 +79,10 @@ def add_swarm(svg: SVGFigure,
             x3 = max(x_lim[0], min(x_lim[1], x2))
 
             match style:
-                case '+':
+                case PlotStyle.CROSS:
                     svg.add_line(x1=x3-dot_size/2, x2=x3+dot_size/2, y1=p, color=color)
                     svg.add_line(x1=x3, y1=p-dot_size/2, y2=p+dot_size/2, color=color)
-                case '^':
+                case PlotStyle.TRIANGLE:
                     h = np.sin(np.pi / 3) * dot_size
                     svg.add_polygon([[x3-dot_size/2, p+h/2], [x3, p-h/2], [x3+dot_size/2, p+h/2]], fill=fill, fill_opacity=opacity)
                 case _:

@@ -30,7 +30,7 @@ def add_heatmap(svg: SVGFigure,
                 yticklabels: Optional[Union[list[str], bool]] = True,
                 yticklabel_colors: dict[str, str] = {},
                 col_colors: dict[str, str] = {},
-                color_height=0,
+                col_color_height=0,
                 rename_cols: dict[str, str] = {},
                 row_zscore: bool = False,
                 xsplits=[],
@@ -155,8 +155,8 @@ def add_heatmap(svg: SVGFigure,
         xs1 = 0
         y1 = y - 30
 
-        if color_height > 0 and len(col_colors) > 0:
-            y1 -= (color_height + 30)
+        if col_color_height > 0 and len(col_colors) > 0:
+            y1 -= (col_color_height + 30)
 
         for xs2 in xsplits:
             labels = df.columns[xs1:xs2]
@@ -169,10 +169,10 @@ def add_heatmap(svg: SVGFigure,
 
         #add_xticklabels(svg, xticklabels, cell=cell, colors=xticklabelcolors)
 
-    if color_height > 0 and len(col_colors) > 0:
+    if col_color_height > 0 and len(col_colors) > 0:
         x1 = x
         xs1 = 0
-        y1 = y - 30 - color_height
+        y1 = y - 30 - col_color_height
 
         x1 = x
         xs1 = 0
@@ -184,12 +184,12 @@ def add_heatmap(svg: SVGFigure,
             for i, c in enumerate(labels):
                 for name in col_colors:
                     if name in c:
-                        svg.add_rect(x2, y1, cell[0] * (labels.size - i), color_height,
+                        svg.add_rect(x2, y1, cell[0] * (labels.size - i), col_color_height,
                                     fill=col_colors[name])
                         break
                 x2 += cell[0]
 
-            svg.add_frame(x=x1, y=y1, w=x2-x1, h=color_height)
+            svg.add_frame(x=x1, y=y1, w=x2-x1, h=col_color_height)
             
             x1 = x2 + xsplitgap
             xs1 = xs2
