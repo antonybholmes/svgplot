@@ -68,16 +68,7 @@ def _add_boxplot(svg: SVGFigure,
             svg.add_line(x1=x-width/2, x2=x+width/2, y1=y1, color=color)
 
 
-def _add_legend(svg: SVGFigure,
-                hue_order: Optional[list[str]] = None,
-                colors: Optional[list[str]] = None,
-                pos: tuple[int, int] = (0, 0)):
-    x, y = pos
 
-    for huei, hue in enumerate(hue_order):
-        svg.add_bullet(
-            hue, x=x, y=y, color=colors[huei % colors.size], shape='s')
-        y += 50
 
 
 def add_boxplot(svg: SVGFigure,
@@ -243,7 +234,7 @@ def add_boxplot(svg: SVGFigure,
                      plot_width/2-x_gap, y1=y1+yaxis.w)
 
     if show_legend:
-        _add_legend(svg,
+        swarm._add_legend(svg,
                     hue_order,
                     palette,
                     pos=(x2-plot_width+40, 0))

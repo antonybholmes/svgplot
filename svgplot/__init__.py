@@ -8,6 +8,7 @@ from .core import *
 from .matrix import *
 from .violin import *
 from .boxplot import *
+from .swarm import *
 from .cluster import *
 from .colorbar import *
 from .graph import *
