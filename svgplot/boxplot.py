@@ -19,6 +19,7 @@ def _add_boxplot(svg: SVGFigure,
                  width: int = 18,
                  whisker_width: Optional[int] = None,
                  color: str = 'blue',
+                 line_color:Optional[str] = None,
                  fill: str = 'white',
                  opacity: float = 1,
                  stroke=3,
@@ -29,6 +30,9 @@ def _add_boxplot(svg: SVGFigure,
 
     if whisker_width is None:
         whisker_width = width
+
+    if line_color is None:
+        line_color = color
 
     x, y = pos
 
@@ -47,17 +51,17 @@ def _add_boxplot(svg: SVGFigure,
     #svg.add_rect(x=x-iqr_15_line_width/2, y=y+yaxis.w-yaxis.scale(q3_iqr), w=iqr_15_line_width, h=yaxis.scale(q3_iqr) - yaxis.scale(q1_iqr), color='black', fill='white', stroke=2)
 
     svg.add_line(x1=x, y1=y + yaxis.w-yaxis.scale(q3_iqr), y2=y +
-                 yaxis.w-yaxis.scale(q1_iqr), color=color, stroke=stroke)
+                 yaxis.w-yaxis.scale(q1_iqr), color=line_color, stroke=stroke)
     svg.add_line(x1=x-whisker_width/2, x2=x+whisker_width/2, y1=y +
-                 yaxis.w-yaxis.scale(q3_iqr), color=color, stroke=stroke)
+                 yaxis.w-yaxis.scale(q3_iqr), color=line_color, stroke=stroke)
     svg.add_line(x1=x-whisker_width/2, x2=x+whisker_width/2, y1=y +
-                 yaxis.w-yaxis.scale(q1_iqr), color=color, stroke=stroke)
+                 yaxis.w-yaxis.scale(q1_iqr), color=line_color, stroke=stroke)
 
     #svg.add_rect(x=x-iqr_line_width/2, y=y+yaxis.w-yaxis.scale(q3), w=iqr_line_width, h=yaxis.scale(q3)-yaxis.scale(median), fill='white', color=color, stroke=stroke, rounding=iqr_line_width/2)
     #svg.add_rect(x=x-iqr_line_width/2, y=y+yaxis.w-yaxis.scale(median), w=iqr_line_width, h=yaxis.scale(median)-yaxis.scale(q1), fill='white', color=color, stroke=stroke, rounding=iqr_line_width/2)
 
     svg.add_rect(x=x-width/2, y=y+yaxis.w-yaxis.scale(q3), w=width, h=yaxis.scale(
-        q3) - yaxis.scale(q1), stroke=stroke, fill=fill, fill_opacity=opacity, color=color, rounding=min(10, width/2) if rounded else 0)
+        q3) - yaxis.scale(q1), stroke=stroke, fill=fill, fill_opacity=opacity, color=line_color, rounding=min(10, width/2) if rounded else 0)
 
     y1 = y+yaxis.w-yaxis.scale(median)
 

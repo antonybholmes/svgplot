@@ -6,6 +6,7 @@ from .svgfigure import *
 # from . import gsea
 from .core import *
 from .matrix import *
+from .heatmap import *
 from .violin import *
 from .boxplot import *
 from .swarm import *
@@ -23,3 +24,4 @@ from .genes import *
 from .coo import *
 from .motifs import *
 from .singlecell import *
+from .pathway import *

@@ -144,7 +144,7 @@ def add_violinplot(svg: SVGFigure,
     _swarm_kws = core.kws({'show': True, 'dot_size': 10,
                           'opacity': 0.7, 'style': swarm.PlotStyle.TRIANGLE}, swarm_kws)
     _box_kws = core.kws({'show': True, 'width': 20, 'whisker_width': 20, 'stroke': 3, 'dot_size': 12,
-                         'fill': 'white', 'opacity': 1, 'rounded': True, 'median_style': boxplot.MedianStyle.CIRCLE}, box_kws)
+                         'fill': 'white', 'line_color':None, 'opacity': 1, 'rounded': True, 'median_style': boxplot.MedianStyle.CIRCLE}, box_kws)
 
     if palette is None:
         palette = matplotlib.cm.Set2
@@ -295,6 +295,7 @@ def add_violinplot(svg: SVGFigure,
                                     width=_box_kws['width'],
                                     whisker_width=_box_kws['whisker_width'],
                                     color=color,
+                                    line_color=_box_kws['line_color'],
                                     median_style=_box_kws['median_style'],
                                     dot_size=_box_kws['dot_size'],
                                     fill=_box_kws['fill'],
