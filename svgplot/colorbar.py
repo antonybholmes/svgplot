@@ -8,20 +8,21 @@ import matplotlib
 
 
 def add_h_colorbar(svg: SVGFigure,
-                 x:int=0,
-                 y:int=0,
-                 w:int=300,
-                 h:int=32,
-                 steps=None,
-                 cmap=matplotlib.cm.viridis,
-                 ticks=None,
-                 ticklabels:Optional[list[str]]=None,
-                 xaxis=None,
-                 norm:matplotlib.colors.Normalize=None,
-                 showframe:bool=True,
-                 showaxis:bool=True,
-                 stroke:int=2,
-                 align:str='c'):
+                   pos: tuple[int, int] = (0, 0),
+                   dim: tuple[int, int] = (300, 25),
+                   steps=45,
+                   cmap=matplotlib.cm.viridis,
+                   ticks=None,
+                   ticklabels: Optional[list[str]] = None,
+                   xaxis=None,
+                   norm: matplotlib.colors.Normalize = None,
+                   showframe: bool = True,
+                   showaxis: bool = True,
+                   stroke: int = 2,
+                   align: str = 'c'):
+    x, y = pos
+    w, h = dim
+
     if align == 'c':
         x -= w/2
 
@@ -48,21 +49,27 @@ def add_h_colorbar(svg: SVGFigure,
         ticklabels = ticks
 
     if steps is None:
-        steps = cmap.N // 2
+        steps = int(cmap.N / 2)
 
     if isinstance(steps, int):
         steps = np.array(range(0, steps))
-        steps = steps / (steps.size - 1) * \
-            (norm.vmax - norm.vmin) + norm.vmin
+        steps = steps / steps.size * (norm.vmax - norm.vmin) + norm.vmin
+
+    mid = int((cmap.N-1 if cmap.N % 2 == 0 else cmap.N)/2)
 
     svg.add_rect(x=x, y=y, w=w, h=h, fill=core.rgbtohex(cmap(0)))
     svg.add_rect(x=x+w/4, y=y, w=w/2, h=h, fill=core.rgbtohex(
-        cmap((cmap.N-1 if cmap.N % 2 == 0 else cmap.N)//2)))
+        cmap(mid)))
 
-    for step in steps:
+    print(cmap.N, mid, core.rgbtohex(cmap(mid - 1)), core.rgbtohex(cmap(mid)), core.rgbtohex(cmap(mid + 1)), norm.vmax, norm.vmin)
+
+    offset = 0.5 / steps.size
+
+    for stepi, step in enumerate(steps):
         xoff = xaxis.scale(step)
         w1 = w - xoff
-        col = core.rgbtohex(cmap(int(norm(step) * cmap.N - 1)))
+        col = core.rgbtohex(cmap(int((norm(step) + offset) * cmap.N)))
+        print(stepi, step, norm(step), int((norm(step) + offset) * cmap.N), col)
         svg.add_rect(x=x+xoff, y=y, w=w1, h=h, fill=col)
         #self.add_line(x1=x+xoff, y1=y, x2=x+xoff, y2=y+h)
 
@@ -97,20 +104,20 @@ def add_h_colorbar(svg: SVGFigure,
 
 
 def add_v_colorbar(svg,
-                      x=0,
-                      y=0,
-                      w=25,
-                      h=200,
-                      steps=None,
-                      cmap=matplotlib.cm.viridis,
-                      ticks=None,
-                      ticklabels=None,
-                      axis=None,
-                      norm=None,
-                      showframe=True,
-                      showaxis=True,
-                      stroke=2,
-                      align='c'):    
+                   pos: tuple[int, int] = (0, 0),
+                   dim: tuple[int, int] = (25, 200),
+                   steps=None,
+                   cmap=matplotlib.cm.viridis,
+                   ticks=None,
+                   ticklabels=None,
+                   axis=None,
+                   norm=None,
+                   showframe=True,
+                   showaxis=True,
+                   stroke=2,
+                   align='c'):
+    x, y = pos
+    w, h = dim
 
     if axis is None:
         axis = Axis(lim=[0., 1.], w=h)
@@ -135,7 +142,7 @@ def add_v_colorbar(svg,
         ticklabels = ticks
 
     if steps is None:
-        steps = cmap.N // 2
+        steps = int(cmap.N / 2)
 
     if isinstance(steps, int):
         steps = np.array(list(range(0, steps)))
@@ -171,8 +178,8 @@ def add_v_colorbar(svg,
     #     self.add_rect(x=x+xoff, y=y, w=w1, h=h, fill=col)
 
     if showaxis:
-        graph.add_y_axis(svg, x=x+w,
-                         y=0,
+        graph.add_y_axis(svg, 
+                         pos=(x+w, 0),
                          axis=axis,
                          ticks=ticks,
                          ticklabels=ticklabels,

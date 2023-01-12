@@ -14,34 +14,35 @@ from . import core
 from .svgfigure import SVGFigure
 from .axis import Axis
 from scipy.stats import zscore
+from . import graph
 
 
 def add_dot_plot(svg: SVGFigure,
-             df_data: pd.DataFrame,
-             df_coldata: pd.DataFrame,
-             genes: list[str],
-             groups: list[str] = [],
-             groupby: str = 'Phenotype',
-             use_zscore: bool = True,
-             cmap=libplot.BWR2_CMAP,
-             vlim: tuple[float, float] = (-0.5, 0.5),
-             min_exp: int = 0,
-             fraction_groups: list[float]=[0.25, 0.5, 0.75, 1],
-             dot_sizes: tuple[int, int] = (8, 26),
-             pos: tuple[int, int] = (0, 0),
-             gap: tuple[int, int] = (40, 28),
-             title_offset: int = 40,
-             linecolor: str = 'black',
-             show_row_labels: bool = False,
-             show_col_labels: bool = False,
-             label_colors: dict[str, str] = {},
-             row_color: str = "black",
-             frac_file: str = "fractions.txt",
-             stroke: int = core.STROKE_SIZE,
-             showframe: bool = True,
-             frac_filter={},
-             mode: str = 'exp',
-             df_exp: Optional[pd.DataFrame] = None):
+                 df_data: pd.DataFrame,
+                 df_coldata: pd.DataFrame,
+                 genes: list[str],
+                 groups: list[str] = [],
+                 groupby: str = 'Phenotype',
+                 use_zscore: bool = True,
+                 cmap=libplot.BWR2_CMAP,
+                 vlim: tuple[float, float] = (-0.5, 0.5),
+                 min_exp: float = 0,
+                 fraction_groups: list[float] = [0.25, 0.5, 0.75, 1],
+                 dot_sizes: tuple[int, int] = (8, 26),
+                 pos: tuple[int, int] = (0, 0),
+                 gap: tuple[int, int] = (40, 28),
+                 title_offset: int = 40,
+                 linecolor: str = 'black',
+                 show_row_labels: bool = False,
+                 show_col_labels: bool = False,
+                 label_colors: dict[str, str] = {},
+                 row_color: str = "black",
+                 frac_file: str = "fractions.txt",
+                 stroke: int = core.STROKE_SIZE,
+                 showframe: bool = True,
+                 frac_filter={},
+                 mode: str = 'group',
+                 df_exp: Optional[pd.DataFrame] = None):
     """
     Generate a dot plot
 
@@ -55,7 +56,7 @@ def add_dot_plot(svg: SVGFigure,
         use_zscore (bool, optional): _description_. Defaults to True.
         cmap (_type_, optional): _description_. Defaults to libplot.BWR2_CMAP.
         vlim (tuple[float, float], optional): _description_. Defaults to (-0.5, 0.5).
-        min_exp (int, optional): _description_. Defaults to 0.
+        min_exp (float, optional): _description_. Defaults to 0.
         fraction_groups (list[float], optional): _description_. Defaults to [0.25, 0.5, 0.75, 1].
         dot_sizes (tuple[int, int], optional): _description_. Defaults to (8, 26).
         pos (tuple[int, int], optional): _description_. Defaults to (0, 0).
@@ -109,6 +110,7 @@ def add_dot_plot(svg: SVGFigure,
             # print('ugh', g, i)
             pass
 
+    # keep only the genes of interest
     df_data = df_data.iloc[idx, :]
 
     # make sure in same order
@@ -122,14 +124,16 @@ def add_dot_plot(svg: SVGFigure,
     colnames = []
 
     for group in groups:
-        for g in group['items']:
-            colnames.append(g)
+        for col in group['items']:
+            colnames.append(col)
 
             if data_mode == 'as.is':
-                idx = np.where(df_data.columns == g)[0][0]
+                idx = np.where(df_data.columns == col)[0][0]
                 m = df_data.iloc[:, idx].values
             else:
-                idx = np.where(df_coldata[groupby] == g)[0]
+                # find cols containing group, extract this
+                # table and find mean
+                idx = np.where(df_coldata[groupby] == col)[0]
                 t = df_exp.iloc[:, idx]
                 m = t.mean(axis=1)
 
@@ -147,20 +151,20 @@ def add_dot_plot(svg: SVGFigure,
     # custom z score based on klein, califano 2003 transcriptional analysis
     m = 0
     sd = 0
-    for g in colnames:
+    for col in colnames:
         if data_mode == 'as.is':
-            idx = np.where(df_data.columns == g)[0][0]
+            idx = np.where(df_data.columns == col)[0][0]
             m += df_data.iloc[:, idx].values
             sd += df_data.iloc[:, idx].values
         else:
-            idx = np.where(df_coldata[groupby] == g)[0]
+            idx = np.where(df_coldata[groupby] == col)[0]
             t = df_exp.iloc[:, idx].values
             m += np.mean(t, axis=1)
             sd += np.std(t, axis=1)
 
     m /= colnames.size
     sd /= colnames.size
-
+    # zscore averages across the groups/columns
     z = df_data.subtract(m, axis=0).divide(sd, axis=0)
     df_z = pd.DataFrame(z, index=df_data.index, columns=df_data.columns)
 
@@ -169,27 +173,29 @@ def add_dot_plot(svg: SVGFigure,
 
     c = 0
     for group in groups:
-        for g in group['items']:
-            idx = np.where(df_coldata[groupby] == g)[0]
+        for col in group['items']:
+            idx = np.where(df_coldata[groupby] == col)[0]
 
             t = df_exp.iloc[:, idx]
             m = np.zeros(t.shape, dtype=int)
             m[t > min_exp] = 1
             f = np.sum(m, axis=1) / m.shape[1]
-            fractions[g] = f
+            fractions[col] = f
 
             if data_mode == 'as.is':
-                idx = np.where(df_data.columns == g)[0][0]
+                idx = np.where(df_data.columns == col)[0][0]
                 t = df_data.iloc[:, idx].values
-
+            
+            print('use z', use_zscore, mode)
             if use_zscore:
                 if mode == 'group':
-                    tables[g] = df_z_group.iloc[:, c]
+                    tables[col] = df_z_group.iloc[:, c]
                 else:
-                    tables[g] = np.mean(df_z.iloc[:, idx].values, axis=1)
+                    print('z-score groupby')
+                    tables[col] = np.mean(df_z.iloc[:, idx].values, axis=1)
 
             else:
-                tables[g] = t
+                tables[col] = t
 
             c += 1
 
@@ -199,11 +205,10 @@ def add_dot_plot(svg: SVGFigure,
 
     idx = np.array([], dtype=int)  # range(0, df_data.shape[0]))
 
-    print('filter 1', idx.size)
-
+    print('frac_filter', frac_filter)
     for g in frac_filter:
         if g in fractions:
-            print(g, fractions[g], fractions[g].size)
+            #print(g, fractions[g], fractions[g].size)
             idx = np.union1d(idx, np.where(fractions[g] >= frac_filter[g]))
 
     idx = np.sort(idx)
@@ -267,7 +272,7 @@ def add_dot_plot(svg: SVGFigure,
 
                 v = m[gene_index]
 
-                print(g, gene_index, v)
+                #print(g, gene_index, v)
 
                 # if use_zscore:
                 #    v = df_z.iloc[gene_index, group_index]
@@ -297,22 +302,23 @@ def add_dot_plot(svg: SVGFigure,
         # add some separation between groups
         x1 += gap[0] / 2
 
-    n = df_data.shape[0] - 1  # tables[0].shape[0] - 1
+    n = df_data.shape[0] # - 1  # tables[0].shape[0] - 1
     # reverse labels as axis draw opposite to rendering direction
-    yaxis = Axis(lim=[0, n], ticklabels=np.array(
-        list(reversed(df_data.index.values))), w=n*gap[1])
+    yaxis = Axis(lim=[0, n-1], ticks=list(range(0, n)), ticklabels=np.array(
+        list(reversed(df_data.index.values))), w=(n-1)*gap[1])
 
     # plot gene names from Table 0 as all tables are the same
     if show_row_labels:
-        svg.add_y_axis(x=x1-gap[0],
-                       y=y+yaxis.w,
-                       axis=yaxis,
-                       showline=not showframe,
-                       side='r',
-                       tickcolor=row_color)
+        graph.add_y_axis(svg,
+                         pos=(x1-gap[0],y),
+                         axis=yaxis,
+                         showline=not showframe,
+                         side='r',
+                         showticks=False,
+                         tickcolor=row_color)
 
-    # if showframe:
-    #    svg.add_rect(x=x-gap[0], y=y-gap[0], w=x1, h=yaxis.w+gap[0], color='black', stroke=core.AXIS_STROKE)
+    if showframe:
+        svg.add_rect(x=x-gap[0]/2, y=y-gap[0]/2, w=x1-gap[0]/2, h=yaxis.w+gap[0], color='black', stroke=core.AXIS_STROKE)
 
         # for gene in tables[0].index:
         #    svg.add_text_bb(gene, x1+label_offset, y1, color=row_color)
@@ -358,10 +364,10 @@ def add_dot_plot(svg: SVGFigure,
 
 
 def add_dot_plot_legend(svg: SVGFigure,
-                    pos: tuple[int, int] = (0, 0),
-                    fraction_groups: list[float] = [0.25, 0.5, 0.75, 1],
-                    dot_sizes: tuple[int, int] = (8, 30),
-                    linecolor: str = 'black'):
+                        pos: tuple[int, int] = (0, 0),
+                        fraction_groups: list[float] = [0.25, 0.5, 0.75, 1],
+                        dot_sizes: tuple[int, int] = (8, 30),
+                        linecolor: str = 'black'):
 
     x, y = pos
 

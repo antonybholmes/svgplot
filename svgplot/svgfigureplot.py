@@ -367,7 +367,7 @@ class SVGFigurePlot(SVGFigureDraw):
             self.add_circle(x1, y, dot_size, fill='gray', color=linecolor)
             self.add_text_bb('{}%'.format(int(f * 100)), x1,
                              y+dot_sizes[1]+10, align='c')
-            x1 += 70
+            x1 += 90
 
         # self.set_font_size(core.DEFAULT_FONT_SIZE)
 
