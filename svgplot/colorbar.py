@@ -10,7 +10,7 @@ import matplotlib
 def add_h_colorbar(svg: SVGFigure,
                    pos: tuple[int, int] = (0, 0),
                    dim: tuple[int, int] = (300, 25),
-                   steps=25,
+                   steps=15,
                    cmap=matplotlib.cm.viridis,
                    ticks=None,
                    ticklabels: Optional[list[str]] = None,
@@ -69,6 +69,8 @@ def add_h_colorbar(svg: SVGFigure,
     max_color_index = cmap.N - 1
 
     x_off = 0
+
+    #w1 = x_inc * 2
     
     for stepi, step_color_x in enumerate(steps_color_x):
         #xoff = xaxis.scale(step_x)
@@ -94,7 +96,7 @@ def add_h_colorbar(svg: SVGFigure,
 def add_v_colorbar(svg,
                    pos: tuple[int, int] = (0, 0),
                    dim: tuple[int, int] = (25, 200),
-                   steps=25,
+                   steps=15,
                    cmap=matplotlib.cm.viridis,
                    ticks=None,
                    ticklabels=None,
