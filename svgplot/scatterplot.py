@@ -119,3 +119,5 @@ def add_scatterplot(svg: SVGFigure,
                 pos = (pos[0] + xaxis.w - 100, pos[1]))
 
     return {'w':xaxis.w, 'h':yaxis.w, 'xaxis':xaxis, 'yaxis':yaxis}
+
+

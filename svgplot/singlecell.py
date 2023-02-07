@@ -319,6 +319,8 @@ def add_single_cell_col_labels(svg: SVGFigure,
 			color = clusters.get_color(
 				altId) if clusters is not None else 'black'
 
+			print('blob', col, altId, color)
+
 			for mode in modes:
 				if mode == 'short':
 					group = clusters.get_short_group(

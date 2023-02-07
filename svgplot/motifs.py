@@ -51,7 +51,7 @@ def plot_homer_motifs_by_range(svg: SVGFigure,
 
 def plot_homer_motif(svg: SVGFigure,
                      file: str,
-                     mode: Mode = Mode.BITS,
+                     mode: Mode = Mode.PROB,
                      rev_comp=False,
                      pos: tuple[int, int] = (0, 0),
                      height: int = 100,
@@ -64,9 +64,11 @@ def plot_homer_motif(svg: SVGFigure,
     
     rc = 1
 
-    print(file)
+    
     with open(file, 'r') as f:
         name = re.sub(r'^.+BestGuess:', '', f.readline().split('\t')[1]).split('/')[0]
+
+    print(file, name)
 
     df = pd.read_csv(file, sep='\t', skiprows=1, header=None)
 
@@ -79,6 +81,8 @@ def plot_homer_motif(svg: SVGFigure,
         dfrc['g'] = df.iloc[:, 1].values
         dfrc['t'] = df.iloc[:, 0].values
         df = dfrc
+
+    #print(df)
 
     w = letter_width * df.shape[0]
 

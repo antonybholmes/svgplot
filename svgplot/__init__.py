@@ -24,4 +24,5 @@ from .genes import *
 from .coo import *
 from .motifs import *
 from .singlecell import *
+from .survival import *
 from .pathway import *

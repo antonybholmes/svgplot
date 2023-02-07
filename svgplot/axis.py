@@ -32,7 +32,7 @@ def _calc_linear_scale(lim: tuple[float, float] = [0, 1], ticks=6):
 class Axis:
     def __init__(self,
                  lim: tuple[Union[int, float], Union[int, float]] = (0, 100),
-                 label: str = '',
+                 label: Optional[str] = None,
                  ticks: Optional[list[Union[int, float]]] = None,
                  ticklabels: Optional[list[Union[str, int, float]]] = None,
                  w: int = 100):
@@ -51,7 +51,7 @@ class Axis:
         else:
             self._ticks.extend(lim)
 
-        self._ticks = np.array(self._ticks)
+        
 
         if isinstance(ticklabels, list) or isinstance(ticklabels, np.ndarray):
             self._ticklabels.extend(ticklabels)
@@ -61,10 +61,13 @@ class Axis:
             # if self._ticks.size > 1:
             #     self._ticklabels.append(self._ticks[-1])
 
+            print('hgh', self._ticks)
             self._ticklabels.extend(self._ticks)
 
+        self._ticks = np.array(self._ticks)
         self._ticklabels = np.array(self._ticklabels)
 
+        print(self._ticklabels)
         
 
     @property
@@ -105,7 +108,7 @@ class Axis:
             self._ticklabels = np.array(ticklabels)
 
     @property
-    def label(self) -> str:
+    def label(self) -> Optional[str]:
         return self._label
 
     @label.setter
@@ -141,3 +144,7 @@ def create_axis(axis: Optional[Union[Axis, tuple[float, float]]],
         return auto_axis(lim=axis, w=w, label=label)
     else:
         return auto_axis(w=w, label=label)
+
+
+def get_pc_axis(w:int, label:str='%'):
+    return Axis(lim=[0, 100], ticks=list(range(0, 120, 20)), label=label, w=w)

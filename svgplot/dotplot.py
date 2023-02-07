@@ -324,6 +324,8 @@ def add_dot_plot(svg: SVGFigure,
         #    svg.add_text_bb(gene, x1+label_offset, y1, color=row_color)
         #    y1 += gap[1]
 
+    w, h = x1 - gap[0]/2, y1
+
     y1 += 50
 
     x1 = x
@@ -360,7 +362,7 @@ def add_dot_plot(svg: SVGFigure,
     df_frac = pd.concat(tables, axis=1)
     df_frac.round(2).to_csv(frac_file, sep='\t', header=True, index=True)
 
-    return df_exp
+    return {'w':w, 'h':h, 'exp':df_exp}
 
 
 def add_dot_plot_legend(svg: SVGFigure,

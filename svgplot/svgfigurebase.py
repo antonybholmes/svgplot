@@ -183,7 +183,7 @@ class SVGFigureBase:
     def scale(self, elem=None, x: float = 1, y: float = 1, css: Optional[Mapping[str, str]] = None) -> None:
         css = self.css_map(css)
 
-        #print(x, y)
+        print(x, y)
 
         g = self._svg.g(transform=self.format_scale(x, y),
                         style=core.format_css_params(css))

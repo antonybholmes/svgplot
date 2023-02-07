@@ -230,6 +230,10 @@ def add_x_axis(svg,
     if minortickstroke is None:
         minortickstroke = stroke
 
+    if label is None:
+        if axis.label is not None:
+            label = axis.label
+
     # if smallfont:
     #    svg.set_font_size(FIGURE_FONT_SIZE)
 
