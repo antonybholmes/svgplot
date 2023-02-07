@@ -1,11 +1,12 @@
 from typing import Optional, Union
+from collections.abc import Iterable
 import numpy as np
 
-def _calc_linear_scale(lim: tuple[float, float] = [0, 1], ticks=6):
+
+def _calc_linear_scale(lim: tuple[Union[int, float], Union[int, float]] = [0, 1], ticks=6):
     if lim[0] == lim[1]:
         lim[0] -= 10
         lim[1] += 10
-
 
     range = lim[1] - lim[0]
 
@@ -14,10 +15,10 @@ def _calc_linear_scale(lim: tuple[float, float] = [0, 1], ticks=6):
     if ticks > 2:
         ticks -= 1
 
-    tempStep = range/(ticks - 1)
-    #Calculate pretty step value
+    tempStep = range / (ticks - 1)
+    # Calculate pretty step value
     mag = np.floor(np.log10(tempStep))
-    magPow = np.power(10,mag)
+    magPow = np.power(10, mag)
     magMsd = (int)(tempStep/magPow + 0.5)
     stepSize = magMsd*magPow
     upper = stepSize * np.ceil(1 + lim[1] / stepSize)
@@ -25,18 +26,13 @@ def _calc_linear_scale(lim: tuple[float, float] = [0, 1], ticks=6):
     return (lower, upper)
 
 
-
-
-
-
 class Axis:
     def __init__(self,
                  lim: tuple[Union[int, float], Union[int, float]] = (0, 100),
-                 label: Optional[str] = None,
-                 ticks: Optional[list[Union[int, float]]] = None,
-                 ticklabels: Optional[list[Union[str, int, float]]] = None,
+                 label: str = '',
+                 ticks: Optional[Iterable[Union[int, float]]] = None,
+                 ticklabels: Optional[Iterable[Union[str, int, float]]] = None,
                  w: int = 100):
-        
 
         self._lim = lim
         self._range = self._lim[1] - self._lim[0]
@@ -45,30 +41,19 @@ class Axis:
         self._ticks = []
         self._ticklabels = []
         self._w = w
-        
-        if isinstance(ticks, list) or isinstance(ticks, np.ndarray):
+
+        if isinstance(ticks, Iterable):
             self._ticks.extend(ticks)
         else:
             self._ticks.extend(lim)
 
-        
-
-        if isinstance(ticklabels, list) or isinstance(ticklabels, np.ndarray):
+        if isinstance(ticklabels, Iterable):
             self._ticklabels.extend(ticklabels)
         else:
-            # if self._ticks.size > 0:
-            #     self._ticklabels.append(self._ticks[0])
-            # if self._ticks.size > 1:
-            #     self._ticklabels.append(self._ticks[-1])
-
-            print('hgh', self._ticks)
             self._ticklabels.extend(self._ticks)
 
         self._ticks = np.array(self._ticks)
         self._ticklabels = np.array(self._ticklabels)
-
-        print(self._ticklabels)
-        
 
     @property
     def scale_factor(self) -> Union[int, float]:
@@ -91,7 +76,7 @@ class Axis:
         return self._lim
 
     @property
-    def ticks(self) -> list[Union[int, float]]:
+    def ticks(self) -> np.ndarray[Union[int, float]]:
         return self._ticks
 
     @ticks.setter
@@ -99,16 +84,16 @@ class Axis:
         self._ticks = ticks
 
     @property
-    def ticklabels(self) -> list[str]:
+    def ticklabels(self) -> np.ndarray[Union[str, int, float]]:
         return self._ticklabels
 
     @ticklabels.setter
-    def ticklabels(self, ticklabels: list[Union[int, float, str]]):
-        if isinstance(ticklabels, list) or isinstance(ticklabels, np.ndarray):
+    def ticklabels(self, ticklabels: Iterable[Union[str, int, float]]):
+        if isinstance(ticklabels, Iterable):
             self._ticklabels = np.array(ticklabels)
 
     @property
-    def label(self) -> Optional[str]:
+    def label(self) -> str:
         return self._label
 
     @label.setter
@@ -128,16 +113,17 @@ class Axis:
         return self.scale(x, clip=True)
 
 
-def auto_axis(lim: tuple[float, float] = [0, 1], label: str = '', ticks: int =6, dp: int = 2, w: int = 100):
+def auto_axis(lim: tuple[float, float] = [0, 1], label: str = '', ticks: int = 6, dp: int = 2, w: int = 100):
     lower, upper = _calc_linear_scale(lim, ticks=ticks)
     ticks = [np.round(x, dp) for x in np.linspace(lower, upper, ticks)]
 
     return Axis(lim=[lower, upper], ticks=ticks, label=label, w=w)
 
-def create_axis(axis: Optional[Union[Axis, tuple[float, float]]], 
-        w: int = 100,
-        label: str = ''
-        ) -> Axis:
+
+def create_axis(axis: Optional[Union[Axis, tuple[float, float]]],
+                w: int = 100,
+                label: str = ''
+                ) -> Axis:
     if isinstance(axis, Axis):
         return axis
     elif isinstance(axis, tuple):
@@ -146,5 +132,15 @@ def create_axis(axis: Optional[Union[Axis, tuple[float, float]]],
         return auto_axis(w=w, label=label)
 
 
-def get_pc_axis(w:int, label:str='%'):
-    return Axis(lim=[0, 100], ticks=list(range(0, 120, 20)), label=label, w=w)
+def get_pc_axis(w: int, label: str = '%') -> Axis:
+    """
+    Creates a percentage access from 0 to 100%.
+
+    Args:
+        w (int): width of axis
+        label (str, optional): Name of axis (for labelling). Defaults to '%'.
+
+    Returns:
+        Axis: an axis.
+    """
+    return Axis(lim=[0, 100], ticks=range(0, 120, 20), label=label, w=w)

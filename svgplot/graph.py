@@ -1,4 +1,5 @@
 from typing import Mapping, Optional, Union, Any
+from collections.abc import Iterable
 from .axis import Axis
 from .svgfigure import SVGFigure
 from . import svgfiguredraw
@@ -201,26 +202,26 @@ def add_axes(svg: SVGFigure,
 
 
 def add_x_axis(svg,
-               pos: tuple[float, float] = (0, 0),
+               pos: tuple[Union[int, float], Union[int, float]] = (0, 0),
                axis: Axis = Axis(lim=[0, 100], w=200, ticks=[
                                  0, 20, 40, 60, 80, 100]),
-               ticks=None,
-               ticklabels=None,
-               label=None,
-               padding=TICK_SIZE,
-               showticks=True,
-               inside=False,
-               showline=True,
-               minorticks=None,
-               ticksize=TICK_SIZE,
-               minorticksize=MINOR_TICK_SIZE,
-               stroke=AXIS_STROKE,
-               tickstroke=None,
-               minortickstroke=None,
-               invert=False,
-               showlabel=True,
-               title_offset=None,
-               label_pos='center'):
+               ticks: Optional[Iterable[Union[int, float]]] = None,
+               ticklabels: Optional[Iterable[Union[str, int, float]]] = None,
+               label: Optional[str] = None,
+               padding: int = TICK_SIZE,
+               showticks: bool = True,
+               inside: bool = False,
+               showline: bool = True,
+               minorticks: Optional[Iterable[Union[int, float]]] = None,
+               ticksize: int = TICK_SIZE,
+               minorticksize: int = MINOR_TICK_SIZE,
+               stroke: int = AXIS_STROKE,
+               tickstroke: Optional[int] = None,
+               minortickstroke: Optional[int] = None,
+               invert: bool = False,
+               showlabel: bool = True,
+               title_offset: Optional[int] = None,
+               label_pos: str = 'center'):
 
     x, y = pos
 
@@ -231,8 +232,7 @@ def add_x_axis(svg,
         minortickstroke = stroke
 
     if label is None:
-        if axis.label is not None:
-            label = axis.label
+        label = axis.label
 
     # if smallfont:
     #    svg.set_font_size(FIGURE_FONT_SIZE)
@@ -313,7 +313,7 @@ def add_x_axis(svg,
                     svg.add_line(x1=tickx, y1=y, x2=tickx, y2=y +
                                  minorticksize, stroke=minortickstroke)
 
-    if showlabel and isinstance(label, str):
+    if showlabel and isinstance(label, str) and label != "":
         if title_offset is None:
             if showticks:
                 title_offset = 2*padding+2*svg.get_font_h()
@@ -334,18 +334,18 @@ def add_x_axis(svg,
 
 
 def add_y_axis(svg,
-               pos: tuple[float, float] = (0, 0),
+               pos: tuple[Union[int, float], Union[int, float]] = (0, 0),
                axis: Axis = Axis(lim=[0, 100], w=200),
-               ticks: Optional[list[float]] = None,
-               ticklabels: Optional[list[Any]] = None,
-               label: str = None,
+               ticks: Optional[Iterable[Union[int, float]]] = None,
+               ticklabels: Optional[Iterable[Union[str, int, float]]] = None,
+               label: Optional[str] = None,
                padding: int = TICK_SIZE,
                showticks: bool = True,
                inside: bool = False,
                showline: bool = True,
                side: str = 'l',
                stroke: int = AXIS_STROKE,
-               minorticks: Optional[list[float]] = None,
+               minorticks: Optional[Iterable[Union[int, float]]] = None,
                ticksize: int = TICK_SIZE,
                tickstroke: Optional[int] = None,
                minorticksize: int = MINOR_TICK_SIZE,
@@ -464,7 +464,7 @@ def add_y_axis(svg,
                         svg.add_line(x1=x-minorticksize, y1=ticky,
                                      x2=x, y2=ticky, stroke=minortickstroke)
 
-    if showlabel and isinstance(label, str):
+    if showlabel and isinstance(label, str) and label != "":
         if title_offset is None:
             title_offset = max(80, mw + 20 + 4 * padding)
 
@@ -484,12 +484,12 @@ def add_y_percent_axis(svg,
                        pos: tuple[float, float] = (0, 0),
                        ticks=[0, 20, 40, 60, 80, 100],
                        minorticks=None,  # range(5, 100, 5),
-                       label: str = None):
+                       label: str = ''):
     add_y_axis(svg,
                axis=axis,
                pos=pos,
                ticks=ticks,
                label=label + ' (%)',
                # ['0%', '20%', '40%', '60%', '80%', '100%'],
-               ticklabels=[0, 20, 40, 60, 80, 100],
+               ticklabels=ticks,
                minorticks=minorticks)
