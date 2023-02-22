@@ -24,14 +24,14 @@ def _get_fill_kws(kws: Mapping[str, Union[int, float, bool, str]]) -> dict[str, 
 
 def _get_default_x_kws(kws: Mapping[str, Union[int, float, bool, str]] = {}) -> Mapping[str, Union[int, float, bool, str]]:
     ret = {'show': True, 'label': True, 'stroke': 3, 'title_offset': 70,
-           'clip': False, 'label_pos': 'c', 'invert': False}
+           'clip': True, 'label_pos': 'c', 'invert': False}
     ret.update(kws)
     return ret
 
 
 def _get_default_y_kws(kws: Mapping[str, Union[int, float, bool, str]] = {}) -> Mapping[str, Union[int, float, bool, str]]:
     ret = {'show': True, 'label': True, 'stroke': 3, 'title_offset': 120,
-           'clip': False, 'label_pos': 'c', 'invert': False}
+           'clip': True, 'label_pos': 'c', 'invert': False}
     ret.update(kws)
     return ret
 
@@ -39,92 +39,6 @@ def _get_default_y_kws(kws: Mapping[str, Union[int, float, bool, str]] = {}) -> 
 def _get_default_axes_kws(xaxis_kws: Mapping[str, Union[int, float, bool, str]] = {},
                           yaxis_kws: Mapping[str, Union[int, float, bool, str]] = {}) -> list[Mapping[str, Union[int, float, bool, str]]]:
     return (_get_default_x_kws(xaxis_kws), _get_default_y_kws(yaxis_kws))
-
-
-def add_pie_chart(svg: SVGFigure,
-                  values: list[float],
-                  colors: list[str] = None,
-                  labels: list[str] = None,
-                  labelcolors='white',
-                  labelradius=0.5,
-                  edgecolor='black',
-                  pos: tuple[float, float] = (0, 0),
-                  r: int = 150,
-                  labelrmap={},
-                  stroke=2):
-    x, y = pos
-
-    if colors is None:
-        colors = ['blue']
-
-    if labels is not None:
-        labels = np.array(labels)
-
-    if isinstance(labelcolors, str):
-        labelcolors = [labelcolors]
-
-    labelcolors = np.array(labelcolors)
-
-    colors = np.array(colors)
-
-    fracs = np.array(values)
-    fracs = fracs / fracs.sum()
-
-    angle1 = 0
-    angle2 = 0
-    labelradius = r * labelradius
-
-    for i in range(0, fracs.size):
-        f = fracs[i]
-        angle2 = round(360 * f)
-
-        # svgplot.rgbtohex(colors[i % colors.size])
-        col = colors[i % colors.size]
-
-        svg.add_arc(x=x, y=y, w=r*2, h=r*2, angle1=angle1,
-                    angle2=angle2, fill=col, color=edgecolor, stroke=stroke)
-
-        angle3 = (angle1 + angle2) / 2
-        angle3 = angle3 / 360 * svgfiguredraw.TWO_PI_RADS
-
-        angle1 += angle2
-
-        # break
-
-    if labels is not None:
-        angle1 = 0
-        angle2 = 0
-
-        for i in range(0, fracs.size):
-            f = fracs[i]
-            angle2 = round(360 * f)
-
-            angle3 = angle1 + angle2 / 2
-
-            angle4 = angle3 / 360 * svgfiguredraw.TWO_PI_RADS
-
-            lr = labelradius
-
-            if i in labelrmap:
-                lr *= labelrmap[i]
-
-            if angle3 > 270:
-                x1 = x + lr * math.sin(angle4)
-                y1 = y - lr * math.cos(angle4)
-            elif angle3 > 180:
-                x1 = x + lr * math.sin(angle4)
-                y1 = y - lr * math.cos(angle4)
-            elif angle3 > 90:
-                x1 = x + lr * math.sin(angle4)
-                y1 = y - lr * math.cos(angle4)
-            else:
-                x1 = x + lr * math.sin(angle4)
-                y1 = y - lr * math.cos(angle4)
-
-            svg.add_text_bb(labels[i % labels.size], x=x1, y=y1,
-                            align='c', color=labelcolors[i % labelcolors.size])
-
-            angle1 += angle2
 
 
 def add_axes(svg: SVGFigure,
@@ -135,32 +49,10 @@ def add_axes(svg: SVGFigure,
              yaxis_kws: Optional[Union[bool, str, Mapping[str, Union[int, float, str, bool]]]] = None) -> None:
     x, y = pos
 
-    if axes is None:
-        axes = (Axis(lim=(0, 100), w=200), Axis(lim=(0, 100), w=200))
-
-    xaxis = axes[0]
-    yaxis = axes[1]
+    xaxis, yaxis = axes
 
     # set some defaults
     _show_axes = _get_default_axes_kws(xaxis_kws, yaxis_kws)
-
-    if isinstance(xaxis_kws, dict):
-        _show_axes[0].update(xaxis_kws)
-    elif isinstance(xaxis_kws, bool):
-        _show_axes[0]['show'] = xaxis_kws
-    elif isinstance(xaxis_kws, str):
-        _show_axes[0]['show'] = 'show' in xaxis_kws[0]
-    else:
-        pass
-
-    if isinstance(yaxis_kws, dict):
-        _show_axes[1].update(yaxis_kws)
-    elif isinstance(yaxis_kws, bool):
-        _show_axes[1]['show'] = yaxis_kws
-    elif isinstance(yaxis_kws, str):
-        _show_axes[1]['show'] = 'show' in yaxis_kws[0]
-    else:
-        pass
 
     if _show_axes[0]['show']:
         y1 = y
@@ -398,6 +290,7 @@ def add_y_axis(svg,
         else:
             ticky = y + axis.w - axis.scale(tick)
 
+        print(i, ticklabels)
         ticklabel = ticklabels[i]
 
         if not isinstance(ticklabel, str):

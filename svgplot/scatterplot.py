@@ -24,23 +24,28 @@ def add_scatterplot(svg: SVGFigure,
                   axes: tuple[axis.Axis, axis.Axis] = None,
                   xaxis_kws: Mapping[str, Union[int, float, str, bool]] = {},
                   yaxis_kws: Mapping[str, Union[int, float, str, bool]] = {},
-                  show_legend: bool = False):
-    
-
-    if hue is None:
-        hue = np.array([''] * data.shape[0])
+                  show_legend: bool = False,
+                  outline: bool = False):
 
     if isinstance(hue, str):
         if hue == '.index':
             hue = data.index.values
         else:
             hue = data[hue].values
+    
+    if hue is None:
+        hue = [''] * data.shape[0]
+
+    hue = np.array(hue)
 
     if len(hue_order) == 0:
         hue_order = np.array(sorted(set(hue)))
 
     hue_idx = {}
     for ho in hue_order:
+        print(ho)
+        print(hue)
+        print([i for i in range(hue.size) if ho in hue[i]])
         hue_idx[ho] = np.array([i for i in range(hue.size) if ho in hue[i]]) #np.where(hue == ho)[0])
  
     
@@ -76,6 +81,8 @@ def add_scatterplot(svg: SVGFigure,
     if axes is None:
         xaxis = axis.auto_axis(lim=[data[x].min(), data[x].max()], w=dim[0], label=x)
         yaxis = axis.auto_axis(lim=[data[y].min(), data[y].max()], w=dim[1], label=y)
+    else:
+        xaxis, yaxis = axes
 
 
     # set some axis display props
@@ -102,8 +109,12 @@ def add_scatterplot(svg: SVGFigure,
 
         points = np.array(points)
 
+        print('ho', ho, colors[ho])
         for i, p in enumerate(points):
             svg.add_circle(x=p[0], y=p[1], w=sizes[ho], fill=colors[ho])
+
+            if outline:
+                svg.add_circle(x=p[0], y=p[1], w=sizes[ho], color='black')
 
     # label axes
 

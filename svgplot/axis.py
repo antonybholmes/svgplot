@@ -32,7 +32,7 @@ class Axis:
                  label: str = '',
                  ticks: Optional[Iterable[Union[int, float]]] = None,
                  ticklabels: Optional[Iterable[Union[str, int, float]]] = None,
-                 w: int = 100):
+                 w: int = 500):
 
         self._lim = lim
         self._range = self._lim[1] - self._lim[0]

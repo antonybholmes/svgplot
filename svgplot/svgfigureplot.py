@@ -354,19 +354,28 @@ class SVGFigurePlot(SVGFigureDraw):
 
 
     def dot_plot_legend(self,
-                        x=0,
-                        y=0,
-                        fraction_groups=[0.25, 0.5, 0.75, 1],
-                        dot_sizes=[8, 30],
+                        pos:tuple[int, int] = (0, 0),
+                        sizes:Optional[list[float]] = None,
+                        labels:Optional[list[str]] = None,
                         linecolor='black'):
 
-        x1 = x
+        x1, y = pos
 
-        for f in fraction_groups:
-            dot_size = max(dot_sizes[0], f * dot_sizes[1])
+        if sizes is None:
+            sizes = [max(8, f * 30) for f in [0.25, 0.5, 0.75, 1]]
+
+        sizes = np.array(sizes)
+
+        if labels is None:
+            labels = [f'{int(f * 100)}%' for f in [0.25, 0.5, 0.75, 1]]
+
+        labels = np.array(labels)
+
+        for i, s in enumerate(sizes):
+            dot_size = s
             self.add_circle(x1, y, dot_size, fill='gray', color=linecolor)
-            self.add_text_bb('{}%'.format(int(f * 100)), x1,
-                             y+dot_sizes[1]+10, align='c')
+            self.add_text_bb(labels[i], x1,
+                             y+sizes.max()+10, align='c')
             x1 += 90
 
         # self.set_font_size(core.DEFAULT_FONT_SIZE)
@@ -412,7 +421,6 @@ class SVGFigurePlot(SVGFigureDraw):
         xaxis = Axis(lim=xlim, w=w)
         yaxis = Axis(lim=ylim, w=h)
 
-        # leading edge
         points = [
             [xoffset + xaxis.scale(d[0]), y + h - yaxis.scale(d[1])] for d in data]
         self.add_polyline(points, color=color,

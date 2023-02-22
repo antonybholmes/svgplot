@@ -16,7 +16,6 @@ from .graph import *
 from .legend import *
 from .bar import *
 from .hatch import *
-from .linegraph import *
 from .scatterplot import *
 from .dotplot import *
 from .gsea import *
@@ -26,3 +25,6 @@ from .motifs import *
 from .singlecell import *
 from .survival import *
 from .pathway import *
+from .pie import *
+from .histplot import *
+from .lineplot import *
