@@ -26,7 +26,7 @@ def add_hatch(svg: SVGFigure,
               hatch='solid',
               color='gray',
               dh=[50, 20],
-              id: str = '',
+              id: Optional[str] = None,
               frame=False):
 
     y1 = y
@@ -34,10 +34,8 @@ def add_hatch(svg: SVGFigure,
     x1 = x
     x2 = x + w
 
-    if id == '':
+    if id is None:
         id = get_rand_id()
-
-    print(id)
 
     match hatch:
         case 'x':
@@ -81,5 +79,5 @@ def add_hatch(svg: SVGFigure,
         case _:
             svg.add_rect(x1, y1, w, h, fill=color)
 
-    if frame: 
-      svg.add_rect(x1, y1, w, h, color='black')
+    if frame:
+        svg.add_rect(x1, y1, w, h, color='black')

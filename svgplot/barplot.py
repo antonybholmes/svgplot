@@ -9,26 +9,27 @@ from . import hatch as phatch
 from enum import Enum
 import pandas
 
+
 def add_barplot(svg: SVGFigure,
-                data:pandas.DataFrame,
-                x:str='x',
-                y:str='y',
-                hue:Optional[str] = None,
-                order:Optional[list[str]] = None,
-                hue_order:Optional[list[str]] = None,
-                x_palette:dict[str, str] = {},
-                hue_palette:dict[str, str] = {},
-                pos:tuple[int, int] = (0, 0),
+                data: pandas.DataFrame,
+                x: str = 'x',
+                y: str = 'y',
+                hue: Optional[str] = None,
+                order: Optional[list[str]] = None,
+                hue_order: Optional[list[str]] = None,
+                x_palette: dict[str, str] = {},
+                palette: dict[str, str] = {},
+                pos: tuple[int, int] = (0, 0),
                 height=400,
                 bar_width=60,
-                x_gap:int=10,
-                hue_gap:int=0,
+                x_gap: int = 10,
+                hue_gap: int = 0,
                 bar_color='#cccccc',
                 ylim=[0, 100],
                 yticks=[0, 50, 100],
                 xlabel='',
                 ylabel='% cells',
-                rename:dict[str, str] = {}):
+                rename: dict[str, str] = {}):
 
     xp, yp = pos
 
@@ -40,86 +41,101 @@ def add_barplot(svg: SVGFigure,
 
     y2 = yp + height
 
+    if x is None:
+        x = ''
+
+    if y is None:
+        y = ''
+        
     if order is None:
-      order = sorted(data[x].unique())
+        if x != '':
+            order = sorted(data[x].unique())
+        else:
+            order = ['']
 
     order = np.array(order)
 
     if hue is None:
-        hue = x
-        hue_order = ['']
- 
+        hue = ''
+
     if hue_order is None:
-      hue_order = order #sorted(data[hue].unique())
+        hue_order = ['']  # sorted(data[hue].unique())
 
     hue_order = np.array(hue_order)
-
-
-
 
     # draw bars
 
     x1 = xp
 
     for xo in order:
-      print('xo', xo)
-      dfx = data[data[x] == xo]
+        print('xo', xo)
 
-      color = ''
-      hatch = 'solid'
-
-      
-      if xo in x_palette:
-        p = x_palette[xo]
-        if ':' in p:
-          color, hatch = p.split(':')[0:2]
+        if x != '':
+            dfx = data[data[x] == xo]
         else:
-          color = p
-      
-      w = len(hue_order) * bar_width + (len(hue_order) - 1) * hue_gap
+            dfx = data
 
-      svg.add_text_bb(rename.get(xo, xo), x=x1+w/2, y=y2, orientation='v', align='r')
+        color = ''
+        hatch = 'solid'
 
-      for ho in hue_order:
-        if ho != '':
-          dfh = dfx[dfx[hue] == ho]
-        else:
-          dfh = dfx
+        if xo in x_palette:
+            p = x_palette[xo]
+            if ':' in p:
+                color, hatch = p.split(':')[0:2]
+            else:
+                color = p
 
-        mean = dfh[y].mean()
-        sd = dfh[y].std()
+        w = len(hue_order) * bar_width + (len(hue_order) - 1) * hue_gap
 
-        h = yaxis.scale(mean)
-        sdh = yaxis.scale(sd)
-        h1 = h - sdh
-        h2 = h + sdh
+        svg.add_text_bb(rename.get(xo, xo), x=x1+w/2,
+                        y=y2, orientation='v', align='r')
 
-        if ho in hue_palette:
-          p = hue_palette[ho]
+        for ho in hue_order:
+            if ho != '':
+                dfh = dfx[dfx[hue] == ho]
+            else:
+                dfh = dfx
 
-          if ':' in p:
-            c1, hatch = p.split(':')[0:2]
-          else:
-            c1 = p
+            if y != '':
+                yd = dfh[y].values
+            else:
+                yd = dfh.iloc[:, 0].values
 
-          if c1 != '':
-            color = c1
+            mean = yd.mean()
+            sd = yd.std()
 
-          if color == '':
-            color = bar_color
+            h = yaxis.scale(mean)
+            sdh = yaxis.scale(sd)
+            h1 = h - sdh
+            h2 = h + sdh
 
-        y1 = y2 - h
+            if ho in palette:
+                p = palette[ho]
 
-        phatch.add_hatch(svg, x1, y1, bar_width, h, hatch=hatch, color=color)
+                if ':' in p:
+                    c1, hatch = p.split(':')[0:2]
+                else:
+                    c1 = p
 
-        svg.add_rect(x1, y1, bar_width, h, color='black')
+                if c1 != '':
+                    color = c1
 
-        x1 += bar_width + hue_gap
-      
-      x1 += x_gap
+                if color == '':
+                    color = bar_color
 
-    graph.add_y_axis(svg, axis=yaxis, pos=(xp - x_gap, yp), ticks=yticks, label=ylabel)
+            y1 = y2 - h
 
+            phatch.add_hatch(svg, x1, y1, bar_width, h,
+                             hatch=hatch, color=color)
+
+            svg.add_rect(x1, y1, bar_width, h, color='black')
+
+            x1 += bar_width + hue_gap
+
+        x1 += x_gap
+
+    graph.add_y_axis(svg, axis=yaxis, pos=(
+        xp - x_gap, yp), ticks=yticks, label=ylabel)
 
 
 def add_stacked_bar(svg: SVGFigure,
