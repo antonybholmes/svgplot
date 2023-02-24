@@ -12,6 +12,7 @@ from .boxplot import *
 from .swarm import *
 from .cluster import *
 from .colorbar import *
+from .colormap import *
 from .graph import *
 from .legend import *
 from .barplot import *
