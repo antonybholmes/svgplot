@@ -29,3 +29,4 @@ from .pathway import *
 from .pie import *
 from .histplot import *
 from .lineplot import *
+from .venn import *

@@ -46,7 +46,7 @@ def add_scatterplot(svg: SVGFigure,
         print(ho)
         print(hue)
         print([i for i in range(hue.size) if ho in hue[i]])
-        hue_idx[ho] = np.array([i for i in range(hue.size) if ho in hue[i]]) #np.where(hue == ho)[0])
+        hue_idx[ho] = np.array([i for i in range(hue.size) if ho == hue[i]]) #np.where(hue == ho)[0])
  
     
 
@@ -89,7 +89,9 @@ def add_scatterplot(svg: SVGFigure,
     _show_axes = graph._get_default_axes_kws(xaxis_kws, yaxis_kws)
     
     for ho in hue_order:
+        
         idx = hue_idx[ho]
+        print('oh', ho, idx)
         d_x = data[x].values[idx]
         d_y = data[y].values[idx]
 
@@ -109,7 +111,7 @@ def add_scatterplot(svg: SVGFigure,
 
         points = np.array(points)
 
-        print('ho', ho, colors[ho])
+
         for i, p in enumerate(points):
             svg.add_circle(x=p[0], y=p[1], w=sizes[ho], fill=colors[ho])
 

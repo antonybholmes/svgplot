@@ -119,8 +119,7 @@ def add_lineplot(svg: SVGFigure,
 
         if ho in palette:
             color = palette[ho]
-        else:
-            color = 'black'
+
                 
         svg.add_polyline(points, color=color, stroke=stroke,
                          fill=fill, fill_opacity=fill_opacity)

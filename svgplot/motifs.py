@@ -12,9 +12,11 @@ BASE_COLORS = {'A': 'mediumseagreen', 'G': 'orange',
                'C': 'royalblue', 'T': 'red'}
 
 # tweak letters to appear the same height
-Y_SCALE_FACTORS = {'A': 1.04, 'C': 1, 'G': 1, 'T': 1.04}
+Y_SCALE_FACTORS = {'A': 1.02, 'C': 1, 'G': 1, 'T': 1.02}
 H = 100
 
+# scale around this letter size
+LW = 48
 
 IC_TOTAL = 2
 
@@ -29,7 +31,7 @@ class TitlePos(Enum):
     RIGHT = 2
 
 
-def plot_homer_motifs_by_range(svg: SVGFigure,
+def add_homer_motifs_by_range(svg: SVGFigure,
                                ids: list[int],
                                mode: Mode = Mode.BITS,
                                rev_comp=False,
@@ -44,12 +46,12 @@ def plot_homer_motifs_by_range(svg: SVGFigure,
     y1 = y
 
     for i in ids:
-        plot_homer_motif(svg, f'{prefix}{i}.motif', mode=mode, rev_comp=rev_comp, pos=(
+        add_homer_motif(svg, f'{prefix}{i}.motif', mode=mode, rev_comp=rev_comp, pos=(
             x, y1), height=height, letter_width=letter_width, title_pos=title_pos)
         y1 += offset
 
 
-def plot_homer_motif(svg: SVGFigure,
+def add_homer_motif(svg: SVGFigure,
                      file: str,
                      mode: Mode = Mode.PROB,
                      rev_comp=False,
@@ -59,7 +61,8 @@ def plot_homer_motif(svg: SVGFigure,
                      letter_width: int = 48):
     x, y = pos
 
-    scale_factor = height / H
+    x_scale_factor = letter_width / LW
+    y_scale_factor = height / H
 
     
     rc = 1
@@ -88,9 +91,9 @@ def plot_homer_motif(svg: SVGFigure,
 
     match title_pos:
         case TitlePos.TOP:
-            svg.add_text_bb(name, x=letter_width*df.shape[0]/2, y=y-40, align='c')
+            svg.add_text_bb(name, x=x+letter_width*df.shape[0]/2, y=y-20, align='c')
         case TitlePos.RIGHT:
-            svg.add_text_bb(name, x=w + 50, y=y+height/2)
+            svg.add_text_bb(name, x=x+w+50, y=y+height/2)
         case _:
             pass
 
@@ -99,7 +102,7 @@ def plot_homer_motif(svg: SVGFigure,
 
     if mode == Mode.BITS:
         svgplot.add_y_axis(svg, pos=(x, y), axis=svgplot.Axis(lim=[0, 2], ticks=[
-            0, 1, 2], w=height, label='Bits'))
+            0, 2], w=height, label='Bits'), title_offset=60)
         
     else:
         svgplot.add_y_axis(svg, pos=(x, y), axis=svgplot.Axis(lim=[0, 1], ticks=[
@@ -111,8 +114,9 @@ def plot_homer_motif(svg: SVGFigure,
         if mode == Mode.BITS:
             U = 0
             for c in idx:
-                p = df.iloc[r, c]
-                U += p * np.log2(p)
+                p = df.iloc[r, c] #1 if c == r else 0 #
+                if p > 0:
+                    U += p * np.log2(p)
 
             U = -U
 
@@ -123,16 +127,16 @@ def plot_homer_motif(svg: SVGFigure,
         ic_frac = ic_final / IC_TOTAL
 
         y1 = y + height
+
         for c in idx:
             base = BASE_IDS[c]
             color = BASE_COLORS[base]
-            p = df.iloc[r, c]
+            p = df.iloc[r, c] # 1 if c == r else 0  
 
-            scale = p * 2 * ic_frac * scale_factor * Y_SCALE_FACTORS[base]
+            y_scale = p * 2 * ic_frac * y_scale_factor * Y_SCALE_FACTORS[base]
             h = p * ic_frac * height
-            t = svg.text(base, weight='bold', css={
-                'fill': color, 'font-size': '70'})
-            t = svg.scale(t, y=scale)
+            t = svg.text(base, weight='bold', css={'fill': color, 'font-size': '70'})
+            t = svg.scale(t, x=x_scale_factor, y=y_scale)
             t = svg.trans(t, x=x, y=y1)
             svg.add(t)
 

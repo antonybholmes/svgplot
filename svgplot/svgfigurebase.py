@@ -183,7 +183,7 @@ class SVGFigureBase:
     def scale(self, elem=None, x: float = 1, y: float = 1, css: Optional[Mapping[str, str]] = None) -> None:
         css = self.css_map(css)
 
-        print(x, y)
+        #print(x, y)
 
         g = self._svg.g(transform=self.format_scale(x, y),
                         style=core.format_css_params(css))
@@ -227,6 +227,9 @@ class SVGFigureBase:
 
     def set_font_size(self, size: int) -> None:
         self._font_size = size
+
+    def set_default_font_size(self) -> None:
+        self.set_font_size(core.DEFAULT_FONT_SIZE)
 
     def set_heading_font_size(self, size: int) -> None:
         self._heading_font_size = size
@@ -484,7 +487,7 @@ class SVGFigureBase:
         align = align.lower()
         orientation = orientation.lower()
 
-        y1 = self.get_font_y(y, h, size=size, weight=weight)
+        y1 = self.get_font_y(y, h, size=size, weight=weight, family=family)
 
         match orientation:
             case 'v':
@@ -507,6 +510,7 @@ class SVGFigureBase:
                                       color=color,
                                       size=size,
                                       weight=weight,
+                                      family=family,
                                       rotate=-90)
                     case _:
                         self.add_text(label,
@@ -515,9 +519,10 @@ class SVGFigureBase:
                                       color=color,
                                       size=size,
                                       weight=weight,
+                                      family=family,
                                       rotate=-90)
             case 'a':
-                x = self.get_font_y(x, w, size=size, weight=weight)
+                x = self.get_font_y(x, w, size=size, weight=weight,family=family)
 
                 self.add_text(label,
                               x=x,
@@ -525,6 +530,7 @@ class SVGFigureBase:
                               color=color,
                               size=size,
                               weight=weight,
+                              family=family,
                               rotate=-45)
             case _:
                 if align == 'r':
@@ -538,7 +544,8 @@ class SVGFigureBase:
                                   y=y1,
                                   size=size,
                                   color=color,
-                                  weight=weight)
+                                  weight=weight,
+                                  family=family)
 
                     #self.add_frame(x-sw1, y-self.get_font_h(), sw1, self.get_font_h(), color='red')
                 else:
@@ -549,14 +556,16 @@ class SVGFigureBase:
                                                      x,
                                                      w,
                                                      size=size,
-                                                     weight=weight)
+                                                     weight=weight,
+                                                     family=family)
 
                     self.add_text(label,
                                   x=x1,
                                   y=y1,
                                   color=color,
                                   size=size,
-                                  weight=weight)
+                                  weight=weight,
+                                  family=family)
 
                     #self.add_frame(x-20, y-self.get_font_h(), sw1, self.get_font_h(), color='red')
 

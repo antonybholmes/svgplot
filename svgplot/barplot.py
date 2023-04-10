@@ -75,7 +75,7 @@ def add_barplot(svg: SVGFigure,
         else:
             dfx = data
 
-        color = ''
+        color = bar_color
         hatch = 'solid'
 
         if xo in x_palette:
@@ -119,9 +119,6 @@ def add_barplot(svg: SVGFigure,
 
                 if c1 != '':
                     color = c1
-
-                if color == '':
-                    color = bar_color
 
             y1 = y2 - h
 
