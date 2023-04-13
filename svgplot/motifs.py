@@ -25,6 +25,9 @@ class Mode(Enum):
     PROB = 0
     BITS = 1
 
+    def __str__(self):
+        return str(self.name)
+
 class TitlePos(Enum):
     NONE = 0
     TOP = 1
@@ -106,7 +109,7 @@ def add_homer_motif(svg: SVGFigure,
         
     else:
         svgplot.add_y_axis(svg, pos=(x, y), axis=svgplot.Axis(lim=[0, 1], ticks=[
-            0, 1], w=height, label='Prob'))
+            0, 1], w=height, label='Prob'), title_offset=60)
 
     for r in range(df.shape[0]):
         idx = np.argsort(df.iloc[r, :])  # np.argmax(df.iloc[i, :])

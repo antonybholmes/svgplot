@@ -3,38 +3,38 @@ import numpy as np
 import libplot
 import matplotlib
 import pandas as pd
-import lib10x
 from scipy.cluster.hierarchy import linkage, dendrogram
 from . import matrix
 from . import core
 from .svgfigure import SVGFigure
 
+DEFAULT_HEATMAP_KWS = {'show': True, 'gridcolor':core.GRID_COLOR, 'framecolor':'black'}
 
 def add_clustermap(svg: SVGFigure,
                    df: pd.DataFrame,
                    pos: tuple[int, int] = (0, 0),
-                   cell: tuple[int, int] = matrix.DEFAULT_CELL,
+                   cell: tuple[int, int] = [50, 50],
                    lim: tuple[int, int] = matrix.DEFAULT_LIMITS,
                    cmap: matplotlib.colors.Colormap = libplot.BWR2_CMAP,
-                   gridcolor=core.GRID_COLOR,
-                   showframe=True,
                    xticklabels: Optional[Union[list[str], bool]] = True,
                    xticklabel_colors: dict[str, str] = {},
-                   yticklabels=True,
-                   zscore=False,
+                   yticklabels: Optional[Union[list[str], bool]] = False,
+                   row_zscore=False,
                    rename_cols: dict[str, str] = {},
-                   col_colors: dict[str, str] = {},
+                   col_colors: list[tuple[str, dict[str, str]]] = [],
+                   row_colors: list[tuple[str, dict[str, str]]] = [],
                    color_height=40,
                    tree_offset=15,
                    tree_height=180,
-                   row_linkage: Optional[Union[linkage, str]] = 'auto',
+                   row_linkage: Optional[Union[linkage, str]] = None,
                    col_linkage: Optional[Union[linkage, str]] = 'auto',
                    show_col_tree=True,
                    show_row_tree=True,
-                   xsplits=[],
+                   xsplits: Optional[list[int]] = None,
                    xsplitgap=40,
-                   ysplits=[],
-                   ysplitgap=40) -> dict[str, Any]:
+                   ysplits: Optional[list[int]] = None,
+                   ysplitgap=40,
+                   heatmap_kws:dict[str, Any]= {}) -> dict[str, Any]:
     """_summary_
 
     Args:
@@ -66,8 +66,20 @@ def add_clustermap(svg: SVGFigure,
 
     x, y = pos
 
-    if zscore:
-        df = lib10x.scale(df)
+    _heatmap_kws = DEFAULT_HEATMAP_KWS | heatmap_kws
+
+    print(_heatmap_kws)
+
+    if xsplits is None:
+        xsplits = [df.shape[1]]
+
+    if ysplits is None:
+        ysplits = [df.shape[0]]
+
+    if row_zscore:
+        df = matrix.zscore(df)
+
+    print(df.sum(axis=0))
 
     if isinstance(row_linkage, str) and row_linkage == 'auto':
         row_linkage = linkage(df, method='average', metric='correlation')
@@ -79,6 +91,7 @@ def add_clustermap(svg: SVGFigure,
     if row_linkage is not None:
         dr = dendrogram(row_linkage, get_leaves=True, no_plot=True)
         # reorder rows
+        print(len(dr['leaves']))
         df = df.iloc[dr['leaves'], :]
 
     if col_linkage is not None:
@@ -100,19 +113,20 @@ def add_clustermap(svg: SVGFigure,
     # heatmap
 
     meta = matrix.add_heatmap(svg=svg,
-                                      df=df,
-                                      pos=pos,
-                                      cell=cell,
-                                      lim=lim,
-                                      cmap=cmap,
-                                      gridcolor=gridcolor,
-                                      showframe=showframe,
-                                      xticklabels=False,
-                                      yticklabels=yticklabels,
-                                      xsplits=xsplits,
-                                      xsplitgap=xsplitgap,
-                                      ysplits=ysplits,
-                                      ysplitgap=ysplitgap)
+                            df=df,
+                            pos=pos,
+                            cell=cell,
+                            lim=lim,
+                            cmap=cmap,
+                            show=_heatmap_kws['show'],
+                            gridcolor=_heatmap_kws['gridcolor'],
+                            framecolor=_heatmap_kws['framecolor'],
+                            xticklabels=False,
+                            yticklabels=False,
+                            xsplits=xsplits,
+                            xsplitgap=xsplitgap,
+                            ysplits=ysplits,
+                            ysplitgap=ysplitgap)
 
     # determine the offset of each cell relative to where it should be
     # on a normal heatmap this will be 0 for every row
@@ -145,85 +159,116 @@ def add_clustermap(svg: SVGFigure,
         y1 = y - tree_offset
 
         if len(col_colors) > 0:
-            y1 -= color_height + tree_offset
+            y1 -= color_height * len(col_colors) + tree_offset
 
         n = df.shape[1] - 1
 
         for i, ic in enumerate(icoord):
             dc = dcoord[i]
 
+            # draw 3 lines connecting the 4 points k1...k4
             for j in range(0, 3):
                 x2 = x1 + ic[j] * tree_width + x_offset_map[int(ic[j] * n)]
                 x3 = x1 + ic[j + 1] * tree_width + x_offset_map[int(ic[j + 1] * n)]
 
-                svg.add_line(x1=x2, y1=y1-dc[j]*tree_height,
-                             x2=x3, y2=y1-dc[j+1]*tree_height)
+                svg.add_line(x1=x2, y1=y1-dc[j]*tree_height, x2=x3, y2=y1-dc[j+1]*tree_height)
 
     # col colors
 
     if len(col_colors) > 0:
         y1 = y - tree_offset - color_height
 
-        x1 = x
-        xs1 = 0
-        for xs2 in xsplits:
-            labels = df.columns[xs1:xs2]
-            x2 = x1
-            for i, c in enumerate(df.columns[xs1:xs2]):
-                for name in col_colors:
-                    if name in c:
-                        svg.add_rect(x2, y1, cell[0] * (labels.size - i), color_height,
-                                    fill=col_colors[name])
-                        break
-                x2 += cell[0]
+        for col_color in col_colors:
+            x1 = x
+            xs1 = 0
+            for xs2 in xsplits:
+                labels = df.columns[xs1:xs2]
+                x2 = x1
+                for li, label in enumerate(labels):
+                    if label in col_color[1]:
+                        svg.add_rect(x2, y1, cell[0], color_height, fill=col_color[1][label])
+  
+                    x2 += cell[0]
 
-            svg.add_frame(x=x1, y=y1, w=x2-x1, h=color_height)
-            
-            x1 = x2 + xsplitgap
-            xs1 = xs2
+                svg.add_frame(x=x1, y=y1, w=x2-x1, h=color_height)
+
+                x1 = x2 + xsplitgap
+                xs1 = xs2
+
+            y1 -= color_height + tree_offset
 
     # plot row tree
+    if _heatmap_kws['show']:
 
-    if row_linkage is not None and show_row_tree:
-        # row tree
-        icoord = np.array(dr['icoord'])
-        dcoord = np.array(dr['dcoord'])
+        if row_linkage is not None and show_row_tree:
+            # row tree
+            icoord = np.array(dr['icoord'])
+            dcoord = np.array(dr['dcoord'])
 
-        # norm x
-        ic = icoord.flatten()
-        min_i = ic.min()
-        range_i = ic.max() - min_i
-        icoord = np.array([[(i - min_i) / range_i for i in ic]
-                          for ic in icoord])
+            # norm x
+            ic = icoord.flatten()
+            min_i = ic.min()
+            range_i = ic.max() - min_i
+            icoord = np.array([[(i - min_i) / range_i for i in ic]
+                            for ic in icoord])
 
-        # norm y
-        ic = dcoord.flatten()
-        min_i = ic.min()
-        range_i = ic.max() - min_i
-        dcoord = np.array([[(i - min_i) / range_i for i in ic]
-                          for ic in dcoord])
+            # norm y
+            ic = dcoord.flatten()
+            min_i = ic.min()
+            range_i = ic.max() - min_i
+            dcoord = np.array([[(i - min_i) / range_i for i in ic]
+                            for ic in dcoord])
 
-        x1 = x - tree_offset
-        tree_width = cell[1] * (df.shape[0] - 1)
-        # Render the tree so the leaves are in the middle of the cell
-        y1 = y + cell[1] / 2
+            x1 = x - tree_offset
 
-        # Used to take the normalized value of the tree y between 0 and 1
-        # and map it to a row 0-(#rows-1)
-        n = df.shape[0] - 1
+            if len(row_colors) > 0:
+                x1 -= color_height * len(row_colors) + tree_offset
 
-        for i, ic in enumerate(icoord):
-            dc = dcoord[i]
+            tree_width = cell[1] * (df.shape[0] - 1)
+            # Render the tree so the leaves are in the middle of the cell
+            y1 = y + cell[1] / 2
 
-            for j in range(0, 3):
-                # calculate coordinate as normal, but also lookup the row the
-                # normalized coordinate maps to and check if it has an offset
-                # because of a split gap and add this
-                y2 = y1 + ic[j] * tree_width + y_offset_map[int(ic[j] * n)]
-                y3 = y1 + ic[j + 1] * tree_width + y_offset_map[int(ic[j + 1] * n)]
+            # Used to take the normalized value of the tree y between 0 and 1
+            # and map it to a row 0-(#rows-1)
+            n = df.shape[0] - 1
 
-                svg.add_line(x1=x1-dc[j]*tree_height, y1=y2,
-                             x2=x1-dc[j+1]*tree_height, y2=y3)
+            for i, ic in enumerate(icoord):
+                dc = dcoord[i]
+
+                for j in range(0, 3):
+                    # calculate coordinate as normal, but also lookup the row the
+                    # normalized coordinate maps to and check if it has an offset
+                    # because of a split gap and add this
+                    y2 = y1 + ic[j] * tree_width + y_offset_map[int(ic[j] * n)]
+                    y3 = y1 + ic[j + 1] * tree_width + \
+                        y_offset_map[int(ic[j + 1] * n)]
+
+                    svg.add_line(x1=x1-dc[j]*tree_height, y1=y2,
+                                x2=x1-dc[j+1]*tree_height, y2=y3)
+                    
+        # row colors
+
+        if len(row_colors) > 0:
+            x1 = x - tree_offset - color_height
+
+            for row_color in row_colors:
+                y1 = y
+                ys1 = 0
+                for ys2 in ysplits:
+                    labels = df.index[ys1:ys2]
+                    y2 = y1
+                    for li, label in enumerate(labels):
+                        if label in col_color[1]:
+                            svg.add_rect(x1, y2, color_height, cell[1], fill=row_color[1][label])
+
+                        y2 += cell[1]
+
+                    svg.add_frame(x=x1, y=y1, w=color_height, h=x2-x1)
+
+                    y1 = y2 + ysplitgap
+                    ys1 = ys2
+
+                x1 -= color_height + tree_offset
 
     # col labels
 
@@ -247,12 +292,14 @@ def add_clustermap(svg: SVGFigure,
         xs1 = 0
         for xs2 in xsplits:
             labels = df.columns[xs1:xs2]
-            # allow last minute renaming    
-            labels = np.array([rename_cols[x] if x in rename_cols else x for x in labels])
-            
-            matrix.add_xticklabels(svg, labels, pos=(x1, y1), colors=xticklabel_colors)
-            
+            # allow last minute renaming
+            labels = np.array(
+                [rename_cols[x] if x in rename_cols else x for x in labels])
+
+            matrix.add_xticklabels(svg, labels, pos=(
+                x1, y1), colors=xticklabel_colors)
+
             x1 += cell[0] * labels.size + xsplitgap
             xs1 = xs2
 
-    return {'w':w, 'h':h}
+    return {'w': w, 'h': h}
