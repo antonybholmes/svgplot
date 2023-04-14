@@ -159,7 +159,7 @@ class SVGFigureBase:
         else:
             y = self._trans[-1][1]
 
-        #self._trans = (x * self._scale_xy[0], y * self._scale_xy[1])
+        # self._trans = (x * self._scale_xy[0], y * self._scale_xy[1])
         self._trans.append((x, y))
 
     def undo_t(self) -> None:
@@ -183,7 +183,7 @@ class SVGFigureBase:
     def scale(self, elem=None, x: float = 1, y: float = 1, css: Optional[Mapping[str, str]] = None) -> None:
         css = self.css_map(css)
 
-        #print(x, y)
+        # print(x, y)
 
         g = self._svg.g(transform=self.format_scale(x, y),
                         style=core.format_css_params(css))
@@ -201,7 +201,7 @@ class SVGFigureBase:
     def trans(self, elem=None, x: float = 0, y: float = 0, css: Optional[Mapping[str, str]] = None) -> None:
         css = self.css_map(css)
 
-        #print(x, y)
+        # print(x, y)
 
         g = self._svg.g(transform=self.format_translate(
             self.x(x), self.y(y)), style=core.format_css_params(css))
@@ -408,7 +408,7 @@ class SVGFigureBase:
                              color=color)
 
     def add_section(self,
-                    label:str,
+                    label: str,
                     x=0,
                     y=0,
                     h=core.LABEL_HEIGHT,
@@ -443,7 +443,7 @@ class SVGFigureBase:
             self.add_fig_title('Figure {}.'.format(
                 id), align=align, weight=weight)
 
-    def add_fig_title(self, title, align:str='l', size:int=10, weight:str='normal') -> None:
+    def add_fig_title(self, title, align: str = 'l', size: int = 10, weight: str = 'normal') -> None:
         """
         Add a bolded figure name to a page.
 
@@ -489,41 +489,28 @@ class SVGFigureBase:
 
         y1 = self.get_font_y(y, h, size=size, weight=weight, family=family)
 
-        match orientation:
-            case 'v':
-                x = self.get_font_y(x, w, size=size, weight=weight)
-                sw = self.get_string_width(label,
-                                           family=family,
-                                           size=size,
-                                           weight=weight)
+        if orientation == 'v':
+            x = self.get_font_y(x, w, size=size, weight=weight)
+            sw = self.get_string_width(label,
+                                       family=family,
+                                       size=size,
+                                       weight=weight)
 
-                match align:
-                    case 'c':
-                        self.add_rot_trans(self.text(label, color=color, size=size),
-                                           x=x+self.get_font_h()/3,
-                                           y=y-(w-sw)/2,
-                                           rotate=-90)
-                    case 'r':
-                        self.add_text(label,
-                                      x=x,
-                                      y=y1 + sw,
-                                      color=color,
-                                      size=size,
-                                      weight=weight,
-                                      family=family,
-                                      rotate=-90)
-                    case _:
-                        self.add_text(label,
-                                      x=x,
-                                      y=y1,
-                                      color=color,
-                                      size=size,
-                                      weight=weight,
-                                      family=family,
-                                      rotate=-90)
-            case 'a':
-                x = self.get_font_y(x, w, size=size, weight=weight,family=family)
-
+            if align == 'c':
+                self.add_rot_trans(self.text(label, color=color, size=size),
+                                   x=x+self.get_font_h()/3,
+                                   y=y-(w-sw)/2,
+                                   rotate=-90)
+            elif align == 'r':
+                self.add_text(label,
+                              x=x,
+                              y=y1 + sw,
+                              color=color,
+                              size=size,
+                              weight=weight,
+                              family=family,
+                              rotate=-90)
+            else:
                 self.add_text(label,
                               x=x,
                               y=y1,
@@ -531,46 +518,57 @@ class SVGFigureBase:
                               size=size,
                               weight=weight,
                               family=family,
-                              rotate=-45)
-            case _:
-                if align == 'r':
-                    sw1 = self.get_string_width(label,
-                                                family=family,
-                                                size=size,
-                                                weight=weight)
+                              rotate=-90)
+        elif orientation == 'a':
+            x = self.get_font_y(x, w, size=size, weight=weight, family=family)
 
-                    self.add_text(label,
-                                  x - sw1,
-                                  y=y1,
-                                  size=size,
-                                  color=color,
-                                  weight=weight,
-                                  family=family)
+            self.add_text(label,
+                          x=x,
+                          y=y1,
+                          color=color,
+                          size=size,
+                          weight=weight,
+                          family=family,
+                          rotate=-45)
+        else:
+            if align == 'r':
+                sw1 = self.get_string_width(label,
+                                            family=family,
+                                            size=size,
+                                            weight=weight)
 
-                    #self.add_frame(x-sw1, y-self.get_font_h(), sw1, self.get_font_h(), color='red')
-                else:
-                    x1 = x
+                self.add_text(label,
+                              x - sw1,
+                              y=y1,
+                              size=size,
+                              color=color,
+                              weight=weight,
+                              family=family)
 
-                    if align == 'c':
-                        x1 = self._get_font_center_x(label,
-                                                     x,
-                                                     w,
-                                                     size=size,
-                                                     weight=weight,
-                                                     family=family)
+                # self.add_frame(x-sw1, y-self.get_font_h(), sw1, self.get_font_h(), color='red')
+            else:
+                x1 = x
 
-                    self.add_text(label,
-                                  x=x1,
-                                  y=y1,
-                                  color=color,
-                                  size=size,
-                                  weight=weight,
-                                  family=family)
+                if align == 'c':
+                    x1 = self._get_font_center_x(label,
+                                                 x,
+                                                 w,
+                                                 size=size,
+                                                 weight=weight,
+                                                 family=family)
 
-                    #self.add_frame(x-20, y-self.get_font_h(), sw1, self.get_font_h(), color='red')
+                self.add_text(label,
+                              x=x1,
+                              y=y1,
+                              color=color,
+                              size=size,
+                              weight=weight,
+                              family=family)
 
-                    if frameargs['style'] is not None:
-                        if frameargs['style'] == 'circle':
-                            x1 = x  # + (w - frameargs['s'])
-                            self.add_circle(
-                                x=x1, y=y, w=frameargs['s'], color=frameargs['color'])
+                # self.add_frame(x-20, y-self.get_font_h(), sw1, self.get_font_h(), color='red')
+
+                if frameargs['style'] is not None:
+                    if frameargs['style'] == 'circle':
+                        x1 = x  # + (w - frameargs['s'])
+                        self.add_circle(
+                            x=x1, y=y, w=frameargs['s'], color=frameargs['color'])

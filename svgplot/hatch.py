@@ -37,47 +37,46 @@ def add_hatch(svg: SVGFigure,
     if id is None:
         id = get_rand_id()
 
-    match hatch:
-        case 'x':
-            clip_path = svg.svg.defs.add(svg.svg.clipPath(id=id))
-            # things inside this shape will be drawn
-            clip_path.add(svg.svg.rect(
-                insert=(svg.x(x1), svg.y(y1)), size=(w, h)))
+    if hatch == 'x':
+        clip_path = svg.svg.defs.add(svg.svg.clipPath(id=id))
+        # things inside this shape will be drawn
+        clip_path.add(svg.svg.rect(
+            insert=(svg.x(x1), svg.y(y1)), size=(w, h)))
 
-            yh1 = y2 + dh[0]
-            yh2 = yh1 - dh[0]
+        yh1 = y2 + dh[0]
+        yh2 = yh1 - dh[0]
 
-            while yh1 > y1:
-                svg.add_line(x1=x1, x2=x2, y1=yh1, y2=yh2,
-                             color=color, clip_path=f"url(#{id})")
-                yh1 -= dh[1]
-                yh2 -= dh[1]
+        while yh1 > y1:
+            svg.add_line(x1=x1, x2=x2, y1=yh1, y2=yh2,
+                         color=color, clip_path=f"url(#{id})")
+            yh1 -= dh[1]
+            yh2 -= dh[1]
 
-            yh1 = y2
-            yh2 = yh1 + dh[0]
+        yh1 = y2
+        yh2 = yh1 + dh[0]
 
-            while yh2 > y1:
-                svg.add_line(x1=x1, x2=x2, y1=yh1, y2=yh2,
-                             color=color, clip_path=f"url(#{id})")
-                yh1 -= dh[1]
-                yh2 -= dh[1]
-        case '/':
-            clip_path = svg.svg.defs.add(svg.svg.clipPath(id=id))
-            # things inside this shape will be drawn
-            clip_path.add(svg.svg.rect(
-                insert=(svg.x(x1), svg.y(y1)), size=(w, h)))
+        while yh2 > y1:
+            svg.add_line(x1=x1, x2=x2, y1=yh1, y2=yh2,
+                         color=color, clip_path=f"url(#{id})")
+            yh1 -= dh[1]
+            yh2 -= dh[1]
+    elif hatch == '/':
+        clip_path = svg.svg.defs.add(svg.svg.clipPath(id=id))
+        # things inside this shape will be drawn
+        clip_path.add(svg.svg.rect(
+            insert=(svg.x(x1), svg.y(y1)), size=(w, h)))
 
-            yh1 = y2 + dh[0]
-            yh2 = yh1 - dh[0]
+        yh1 = y2 + dh[0]
+        yh2 = yh1 - dh[0]
 
-            while yh1 > y1:
-                svg.add_line(x1=x1, x2=x2, y1=yh1, y2=yh2,
-                             color=color, clip_path=f"url(#{id})")
-                yh1 -= dh[1]
-                yh2 -= dh[1]
+        while yh1 > y1:
+            svg.add_line(x1=x1, x2=x2, y1=yh1, y2=yh2,
+                         color=color, clip_path=f"url(#{id})")
+            yh1 -= dh[1]
+            yh2 -= dh[1]
 
-        case _:
-            svg.add_rect(x1, y1, w, h, fill=color)
+    else:
+        svg.add_rect(x1, y1, w, h, fill=color)
 
     if frame:
         svg.add_rect(x1, y1, w, h, color='black')

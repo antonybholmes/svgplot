@@ -4,6 +4,7 @@ import libplot
 import matplotlib
 import pandas as pd
 from scipy.cluster.hierarchy import linkage, dendrogram
+from scipy.cluster import hierarchy
 from . import matrix
 from . import core
 from .svgfigure import SVGFigure
@@ -79,25 +80,24 @@ def add_clustermap(svg: SVGFigure,
     if row_zscore:
         df = matrix.zscore(df)
 
-    print(df.sum(axis=0))
-
     if isinstance(row_linkage, str) and row_linkage == 'auto':
         row_linkage = linkage(df, method='average', metric='correlation')
+        row_linkage = hierarchy.optimal_leaf_ordering(row_linkage, df)
 
     if isinstance(col_linkage, str) and col_linkage == 'auto':
         col_linkage = linkage(df.T, method='average', metric='correlation')
+        col_linkage = hierarchy.optimal_leaf_ordering(col_linkage, df.T)
 
     # If row linkage
     if row_linkage is not None:
         dr = dendrogram(row_linkage, get_leaves=True, no_plot=True)
         # reorder rows
-        print(len(dr['leaves']))
         df = df.iloc[dr['leaves'], :]
 
     if col_linkage is not None:
         dc = dendrogram(col_linkage, get_leaves=True, no_plot=True)
         # reorder columns
-        print(len(dc['leaves']))
+        print(len(dc['leaves']), hierarchy.optimal_leaf_ordering(col_linkage, df.T))
         df = df.iloc[:, dc['leaves']]
 
     #df.to_csv('reordered.tsv', sep='\t', header=True, index=True)
@@ -302,4 +302,4 @@ def add_clustermap(svg: SVGFigure,
             x1 += cell[0] * labels.size + xsplitgap
             xs1 = xs2
 
-    return {'w': w, 'h': h}
+    return {'w': w, 'h': h, 'df':df}

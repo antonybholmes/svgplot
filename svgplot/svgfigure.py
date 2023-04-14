@@ -49,14 +49,13 @@ class FigureFactory:
                       size: FigureSize = FigureSize.LETTER,
                       orientation: Orientation = Orientation.LANDSCAPE) -> SVGFigure:
 
-        match size:
-            case FigureSize.JEM:
-                size = (int(round(7*25.4)), int(round(9*25.4)))
-            case FigureSize.FRONTIER:
-                size = (180, 279)
-            case _:
-                # landscape
-                size = (216, 279)
+        if size == FigureSize.JEM:
+            size = (int(round(7*25.4)), int(round(9*25.4)))
+        elif size == FigureSize.FRONTIER:
+            size = (180, 279)
+        else:
+            # landscape
+            size = (216, 279)
 
         if orientation == Orientation.LANDSCAPE:
             size = (size[1], size[0])

@@ -9,9 +9,11 @@ from . import core
 from . import swarm
 from . import graph
 
+
 class MedianStyle(Enum):
     LINE = 0
     CIRCLE = 1
+
 
 def _add_boxplot(svg: SVGFigure,
                  data_points: np.array,
@@ -19,7 +21,7 @@ def _add_boxplot(svg: SVGFigure,
                  width: int = 18,
                  whisker_width: Optional[int] = None,
                  color: str = 'blue',
-                 line_color:Optional[str] = None,
+                 line_color: Optional[str] = None,
                  fill: str = 'white',
                  opacity: float = 1,
                  stroke=3,
@@ -45,10 +47,10 @@ def _add_boxplot(svg: SVGFigure,
     q1_iqr = max(q1 - iqr_15, data_points.min())
     q3_iqr = min(q3 + iqr_15, data_points.max())
 
-    #svg.add_rect(x=x-iqr_15_line_width/2, y=y+yaxis.w-yaxis.scale(q3_iqr), w=iqr_15_line_width, h=yaxis.scale(q3_iqr) - yaxis.scale(q1_iqr), fill='red', rounding=iqr_15_line_width)
-    #svg.add_rect(x=x-iqr_line_width/2, y=y+yaxis.w-yaxis.scale(q3), w=iqr_line_width, h=yaxis.scale(q3) - yaxis.scale(q1), fill='red', rounding=iqr_line_width)
+    # svg.add_rect(x=x-iqr_15_line_width/2, y=y+yaxis.w-yaxis.scale(q3_iqr), w=iqr_15_line_width, h=yaxis.scale(q3_iqr) - yaxis.scale(q1_iqr), fill='red', rounding=iqr_15_line_width)
+    # svg.add_rect(x=x-iqr_line_width/2, y=y+yaxis.w-yaxis.scale(q3), w=iqr_line_width, h=yaxis.scale(q3) - yaxis.scale(q1), fill='red', rounding=iqr_line_width)
 
-    #svg.add_rect(x=x-iqr_15_line_width/2, y=y+yaxis.w-yaxis.scale(q3_iqr), w=iqr_15_line_width, h=yaxis.scale(q3_iqr) - yaxis.scale(q1_iqr), color='black', fill='white', stroke=2)
+    # svg.add_rect(x=x-iqr_15_line_width/2, y=y+yaxis.w-yaxis.scale(q3_iqr), w=iqr_15_line_width, h=yaxis.scale(q3_iqr) - yaxis.scale(q1_iqr), color='black', fill='white', stroke=2)
 
     svg.add_line(x1=x, y1=y + yaxis.w-yaxis.scale(q3_iqr), y2=y +
                  yaxis.w-yaxis.scale(q1_iqr), color=line_color, stroke=stroke)
@@ -57,22 +59,18 @@ def _add_boxplot(svg: SVGFigure,
     svg.add_line(x1=x-whisker_width/2, x2=x+whisker_width/2, y1=y +
                  yaxis.w-yaxis.scale(q1_iqr), color=line_color, stroke=stroke)
 
-    #svg.add_rect(x=x-iqr_line_width/2, y=y+yaxis.w-yaxis.scale(q3), w=iqr_line_width, h=yaxis.scale(q3)-yaxis.scale(median), fill='white', color=color, stroke=stroke, rounding=iqr_line_width/2)
-    #svg.add_rect(x=x-iqr_line_width/2, y=y+yaxis.w-yaxis.scale(median), w=iqr_line_width, h=yaxis.scale(median)-yaxis.scale(q1), fill='white', color=color, stroke=stroke, rounding=iqr_line_width/2)
+    # svg.add_rect(x=x-iqr_line_width/2, y=y+yaxis.w-yaxis.scale(q3), w=iqr_line_width, h=yaxis.scale(q3)-yaxis.scale(median), fill='white', color=color, stroke=stroke, rounding=iqr_line_width/2)
+    # svg.add_rect(x=x-iqr_line_width/2, y=y+yaxis.w-yaxis.scale(median), w=iqr_line_width, h=yaxis.scale(median)-yaxis.scale(q1), fill='white', color=color, stroke=stroke, rounding=iqr_line_width/2)
 
     svg.add_rect(x=x-width/2, y=y+yaxis.w-yaxis.scale(q3), w=width, h=yaxis.scale(
         q3) - yaxis.scale(q1), stroke=stroke, fill=fill, fill_opacity=opacity, color=line_color, rounding=min(10, width/2) if rounded else 0)
 
     y1 = y+yaxis.w-yaxis.scale(median)
 
-    match median_style:
-        case MedianStyle.CIRCLE:
-            svg.add_circle(x=x, y=y1, w=dot_size, fill=color)
-        case _:
-            svg.add_line(x1=x-width/2, x2=x+width/2, y1=y1, color=color)
-
-
-
+    if median_style == MedianStyle.CIRCLE:
+        svg.add_circle(x=x, y=y1, w=dot_size, fill=color)
+    else:
+        svg.add_line(x1=x-width/2, x2=x+width/2, y1=y1, color=color)
 
 
 def add_boxplot(svg: SVGFigure,
@@ -177,16 +175,15 @@ def add_boxplot(svg: SVGFigure,
 
     for labeli, label in enumerate(x_order):
         if _x_kws['show_labels']:
-            match _x_kws['label_pos']:
-                case 'title':
-                    svg.add_text_bb(label, x=x2+w/2, y=title_offset, align='c')
-                case _:
-                    if _x_kws['label_orientation'] == 'v':
-                        svg.add_text_bb(label, x=x2+w/2, y=y1 +
-                                        yaxis.w+10, orientation='v', align='r')
-                    else:
-                        svg.add_text_bb(label, x=x2+w/2, y=y1 +
-                                        yaxis.w+50, align='c')
+            if _x_kws['label_pos'] == 'title':
+                svg.add_text_bb(label, x=x2+w/2, y=title_offset, align='c')
+            else:
+                if _x_kws['label_orientation'] == 'v':
+                    svg.add_text_bb(label, x=x2+w/2, y=y1 +
+                                    yaxis.w+10, orientation='v', align='r')
+                else:
+                    svg.add_text_bb(label, x=x2+w/2, y=y1 +
+                                    yaxis.w+50, align='c')
 
         for huei, hue_label in enumerate(hue_order):
             x2 += plot_width  # 2 * xaxis.w
@@ -239,8 +236,8 @@ def add_boxplot(svg: SVGFigure,
 
     if show_legend:
         swarm._add_legend(svg,
-                    hue_order,
-                    palette,
-                    pos=(x2-plot_width+40, 0))
+                          hue_order,
+                          palette,
+                          pos=(x2-plot_width+40, 0))
 
     return (x2 - x_gap - plot_width, height)

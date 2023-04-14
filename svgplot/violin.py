@@ -56,7 +56,7 @@ def _add_violin(svg: SVGFigure,
     # if points1[0][0] != x:
     #    points1.insert(0, (x, y + yaxis.w))
 
-    #points1[-1][0] = x
+    # points1[-1][0] = x
 
     points1 = np.array(points1)
 
@@ -74,17 +74,14 @@ def _add_violin(svg: SVGFigure,
 
         points2.append(p)
 
-    #points2[0][0] = x
-    #points2[-1][0] = x
+    # points2[0][0] = x
+    # points2[-1][0] = x
 
     points2 = np.array(points2)
 
     points = np.concatenate([points1, points2])
 
     svg.add_polygon(points, fill=color, fill_opacity=opacity)
-
-
-
 
 
 def _fit_kde(x, bw):
@@ -144,7 +141,7 @@ def add_violinplot(svg: SVGFigure,
     _swarm_kws = core.kws({'show': True, 'dot_size': 10,
                           'opacity': 0.7, 'style': swarm.PlotStyle.TRIANGLE}, swarm_kws)
     _box_kws = core.kws({'show': True, 'width': 20, 'whisker_width': 20, 'stroke': 3, 'dot_size': 12,
-                         'fill': 'white', 'line_color':None, 'opacity': 1, 'rounded': True, 'median_style': boxplot.MedianStyle.CIRCLE}, box_kws)
+                         'fill': 'white', 'line_color': None, 'opacity': 1, 'rounded': True, 'median_style': boxplot.MedianStyle.CIRCLE}, box_kws)
 
     if palette is None:
         palette = matplotlib.cm.Set2
@@ -238,16 +235,15 @@ def add_violinplot(svg: SVGFigure,
 
     for labeli, label in enumerate(x_order):
         if _x_kws['show_labels']:
-            match _x_kws['label_pos']:
-                case 'title':
-                    svg.add_text_bb(label, x=x1+w/2, y=title_offset, align='c')
-                case _:
-                    if _x_kws['label_orientation'] == 'v':
-                        svg.add_text_bb(label, x=x1+w/2, y=y1 +
-                                        yaxis.w+10, orientation='v', align='r')
-                    else:
-                        svg.add_text_bb(label, x=x1+w/2, y=y1 +
-                                        yaxis.w+50, align='c')
+            if _x_kws['label_pos'] == 'title':
+                svg.add_text_bb(label, x=x1+w/2, y=title_offset, align='c')
+            else:
+                if _x_kws['label_orientation'] == 'v':
+                    svg.add_text_bb(label, x=x1+w/2, y=y1 +
+                                    yaxis.w+10, orientation='v', align='r')
+                else:
+                    svg.add_text_bb(label, x=x1+w/2, y=y1 +
+                                    yaxis.w+50, align='c')
 
         for huei, hue_label in enumerate(hue_order):
             color = palette[colori % palette.size]
@@ -258,14 +254,13 @@ def add_violinplot(svg: SVGFigure,
 
             # determines how violin appears and whether
             # violins are scaled relative to each other
-            match scale:
-                case 'area':
-                    if scale_hue:
-                        md = max_densities[labeli]
-                    else:
-                        md = global_max_density
-                case _:
-                    md = df['x'].max()
+            if scale == 'area':
+                if scale_hue:
+                    md = max_densities[labeli]
+                else:
+                    md = global_max_density
+            else:
+                md = df['x'].max()
 
             if _violin_kws['show']:
                 _add_violin(svg,
@@ -280,29 +275,29 @@ def add_violinplot(svg: SVGFigure,
 
             if _swarm_kws['show']:
                 swarm._add_swarm(svg,
-                                dp,
-                                axes=(xaxis, yaxis),
-                                dot_size=_swarm_kws['dot_size'],
-                                color=color,
-                                opacity=_swarm_kws['opacity'],
-                                pos=(x1, y1),
-                                style=_swarm_kws['style'])
+                                 dp,
+                                 axes=(xaxis, yaxis),
+                                 dot_size=_swarm_kws['dot_size'],
+                                 color=color,
+                                 opacity=_swarm_kws['opacity'],
+                                 pos=(x1, y1),
+                                 style=_swarm_kws['style'])
 
             if _box_kws['show']:
                 boxplot._add_boxplot(svg,
-                                    dp,
-                                    axes=(xaxis, yaxis),
-                                    width=_box_kws['width'],
-                                    whisker_width=_box_kws['whisker_width'],
-                                    color=color,
-                                    line_color=_box_kws['line_color'],
-                                    median_style=_box_kws['median_style'],
-                                    dot_size=_box_kws['dot_size'],
-                                    fill=_box_kws['fill'],
-                                    opacity=_box_kws['opacity'],
-                                    stroke=_box_kws['stroke'],
-                                    pos=(x1, y1),
-                                    rounded=_box_kws['rounded'])
+                                     dp,
+                                     axes=(xaxis, yaxis),
+                                     width=_box_kws['width'],
+                                     whisker_width=_box_kws['whisker_width'],
+                                     color=color,
+                                     line_color=_box_kws['line_color'],
+                                     median_style=_box_kws['median_style'],
+                                     dot_size=_box_kws['dot_size'],
+                                     fill=_box_kws['fill'],
+                                     opacity=_box_kws['opacity'],
+                                     stroke=_box_kws['stroke'],
+                                     pos=(x1, y1),
+                                     rounded=_box_kws['rounded'])
 
             x1 += plot_width  # 2 * xaxis.w
             colori += 1
@@ -315,8 +310,8 @@ def add_violinplot(svg: SVGFigure,
 
     if show_legend:
         boxplot._add_legend(svg,
-                    hue_order,
-                    palette,
-                    pos=(x1-plot_width+40, 0))
+                            hue_order,
+                            palette,
+                            pos=(x1-plot_width+40, 0))
 
     return (x1 - x_gap - plot_width, height)

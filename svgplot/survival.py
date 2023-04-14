@@ -50,8 +50,6 @@ def add_kmf_plot(svg: SVGFigure,
     kmf = KaplanMeierFitter()
     kmf.fit(durations, event_observed, label=name)
 
-    
-
     data = [[x, y, censor, cil, cih] for x, y, censor, cil, cih in zip(kmf.cumulative_density_.index,
                                                                        kmf.cumulative_density_.iloc[:, 0],
                                                                        kmf.event_table['censored'],
@@ -96,14 +94,14 @@ def add_kmf_plot(svg: SVGFigure,
         svg.add_polygon(points, fill=color,
                         fill_opacity=_ci_kws['fill_opacity'])
 
-    #d = [df.iloc[0, :].values]
+    # d = [df.iloc[0, :].values]
     points = [[df['x'].values[0], df['y'].values[0]]]
 
     for i2 in range(1, df.shape[0]):
         x1, y1 = points[-1]
         x2, y2, censored2, ci_low2, ci_high2 = df.iloc[i2, :].values
 
-        #d.append(df.iloc[i1, :].values)
+        # d.append(df.iloc[i1, :].values)
 
         print(x1, y1, x2, y2)
 
@@ -112,14 +110,14 @@ def add_kmf_plot(svg: SVGFigure,
             # insert an extra point with the same x as
             # the current spot, but the y of the previous
             # spot
-            #d.append([x2, y1, 0, ci_low1, ci_high1])
-            #print('add', x1, y1)
+            # d.append([x2, y1, 0, ci_low1, ci_high1])
+            # print('add', x1, y1)
             points.append([x2, y1])
 
-        #d.append([x2, y2, censored2, ci_low2, ci_high2])
+        # d.append([x2, y2, censored2, ci_low2, ci_high2])
         points.append([x2, y2])
 
-    #df1 = pd.DataFrame(
+    # df1 = pd.DataFrame(
     #    d, columns=['x', 'y', 'censored', 'ci_low', 'ci_high'])
 
     points = [
@@ -143,28 +141,27 @@ def add_kmf_plot(svg: SVGFigure,
             x1 = xaxis.scale(dfc['x'].values[i])
             y1 = y + h - yaxis.scale(dfc['y'].values[i])
             s = _censor_kws['size']
-            match _censor_kws['shape']:
-                case 'x':
-                    l = math.sin(math.pi/2) * s
-                    svg.add_line(
-                        x1=x1-l, y1=y1-l, x2=x1+l, y2=y1+l, color=color, stroke=stroke)
-                    svg.add_line(
-                        x1=x1-l, y1=y1+l, x2=x1+l, y2=y1-l, color=color, stroke=stroke)
-                case '|':
-                    # default to crossgraph
-                    svg.add_line(
-                        x1=x1, y1=y1, x2=x1, y2=y1-s, color=color, stroke=stroke)
-                case _:
-                    # default to cross
-                    svg.add_line(x1=x1-s, y1=y1, x2=x1 +
-                                 s, y2=y1, color=color, stroke=stroke)
-                    svg.add_line(x1=x1, y1=y1-s, x2=x1,
-                                 y2=y1+s, color=color, stroke=stroke)
+            if _censor_kws['shape'] == 'x':
+                l = math.sin(math.pi/2) * s
+                svg.add_line(
+                    x1=x1-l, y1=y1-l, x2=x1+l, y2=y1+l, color=color, stroke=stroke)
+                svg.add_line(
+                    x1=x1-l, y1=y1+l, x2=x1+l, y2=y1-l, color=color, stroke=stroke)
+            elif _censor_kws['shape'] == '|':
+                # default to crossgraph
+                svg.add_line(
+                    x1=x1, y1=y1, x2=x1, y2=y1-s, color=color, stroke=stroke)
+            else:
+                # default to cross
+                svg.add_line(x1=x1-s, y1=y1, x2=x1 +
+                             s, y2=y1, color=color, stroke=stroke)
+                svg.add_line(x1=x1, y1=y1-s, x2=x1,
+                             y2=y1+s, color=color, stroke=stroke)
 
     if show_axes:
-        graph.add_x_axis(svg, axis=xaxis, pos=(0,h))
+        graph.add_x_axis(svg, axis=xaxis, pos=(0, h))
         graph.add_y_axis(svg, axis=yaxis)
-        #add_survival_axes(svg, axes, type)
+        # add_survival_axes(svg, axes, type)
 
     return df, kmf
 
@@ -173,8 +170,8 @@ def add_survival_axes(svg: SVGFigure, axes: tuple[Axis, Axis], type: str = 'OS')
     xaxis, yaxis = axes
     h = yaxis.w
 
-    #add_years_axis(svg, axis=xaxis, y=h)
-    graph.add_x_axis(svg, axis=xaxis, pos=(0,h))
+    # add_years_axis(svg, axis=xaxis, y=h)
+    graph.add_x_axis(svg, axis=xaxis, pos=(0, h))
     graph.add_y_percent_axis(svg, axis=yaxis, label=type)
 
 
@@ -206,19 +203,18 @@ def add_survival_legend(svg: SVGFigure,
     if _censor_kws['show']:
         s = _censor_kws['size']
 
-        match _censor_kws['shape']:
-            case 'x':
-                l = math.sin(math.pi/2) * s
-                svg.add_line(x1=x3-l, y1=y-l, x2=x3+l,
-                            y2=y+l, color=color, stroke=stroke)
-                svg.add_line(x1=x3-l, y1=y+l, x2=x3+l,
-                            y2=y-l, color=color, stroke=stroke)
-            case '|':
-                svg.add_line(
-                    x1=x3, y1=y, x2=x3, y2=y-s, color=color, stroke=stroke)
-            case _:
-                svg.add_line(x1=x3, y1=y-s, x2=x3,
-                            y2=y+s, color=color, stroke=stroke)
+        if _censor_kws['shape'] == 'x':
+            l = math.sin(math.pi/2) * s
+            svg.add_line(x1=x3-l, y1=y-l, x2=x3+l,
+                         y2=y+l, color=color, stroke=stroke)
+            svg.add_line(x1=x3-l, y1=y+l, x2=x3+l,
+                         y2=y-l, color=color, stroke=stroke)
+        elif _censor_kws['shape'] == '|':
+            svg.add_line(
+                x1=x3, y1=y, x2=x3, y2=y-s, color=color, stroke=stroke)
+        else:
+            svg.add_line(x1=x3, y1=y-s, x2=x3,
+                         y2=y+s, color=color, stroke=stroke)
 
     for t in name:
         svg.add_text_bb(t, x=x+40, y=y, color=color)
@@ -234,8 +230,8 @@ def add_years_axis(svg: SVGFigure,
                    y: int = 0) -> None:
     graph.add_x_axis(svg,
                      axis=axis,
-                     pos=(0,y),
-                     #minorticks=range(1, 18),
+                     pos=(0, y),
+                     # minorticks=range(1, 18),
                      label='Years')
 
     return axis

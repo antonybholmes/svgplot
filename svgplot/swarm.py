@@ -9,10 +9,12 @@ from . import core
 from . import swarm
 from . import graph
 
+
 class PlotStyle(Enum):
     CIRCLE = 0
     TRIANGLE = 1
     CROSS = 2
+
 
 def _add_legend(svg: SVGFigure,
                 hue_order: Optional[list[str]] = None,
@@ -47,7 +49,7 @@ def _add_swarm(svg: SVGFigure,
         opacity (float, optional): _description_. Defaults to 0.3.
         pos (tuple[int, int], optional): _description_. Defaults to (0, 0).
         style (str, optional): _description_. Defaults to '.'.
-    """               
+    """
     if fill is None:
         fill = color
 
@@ -73,8 +75,8 @@ def _add_swarm(svg: SVGFigure,
             if (p1 >= group['x1'] and p1 <= group['x2']) or (p2 >= group['x1'] and p2 <= group['x2']):
                 group['dots'].append(p)
                 # make group more inclusive
-                #group['x1'] = min(group['x1'], p1)
-                #group['x2'] = max(group['x2'], p2)
+                # group['x1'] = min(group['x1'], p1)
+                # group['x2'] = max(group['x2'], p2)
                 found = True
                 break
 
@@ -87,24 +89,25 @@ def _add_swarm(svg: SVGFigure,
         # shift points
 
         # prevent dots from expanding beyond confines of plot
-        
-        
-        #if x3 != x2:
-        #print(x2, x3, x_lim, l)
+
+        # if x3 != x2:
+        # print(x2, x3, x_lim, l)
 
         for i, p in enumerate(reversed(group['dots'])):
             x3 = max(x_lim[0], min(x_lim[1], x2))
 
-            match style:
-                case PlotStyle.CROSS:
-                    svg.add_line(x1=x3-dot_size/2, x2=x3+dot_size/2, y1=p, color=color)
-                    svg.add_line(x1=x3, y1=p-dot_size/2, y2=p+dot_size/2, color=color)
-                case PlotStyle.TRIANGLE:
-                    h = np.sin(np.pi / 3) * dot_size
-                    svg.add_polygon([[x3-dot_size/2, p+h/2], [x3, p-h/2], [x3+dot_size/2, p+h/2]], fill=fill, fill_opacity=opacity)
-                case _:
-                    svg.add_circle(x=x3, y=p, w=dot_size,
-                                fill=fill, fill_opacity=opacity)
+            if style == PlotStyle.CROSS:
+                svg.add_line(x1=x3-dot_size/2, x2=x3 +
+                             dot_size/2, y1=p, color=color)
+                svg.add_line(x1=x3, y1=p-dot_size/2,
+                             y2=p+dot_size/2, color=color)
+            elif style == PlotStyle.TRIANGLE:
+                h = np.sin(np.pi / 3) * dot_size
+                svg.add_polygon([[x3-dot_size/2, p+h/2], [x3, p-h/2],
+                                [x3+dot_size/2, p+h/2]], fill=fill, fill_opacity=opacity)
+            else:
+                svg.add_circle(x=x3, y=p, w=dot_size,
+                               fill=fill, fill_opacity=opacity)
 
             if i % 2 == 0:
                 x2 += l
@@ -115,22 +118,22 @@ def _add_swarm(svg: SVGFigure,
 
 
 def add_swarm(svg: SVGFigure,
-                data: DataFrame,
-                x: str = '',
-                y: str = '',
-                hue: Optional[str] = None,
-                x_order: Optional[list[str]] = None,
-                hue_order: Optional[list[str]] = [''],
-                palette: Optional[list[str]] = None,
-                plot_width: int = 80,
-                height: int = 500,
-                x_gap: int = 20,
-                title_offset: int = -50,
-                show_legend: bool = False,
-                pos: tuple[int, int] = (0, 0),
-                x_kws: Optional[dict[str, Any]] = None,
-                y_kws: Optional[dict[str, Any]] = None,
-                swarm_kws: Optional[dict[str, Any]] = None) -> None:
+              data: DataFrame,
+              x: str = '',
+              y: str = '',
+              hue: Optional[str] = None,
+              x_order: Optional[list[str]] = None,
+              hue_order: Optional[list[str]] = [''],
+              palette: Optional[list[str]] = None,
+              plot_width: int = 80,
+              height: int = 500,
+              x_gap: int = 20,
+              title_offset: int = -50,
+              show_legend: bool = False,
+              pos: tuple[int, int] = (0, 0),
+              x_kws: Optional[dict[str, Any]] = None,
+              y_kws: Optional[dict[str, Any]] = None,
+              swarm_kws: Optional[dict[str, Any]] = None) -> None:
 
     _x_kws = core.kws({'show': True, 'show_labels': True, 'show_axis': True,
                       'label_pos': 'axis', 'label_orientation': 'h'}, x_kws)
@@ -138,7 +141,7 @@ def add_swarm(svg: SVGFigure,
                        'ticklabels': None, 'offset': None, 'title': None}, y_kws)
     _swarm_kws = core.kws({'show': True, 'dot_size': 10,
                           'opacity': 0.7, 'style': swarm.PlotStyle.TRIANGLE}, swarm_kws)
-                          
+
     if palette is None:
         palette = matplotlib.cm.Set2
 
@@ -213,16 +216,15 @@ def add_swarm(svg: SVGFigure,
 
     for labeli, label in enumerate(x_order):
         if _x_kws['show_labels']:
-            match _x_kws['label_pos']:
-                case 'title':
-                    svg.add_text_bb(label, x=x2+w/2, y=title_offset, align='c')
-                case _:
-                    if _x_kws['label_orientation'] == 'v':
-                        svg.add_text_bb(label, x=x2+w/2, y=y1 +
-                                        yaxis.w+10, orientation='v', align='r')
-                    else:
-                        svg.add_text_bb(label, x=x2+w/2, y=y1 +
-                                        yaxis.w+50, align='c')
+            if _x_kws['label_pos'] == 'title':
+                svg.add_text_bb(label, x=x2+w/2, y=title_offset, align='c')
+            else:
+                if _x_kws['label_orientation'] == 'v':
+                    svg.add_text_bb(label, x=x2+w/2, y=y1 +
+                                    yaxis.w+10, orientation='v', align='r')
+                else:
+                    svg.add_text_bb(label, x=x2+w/2, y=y1 +
+                                    yaxis.w+50, align='c')
 
         for huei, hue_label in enumerate(hue_order):
             x2 += plot_width  # 2 * xaxis.w

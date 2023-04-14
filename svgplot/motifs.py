@@ -28,6 +28,7 @@ class Mode(Enum):
     def __str__(self):
         return str(self.name)
 
+
 class TitlePos(Enum):
     NONE = 0
     TOP = 1
@@ -35,15 +36,15 @@ class TitlePos(Enum):
 
 
 def add_homer_motifs_by_range(svg: SVGFigure,
-                               ids: list[int],
-                               mode: Mode = Mode.BITS,
-                               rev_comp=False,
-                               pos: tuple[int, int] = (0, 0),
-                               height: int = 100,
-                               letter_width: int = 48,
-                               title_pos = TitlePos.TOP,
-                               offset=220,
-                               prefix='motif'):
+                              ids: list[int],
+                              mode: Mode = Mode.BITS,
+                              rev_comp=False,
+                              pos: tuple[int, int] = (0, 0),
+                              height: int = 100,
+                              letter_width: int = 48,
+                              title_pos=TitlePos.TOP,
+                              offset=220,
+                              prefix='motif'):
 
     x, y = pos
     y1 = y
@@ -55,24 +56,23 @@ def add_homer_motifs_by_range(svg: SVGFigure,
 
 
 def add_homer_motif(svg: SVGFigure,
-                     file: str,
-                     mode: Mode = Mode.PROB,
-                     rev_comp=False,
-                     pos: tuple[int, int] = (0, 0),
-                     height: int = 100,
-                     title_pos = TitlePos.TOP,
-                     letter_width: int = 48):
+                    file: str,
+                    mode: Mode = Mode.PROB,
+                    rev_comp=False,
+                    pos: tuple[int, int] = (0, 0),
+                    height: int = 100,
+                    title_pos=TitlePos.TOP,
+                    letter_width: int = 48):
     x, y = pos
 
     x_scale_factor = letter_width / LW
     y_scale_factor = height / H
 
-    
     rc = 1
 
-    
     with open(file, 'r') as f:
-        name = re.sub(r'^.+BestGuess:', '', f.readline().split('\t')[1]).split('/')[0]
+        name = re.sub(r'^.+BestGuess:', '',
+                      f.readline().split('\t')[1]).split('/')[0]
 
     print(file, name)
 
@@ -88,17 +88,17 @@ def add_homer_motif(svg: SVGFigure,
         dfrc['t'] = df.iloc[:, 0].values
         df = dfrc
 
-    #print(df)
+    # print(df)
 
     w = letter_width * df.shape[0]
 
-    match title_pos:
-        case TitlePos.TOP:
-            svg.add_text_bb(name, x=x+letter_width*df.shape[0]/2, y=y-20, align='c')
-        case TitlePos.RIGHT:
-            svg.add_text_bb(name, x=x+w+50, y=y+height/2)
-        case _:
-            pass
+    if title_pos == TitlePos.TOP:
+        svg.add_text_bb(name, x=x+letter_width *
+                        df.shape[0]/2, y=y-20, align='c')
+    elif title_pos == TitlePos.RIGHT:
+        svg.add_text_bb(name, x=x+w+50, y=y+height/2)
+    else:
+        pass
 
     svgplot.add_x_axis(svg, pos=(x, y+height), axis=svgplot.Axis(lim=[0, df.shape[0]], ticks=[
         x+0.5 for x in range(df.shape[0])], ticklabels=[x+1 for x in range(df.shape[0])], w=letter_width*df.shape[0]))
@@ -106,7 +106,7 @@ def add_homer_motif(svg: SVGFigure,
     if mode == Mode.BITS:
         svgplot.add_y_axis(svg, pos=(x, y), axis=svgplot.Axis(lim=[0, 2], ticks=[
             0, 2], w=height, label='Bits'), title_offset=60)
-        
+
     else:
         svgplot.add_y_axis(svg, pos=(x, y), axis=svgplot.Axis(lim=[0, 1], ticks=[
             0, 1], w=height, label='Prob'), title_offset=60)
@@ -117,7 +117,7 @@ def add_homer_motif(svg: SVGFigure,
         if mode == Mode.BITS:
             U = 0
             for c in idx:
-                p = df.iloc[r, c] #1 if c == r else 0 #
+                p = df.iloc[r, c]  # 1 if c == r else 0 #
                 if p > 0:
                     U += p * np.log2(p)
 
@@ -134,11 +134,12 @@ def add_homer_motif(svg: SVGFigure,
         for c in idx:
             base = BASE_IDS[c]
             color = BASE_COLORS[base]
-            p = df.iloc[r, c] # 1 if c == r else 0  
+            p = df.iloc[r, c]  # 1 if c == r else 0
 
             y_scale = p * 2 * ic_frac * y_scale_factor * Y_SCALE_FACTORS[base]
             h = p * ic_frac * height
-            t = svg.text(base, weight='bold', css={'fill': color, 'font-size': '70'})
+            t = svg.text(base, weight='bold', css={
+                         'fill': color, 'font-size': '70'})
             t = svg.scale(t, x=x_scale_factor, y=y_scale)
             t = svg.trans(t, x=x, y=y1)
             svg.add(t)
