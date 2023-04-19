@@ -238,7 +238,7 @@ def add_xticklabels(svg: SVGFigure,
                     break
 
         svg.add_text_bb(rename_cols.get(name, name), x=x1,
-                        y=y, orientation='v', color=color)
+                        y=y, orientation='v', color=color, align='l')
         x1 += cell[0]
 
 

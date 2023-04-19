@@ -7,6 +7,9 @@ import re
 # inches to mm
 PX_TO_SVG = 1 / 72 * 254
 
+TEXT_ANCHOR_MAP = {"c":"middle", "l":"start", "r":"end"}
+BASELINE_MAP_MAP = {"c":"middle", "l":"auto", "r":"hanging"}
+
 
 class SVGFigureBase:
     def __init__(self,
@@ -303,7 +306,9 @@ class SVGFigureBase:
              size=None,
              spacing=0,
              weight=core.DEFAULT_FONT_WEIGHT,
-             css: Optional[Mapping[str, str]] = None) -> None:
+             css: Optional[Mapping[str, str]] = None,
+             baseline="auto",
+             text_anchor="start") -> None:
 
         if size is None:
             size = self._font_size
@@ -320,7 +325,9 @@ class SVGFigureBase:
 
         return self._svg.text(text,
                               insert=(x, y),
-                              style=core.format_css_params(_css))
+                              style=core.format_css_params(_css),
+                              dominant_baseline=baseline,
+                              text_anchor=text_anchor)
 
     def add_text(self,
                  label,
@@ -332,13 +339,17 @@ class SVGFigureBase:
                  size: int = None,
                  weight: str = core.DEFAULT_FONT_WEIGHT,
                  rotate: float = 0,
-                 css: Optional[Mapping[str, str]] = None) -> None:
+                 css: Optional[Mapping[str, str]] = None,
+                 baseline="auto",
+                 text_anchor="start") -> None:
         return self.add_rot_trans(self.text(label,
                                             color=color,
                                             family=family,
                                             size=size,
                                             weight=weight,
-                                            css=css),
+                                            css=css,
+                                            baseline=baseline,
+                                            text_anchor=text_anchor),
                                   x=x,
                                   y=y,
                                   rotate=rotate,)
@@ -490,35 +501,37 @@ class SVGFigureBase:
         y1 = self.get_font_y(y, h, size=size, weight=weight, family=family)
 
         if orientation == 'v':
-            x = self.get_font_y(x, w, size=size, weight=weight)
-            sw = self.get_string_width(label,
-                                       family=family,
-                                       size=size,
-                                       weight=weight)
+            # x = self.get_font_y(x, w, size=size, weight=weight)
+            # sw = self.get_string_width(label,
+            #                            family=family,
+            #                            size=size,
+            #                            weight=weight)
 
-            if align == 'c':
-                self.add_rot_trans(self.text(label, color=color, size=size),
-                                   x=x+self.get_font_h()/3,
-                                   y=y-(w-sw)/2,
-                                   rotate=-90)
-            elif align == 'r':
-                self.add_text(label,
-                              x=x,
-                              y=y1 + sw,
-                              color=color,
-                              size=size,
-                              weight=weight,
-                              family=family,
-                              rotate=-90)
-            else:
-                self.add_text(label,
-                              x=x,
-                              y=y1,
-                              color=color,
-                              size=size,
-                              weight=weight,
-                              family=family,
-                              rotate=-90)
+            # if align == 'c':
+            #     self.add_rot_trans(self.text(label, color=color, size=size),
+            #                        x=x,
+            #                        y=y,
+            #                        rotate=-90)
+            # elif align == 'r':
+            #     self.add_text(label,
+            #                   x=x,
+            #                   y=y1 + sw,
+            #                   color=color,
+            #                   size=size,
+            #                   weight=weight,
+            #                   family=family,
+            #                   rotate=-90)
+            # else:
+            self.add_text(label,
+                            x=x,
+                            y=y1,
+                            color=color,
+                            size=size,
+                            weight=weight,
+                            family=family,
+                            rotate=-90,
+                            text_anchor=TEXT_ANCHOR_MAP[align],
+                            baseline=BASELINE_MAP_MAP['c'])
         elif orientation == 'a':
             x = self.get_font_y(x, w, size=size, weight=weight, family=family)
 
@@ -529,46 +542,57 @@ class SVGFigureBase:
                           size=size,
                           weight=weight,
                           family=family,
-                          rotate=-45)
+                          rotate=-45,
+                          text_anchor=TEXT_ANCHOR_MAP[align])
         else:
-            if align == 'r':
-                sw1 = self.get_string_width(label,
-                                            family=family,
-                                            size=size,
-                                            weight=weight)
-
-                self.add_text(label,
-                              x - sw1,
+            self.add_text(label,
+                              x,
                               y=y1,
                               size=size,
                               color=color,
                               weight=weight,
-                              family=family)
+                              family=family,
+                              text_anchor=TEXT_ANCHOR_MAP[align])
 
-                # self.add_frame(x-sw1, y-self.get_font_h(), sw1, self.get_font_h(), color='red')
-            else:
-                x1 = x
+            # if align == 'r':
+            #     sw1 = self.get_string_width(label,
+            #                                 family=family,
+            #                                 size=size,
+            #                                 weight=weight)
 
-                if align == 'c':
-                    x1 = self._get_font_center_x(label,
-                                                 x,
-                                                 w,
-                                                 size=size,
-                                                 weight=weight,
-                                                 family=family)
+            #     self.add_text(label,
+            #                   x - sw1,
+            #                   y=y1,
+            #                   size=size,
+            #                   color=color,
+            #                   weight=weight,
+            #                   family=family)
 
-                self.add_text(label,
-                              x=x1,
-                              y=y1,
-                              color=color,
-                              size=size,
-                              weight=weight,
-                              family=family)
+            #     # self.add_frame(x-sw1, y-self.get_font_h(), sw1, self.get_font_h(), color='red')
+            # else:
+            #     x1 = x
 
-                # self.add_frame(x-20, y-self.get_font_h(), sw1, self.get_font_h(), color='red')
+            #     # if align == 'c':
+            #     #     x1 = self._get_font_center_x(label,
+            #     #                                  x,
+            #     #                                  w,
+            #     #                                  size=size,
+            #     #                                  weight=weight,
+            #     #                                  family=family)
 
-                if frameargs['style'] is not None:
-                    if frameargs['style'] == 'circle':
-                        x1 = x  # + (w - frameargs['s'])
-                        self.add_circle(
-                            x=x1, y=y, w=frameargs['s'], color=frameargs['color'])
+            #     self.add_text(label,
+            #                   x=x,
+            #                   y=y1,
+            #                   color=color,
+            #                   size=size,
+            #                   weight=weight,
+            #                   family=family,
+            #                   text_anchor="middle" if align == "c" else "start")
+
+            #     # self.add_frame(x-20, y-self.get_font_h(), sw1, self.get_font_h(), color='red')
+
+        if frameargs['style'] is not None:
+            if frameargs['style'] == 'circle':
+                x1 = x  # + (w - frameargs['s'])
+                self.add_circle(
+                    x=x1, y=y, w=frameargs['s'], color=frameargs['color'])
