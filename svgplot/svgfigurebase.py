@@ -7,8 +7,8 @@ import re
 # inches to mm
 PX_TO_SVG = 1 / 72 * 254
 
-TEXT_ANCHOR_MAP = {"c":"middle", "l":"start", "r":"end"}
-BASELINE_MAP_MAP = {"c":"middle", "l":"auto", "r":"hanging"}
+TEXT_ANCHOR_MAP = {"c": "middle", "l": "start", "r": "end"}
+BASELINE_MAP_MAP = {"c": "middle", "l": "auto", "r": "hanging"}
 
 
 class SVGFigureBase:
@@ -523,15 +523,15 @@ class SVGFigureBase:
             #                   rotate=-90)
             # else:
             self.add_text(label,
-                            x=x,
-                            y=y1,
-                            color=color,
-                            size=size,
-                            weight=weight,
-                            family=family,
-                            rotate=-90,
-                            text_anchor=TEXT_ANCHOR_MAP[align],
-                            baseline=BASELINE_MAP_MAP['c'])
+                          x=x,
+                          y=y1,
+                          color=color,
+                          size=size,
+                          weight=weight,
+                          family=family,
+                          rotate=-90,
+                          text_anchor=TEXT_ANCHOR_MAP[align],
+                          baseline=BASELINE_MAP_MAP['c'])
         elif orientation == 'a':
             x = self.get_font_y(x, w, size=size, weight=weight, family=family)
 
@@ -545,14 +545,15 @@ class SVGFigureBase:
                           rotate=-45,
                           text_anchor=TEXT_ANCHOR_MAP[align])
         else:
+            print(label, align, TEXT_ANCHOR_MAP[align])
             self.add_text(label,
-                              x,
-                              y=y1,
-                              size=size,
-                              color=color,
-                              weight=weight,
-                              family=family,
-                              text_anchor=TEXT_ANCHOR_MAP[align])
+                          x,
+                          y=y1,
+                          size=size,
+                          color=color,
+                          weight=weight,
+                          family=family,
+                          text_anchor=TEXT_ANCHOR_MAP[align])
 
             # if align == 'r':
             #     sw1 = self.get_string_width(label,

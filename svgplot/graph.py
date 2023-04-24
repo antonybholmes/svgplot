@@ -223,14 +223,14 @@ def add_x_axis(svg,
             x1 = x
 
         if showticks:
-            svg.add_text_bb(label, x=x1, y=y+title_offset, w=axis.w, align='c')
+            svg.add_text_bb(label, x=x1+axis.w/2, y=y+title_offset, align='c')
         else:
-            svg.add_text_bb(label, x=x1, y=y+title_offset, w=axis.w, align='c')
+            svg.add_text_bb(label, x=x1+axis.w/2, y=y+title_offset, align='c')
 
     # svg.set_font_size(DEFAULT_FONT_SIZE)
 
 
-def add_y_axis(svg,
+def add_y_axis(svg:SVGFigure,
                pos: tuple[Union[int, float], Union[int, float]] = (0, 0),
                axis: Axis = Axis(lim=[0, 100], w=200),
                ticks: Optional[Iterable[Union[int, float]]] = None,

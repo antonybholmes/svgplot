@@ -47,7 +47,9 @@ def add_gsea(svg: SVGFigure,
              label_pos: str = 'upper right',
              show_y_label: bool = True,
              stat: str = 'q',
-             le_fill_opacity: float = 0.3):
+             le_fill_opacity: float = 0.3,
+             bar_colors = ['red', 'royalblue'],
+             label_colors = []):
     """
     Add a gsea plot onto a page. This method adds axes labels to reduce
     scaling effect on fonts.
@@ -322,9 +324,9 @@ def add_gsea(svg: SVGFigure,
         x1 = xoffset + xaxis.scale(hit)  # hit / xmax * w
 
         if hit <= zero_cross:  # xmid:
-            color = 'red'
+            color = bar_colors[0]
         else:
-            color = 'royalblue'
+            color = bar_colors[1]
 
         svg.add_line(x1=x1, y1=y, x2=x1, y2=y+sh, color=color)
 
@@ -378,9 +380,9 @@ def add_gsea(svg: SVGFigure,
     if isinstance(phens, list) or isinstance(phens, tuple):
         #y += svg.get_font_h() - 5
 
-        svg.add_text_bb(phens[0], x=xoffset, y=y, color='red')
+        svg.add_text_bb(phens[0], x=xoffset, y=y, color=label_colors[0] if len(label_colors) > 0 else bar_colors[0])
         svg.add_text_bb(phens[1], x=xoffset + w, y=y,
-                        align='r', color='royalblue')
+                        align='r', color=label_colors[1] if len(label_colors) > 0 else bar_colors[1])
     # else:
     #     svg.add_line(x1=xoffset, y1=y, x2=xoffset, y2=y+padding)
 
