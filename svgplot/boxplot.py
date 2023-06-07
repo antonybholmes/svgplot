@@ -82,7 +82,8 @@ def add_boxplot(svg: SVGFigure,
                 hue_order: Optional[list[str]] = [''],
                 palette: Optional[list[str]] = None,
                 plot_width: int = 80,
-                height: int = 500,
+                padding:int = 0,
+                height: int = 400,
                 x_gap: int = 20,
                 title_offset: int = -50,
                 show_legend: bool = False,
@@ -145,7 +146,7 @@ def add_boxplot(svg: SVGFigure,
         _y_kws['lim'] = (data[y].min(), data[y].max())
 
     if _y_kws['offset'] is None:
-        _y_kws['offset'] = -(plot_width/2 + x_gap)
+        _y_kws['offset'] = -(plot_width/2 + x_gap + padding)
 
     if _y_kws['title'] is None:
         _y_kws['title'] = y
@@ -174,7 +175,7 @@ def add_boxplot(svg: SVGFigure,
     w = (hue_order.size - 1) * plot_width
 
     for labeli, label in enumerate(x_order):
-        if _x_kws['show_labels']:
+        if _x_kws['show']:
             if _x_kws['label_pos'] == 'title':
                 svg.add_text_bb(label, x=x2+w/2, y=title_offset, align='c')
             else:
@@ -231,8 +232,8 @@ def add_boxplot(svg: SVGFigure,
         x2 += x_gap
 
     if _x_kws['show_axis']:
-        svg.add_line(x1=pos[0]-plot_width/2-x_gap, x2=x2 -
-                     plot_width/2-x_gap, y1=y1+yaxis.w)
+        svg.add_line(x1=pos[0]-plot_width/2-x_gap-padding, x2=x2 -
+                     plot_width/2-x_gap+padding, y1=y1+yaxis.w)
 
     if show_legend:
         swarm._add_legend(svg,

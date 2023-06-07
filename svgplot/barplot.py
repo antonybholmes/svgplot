@@ -1,4 +1,6 @@
 from typing import Mapping, Optional, Union, Any
+
+import matplotlib
 from .axis import Axis
 from .svgfigure import SVGFigure
 from . import svgfiguredraw
@@ -7,11 +9,13 @@ import math
 from . import graph
 from . import hatch as phatch
 from enum import Enum
-import pandas
+import pandas as pd
+from . import core
+import seaborn as sns
 
 
 def add_barplot(svg: SVGFigure,
-                data: pandas.DataFrame,
+                data: pd.DataFrame,
                 x: str = 'x',
                 y: str = 'y',
                 hue: Optional[str] = None,
@@ -35,9 +39,9 @@ def add_barplot(svg: SVGFigure,
 
     yaxis = Axis(lim=ylim, w=height)
 
-    #w = means.size * block_size
+    # w = means.size * block_size
 
-    #xaxis = axis.Axis(lim=[0, df.shape[1]], w=w)
+    # xaxis = axis.Axis(lim=[0, df.shape[1]], w=w)
 
     y2 = yp + height
 
@@ -46,7 +50,7 @@ def add_barplot(svg: SVGFigure,
 
     if y is None:
         y = ''
-        
+
     if order is None:
         if x != '':
             order = sorted(data[x].unique())
@@ -136,59 +140,122 @@ def add_barplot(svg: SVGFigure,
 
 
 def add_stacked_bar(svg: SVGFigure,
-                    tables,
-                    bar_colors={},
-                    x=0,
-                    y=0,
+                    df,
+                    x: str,
+                    y: str,
+                    hue: str,
+                    hue_order=None,
+                    palette: Union[list, dict,
+                                   matplotlib.colors.ListedColormap] = None,
+                    pos=(0, 0),
                     height=400,
                     bar_width=60,
                     bar_padding=10,
                     bar_color='#cccccc',
                     ylim=[0, 100],
-                    yticks=[0, 50, 100],
+                    yticks=None,
                     xlabel='',
                     ylabel='% cells',
                     padding=10,
-                    whisker=20,
+                    showborder=True,
                     as_pc=True):
     # self.set_font_size(svgplot.FIGURE_FONT_SIZE)
 
+    x1, y1 = pos
+
+    if hue_order is None:
+        hue_order = np.array(sorted(df[hue].unique()))
+
+    if palette is None:
+        palette = sns.color_palette("hls", len(hue_order))
+
+    if isinstance(palette, matplotlib.colors.ListedColormap):
+        palette = [core.rgbtohex(c) for c in palette.colors]
+
+    if isinstance(palette, list):
+        if isinstance(palette[0], tuple) or isinstance(palette[0], list):
+            palette = [core.rgbtohex(c) for c in palette]
+
+    if isinstance(palette, list):
+        palette = {hue_order[i]: palette[i %
+                                         len(palette)] for i in range(len(hue_order))}
+
     if as_pc:
-        pc_tables = [(t / t.sum(axis=0) * 100) for t in tables]
-        yaxis = Axis(lim=[0, 100], w=height)
+        tables = []
+        for c in df[x].unique():
+            dfc = df[df[x] == c]
+            s = np.sum(dfc[y].values)
+            if s > 0:
+                dfc[y] = dfc[y] / s * 100
+            tables.append(dfc)
+
+        df = pd.concat(tables, axis=0)
+
+        # pc_tables = [(t / t.sum(axis=0) * 100) for t in tables]
+
+        yaxis = Axis(lim=[0, 100], ticks=range(0, 120, 20), w=height)
     else:
-        pc_tables = tables
+        # pc_tables = tables
         yaxis = Axis(lim=ylim, w=height)
 
     block_size = bar_width + 2 * bar_padding
 
-    #w = means.size * block_size
+    # w = means.size * block_size
 
-    #xaxis = axis.Axis(lim=[0, df.shape[1]], w=w)
+    # xaxis = axis.Axis(lim=[0, df.shape[1]], w=w)
 
-    y2 = y + height
+    y2 = y1 + height
 
     # draw bars
 
-    x1 = x + bar_padding
+    x2 = x1 + bar_padding
 
-    for t in pc_tables:
-        for c in range(0, t.shape[1]):
-            y3 = y2
-            for r in range(t.shape[0] - 1, -1, -1):
-                h = yaxis.scale(t.iloc[r, c])
-                y1 = y3 - h
+    groups = []
 
-                bar_name = str(t.index[r])
+    for c in df[x]:
+        if c not in groups:
+            groups.append(c)
 
-                if bar_name in bar_colors:
-                    bar_color = bar_colors[bar_name]
-                else:
-                    bar_color = 'gray'
+    for c in groups:
+        dfc = df[df[x] == c]
+        y3 = y2
 
-                svg.add_rect(x1, y1, bar_width, h, fill=bar_color)
-                svg.add_rect(x1, y1, bar_width, h, color='black')
-                y3 -= h
-            x1 += block_size
+        for hi, h in enumerate(hue_order):
+            dfh = dfc[dfc[hue] == h]
 
-    graph.add_y_axis(svg, axis=yaxis, pos=(0, 0), ticks=yticks, label=ylabel)
+            print(dfc)
+            print(h, dfh)
+
+            print('qwe', dfh[y].values[0])
+
+            h1 = yaxis.scale(dfh[y].values[0])
+            y4 = y3 - h1
+
+            if h in palette:
+                bar_color = palette[h]
+            else:
+                bar_color = 'gray'
+
+            print('fg:', x2)
+            print('ert:', bar_width)
+            print('fg2:', h1, bar_color)
+            svg.add_rect(x2, y4, bar_width, h1, fill=bar_color)
+            
+            if showborder:
+                svg.add_rect(x2, y4, bar_width, h1, color='black')
+            
+            y3 -= h1
+
+        svg.add_text_bb(c, x=x2+bar_width/2, y=y2+20, align='r', orientation='v')
+
+        x2 += block_size
+
+    svg.add_line(x2=x2, y1=y2)
+
+    graph.add_y_axis(svg, axis=yaxis, pos=pos, ticks=yticks, label=ylabel, title_offset=100)
+
+    svg.inc(x=x2 + 50)
+
+    for h in hue_order:
+        svg.add_bullet(h, shape='s', color=palette[h], text_color='black')
+        svg.inc(y=50)

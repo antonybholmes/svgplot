@@ -1,9 +1,11 @@
 from optparse import Option
 from typing import Any, Optional, Union
 from scipy.stats import gaussian_kde
-from pandas import DataFrame
+import pandas as pd
 from .svgfigure import SVGFigure
 import matplotlib
+from scipy.stats import mannwhitneyu
+from enum import Enum
 import numpy as np
 from . import core
 from .axis import Axis
@@ -11,9 +13,13 @@ from . import graph
 from . import swarm
 from . import boxplot
 
+class StatsMode(Enum):
+    NONE = 1
+    CALC = 2
+    SHOW = 3
 
 def _add_violin(svg: SVGFigure,
-                df: DataFrame,
+                df: pd.DataFrame,
                 max_density: float,
                 axes: tuple[Axis, Axis],
                 color: str = 'blue',
@@ -109,7 +115,7 @@ def _kde_support(x, bw, cut, gridsize=100):
 
 
 def add_violinplot(svg: SVGFigure,
-                   data: DataFrame,
+                   data: pd.DataFrame,
                    x: str = '',
                    y: str = '',
                    hue: Optional[str] = None,
@@ -118,12 +124,13 @@ def add_violinplot(svg: SVGFigure,
                    palette: Optional[list[str]] = None,
                    scale: str = 'area',
                    scale_hue: bool = True,
+                   pos: tuple[int, int] = (0, 0),
                    plot_width: int = 80,
                    height: int = 500,
                    x_gap: int = 20,
                    title_offset: int = -50,
                    show_legend: bool = False,
-                   pos: tuple[int, int] = (0, 0),
+                   stats_mode: StatsMode = StatsMode.SHOW,
                    bw_kws: Optional[dict[str, Any]] = None,
                    x_kws: Optional[dict[str, Any]] = None,
                    y_kws: Optional[dict[str, Any]] = None,
@@ -137,11 +144,14 @@ def add_violinplot(svg: SVGFigure,
                       'label_pos': 'axis', 'label_orientation': 'h'}, x_kws)
     _y_kws = core.kws({'show': True, 'lim': None, 'ticks': None,
                        'ticklabels': None, 'offset': None, 'title': None}, y_kws)
-    _violin_kws = core.kws({'show': True, 'opacity': 0.4}, violin_kws)
-    _swarm_kws = core.kws({'show': True, 'dot_size': 10,
+    _violin_kws = core.kws({'show': True, 'opacity': 0.5}, violin_kws)
+    _swarm_kws = core.kws({'show': False, 'dot_size': 10,
                           'opacity': 0.7, 'style': swarm.PlotStyle.TRIANGLE}, swarm_kws)
-    _box_kws = core.kws({'show': True, 'width': 20, 'whisker_width': 20, 'stroke': 3, 'dot_size': 12,
+    _box_kws = core.kws({'show': True, 'width': 20, 'whisker_width': 20, 'stroke': 4, 'dot_size': 12,
                          'fill': 'white', 'line_color': None, 'opacity': 1, 'rounded': True, 'median_style': boxplot.MedianStyle.CIRCLE}, box_kws)
+
+    
+    
 
     if palette is None:
         palette = matplotlib.cm.Set2
@@ -150,7 +160,12 @@ def add_violinplot(svg: SVGFigure,
         palette = [core.rgbtohex(c) for c in palette.colors]
 
     if isinstance(palette, list):
+        if isinstance(palette[0], tuple) or isinstance(palette[0], list):
+            palette = [core.rgbtohex(c) for c in palette]
+
         palette = np.array(palette)
+
+    print(palette)
 
     if hue is not None:
         palette = palette[0:2]
@@ -221,7 +236,7 @@ def add_violinplot(svg: SVGFigure,
 
             density = kde.evaluate(x_d)
 
-            df = DataFrame()
+            df = pd.DataFrame()
             df['x'] = density
             df['y'] = x_d
 
@@ -314,4 +329,71 @@ def add_violinplot(svg: SVGFigure,
                             palette,
                             pos=(x1-plot_width+40, 0))
 
-    return (x1 - x_gap - plot_width, height)
+    #
+    # Stats
+    #
+
+    df_stats = None
+
+    if stats_mode != StatsMode.NONE:
+        d = np.ones((x_order.size, x_order.size))
+
+
+        print(d.size)
+        stats = []
+        n = x_order.size * x_order.size
+
+        for s1, xc1 in enumerate(x_order):
+            for s2, xc2 in enumerate(x_order):
+                s, p = mannwhitneyu(data[data[x] == xc1][y], data[data[x] == xc2][y])
+                #print(p)
+                # bonferroni
+                q = min(1, p * d.size)
+                d[s1, s2] = q
+                stats.append([xc1, xc2, p, q])
+                
+        df_stats = pd.DataFrame(stats, columns=[f'{x} 1', f'{x} 2', 'p', 'q'])
+
+        #dfp = pd.DataFrame(d, index=hue_order, columns=hue_order)
+        #dfp.to_csv('bcca_nrc31_subtype_q.tsv', sep='\t', header=True, index=True)
+
+        if stats_mode == StatsMode.SHOW:
+            # count number of lines
+            bars = 0
+
+            for t1i, t1 in enumerate(x_order):
+                for t2i, t2 in enumerate(x_order):
+                    if t2i > t1i:
+                        df_stats_t = df_stats[(df_stats[f'{x} 1'] == t1) & (
+                            df_stats[f'{x} 2'] == t2)]
+                        if df_stats_t.shape[0] == 0:
+                            continue
+
+                        q = df_stats_t['q'].values[0]
+
+                        if q < 0.05:
+                            bars += 1
+
+            ty = -bars * 20
+            plot_total_width = plot_width + x_gap
+
+            for t1i, t1 in enumerate(x_order):
+                for t2i, t2 in enumerate(x_order):
+                    if t2i > t1i:
+                        df_stats_t = df_stats[(df_stats[f'{x} 1'] == t1) & (
+                            df_stats[f'{x} 2'] == t2)]
+                        if df_stats_t.shape[0] == 0:
+                            continue
+
+                        q = df_stats_t['q'].values[0]
+
+                        if q < 0.05:
+                            print('ddd')
+                            #svg.add_text_bb('*', x=(t1i+t2i)*plot_total_width/2, y=ty-10, align='c')
+                            svg.add_line(t1i * plot_total_width, ty, t2i * plot_total_width, ty)
+                            svg.add_line(t1i * plot_total_width, ty, t1i * plot_total_width, ty + 10)
+                            svg.add_line(t2i * plot_total_width, ty, t2i * plot_total_width, ty + 10)
+                            ty += 20
+
+
+    return {'w':x1 - x_gap - plot_width, 'h':height, 'stats':df_stats}

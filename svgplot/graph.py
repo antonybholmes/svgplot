@@ -181,10 +181,21 @@ def add_x_axis(svg,
 
             if label_pos == 'inner':
                 align = 'r' if i == len(ticks) - 1 else 'l'
+                print(ticklabel, align, 'align')
                 svg.add_text_bb(ticklabel, x=tickx, y=y1, align=align)
             else:
                 #print(tickx, ticklabel)
-                svg.add_text_bb(ticklabel, x=tickx, y=y1, align='c')
+
+                if '^' in ticklabel:
+                    t, sup = ticklabel.split('^')
+                else:
+                    t = ticklabel
+                    sup = None
+
+                svg.add_text_bb(t, x=tickx, y=y1, align='c')
+                
+                if sup is not None:
+                    svg.add_text_bb(sup, x=tickx+20, y=y1-15, size=6)
                 #pass
         else:
             svg.add_text_bb(ticklabel, x=tickx, y=y +
@@ -371,8 +382,8 @@ def add_y_axis(svg:SVGFigure,
         svg.add_text_bb(label,
                         x=x-title_offset,
                         y=y1,
-                        align='c',
-                        orientation='v')
+                        orientation='v',
+                        align='c')
 
     # svg.set_font_size(DEFAULT_FONT_SIZE)
 

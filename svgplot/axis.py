@@ -54,6 +54,8 @@ class Axis:
 
         self._ticks = np.array(self._ticks)
         self._ticklabels = np.array(self._ticklabels)
+        print(self._ticklabels)
+     
 
     @property
     def scale_factor(self) -> Union[int, float]:

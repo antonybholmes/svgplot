@@ -270,36 +270,67 @@ def add_clustermap(svg: SVGFigure,
 
                 x1 -= color_height + tree_offset
 
-    # col labels
+        # row labels
 
-    if isinstance(xticklabels, bool):
-        if xticklabels:
-            xticklabels = df.columns
-        else:
-            xticklabels = []
+        if isinstance(yticklabels, bool):
+            if yticklabels:
+                yticklabels = df.columns
+            else:
+                yticklabels = []
 
-    if len(xticklabels) > 0:
-        x1 = x + cell[0] / 2
-        y1 = y - 30
+        if len(yticklabels) > 0:
+            #if col_linkage is not None and show_col_tree:
+            #    y1 -= (tree_offset + tree_height)
 
-        if col_linkage is not None and show_col_tree:
-            y1 -= (tree_offset + tree_height)
+            #if len(col_colors) > 0:
+            #    y1 -= color_height + tree_offset
 
-        if len(col_colors) > 0:
-            y1 -= color_height + tree_offset
+            x1 = x + df.shape[1] * cell[0] + tree_offset
+            y1 = y # + cell[1]/2
+            ys1 = 0
+            for ys2 in ysplits:
+                labels = df.index[ys1:ys2]
+                # allow last minute renaming
+                labels = np.array(
+                    [rename_cols[x] if x in rename_cols else x for x in labels])
 
-        x1 = x
-        xs1 = 0
-        for xs2 in xsplits:
-            labels = df.columns[xs1:xs2]
-            # allow last minute renaming
-            labels = np.array(
-                [rename_cols[x] if x in rename_cols else x for x in labels])
+                matrix.add_yticklabels(svg, labels, pos=(
+                    x1, y1), colors=xticklabel_colors)
 
-            matrix.add_xticklabels(svg, labels, pos=(
-                x1, y1), colors=xticklabel_colors)
+                y1 += cell[1] * labels.size + ysplitgap
+                ys1 = ys2
 
-            x1 += cell[0] * labels.size + xsplitgap
-            xs1 = xs2
+
+        # col labels
+
+        if isinstance(xticklabels, bool):
+            if xticklabels:
+                xticklabels = df.columns
+            else:
+                xticklabels = []
+
+        if len(xticklabels) > 0:
+            x1 = x + cell[0] / 2
+            y1 = y - 30
+
+            if col_linkage is not None and show_col_tree:
+                y1 -= (tree_offset + tree_height)
+
+            if len(col_colors) > 0:
+                y1 -= color_height + tree_offset
+
+            x1 = x
+            xs1 = 0
+            for xs2 in xsplits:
+                labels = df.columns[xs1:xs2]
+                # allow last minute renaming
+                labels = np.array(
+                    [rename_cols[x] if x in rename_cols else x for x in labels])
+
+                matrix.add_xticklabels(svg, labels, pos=(
+                    x1, y1), colors=xticklabel_colors)
+
+                x1 += cell[0] * labels.size + xsplitgap
+                xs1 = xs2
 
     return {'w': w, 'h': h, 'df':df}

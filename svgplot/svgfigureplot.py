@@ -378,7 +378,7 @@ class SVGFigurePlot(SVGFigureDraw):
                              y+sizes.max()+10, align='c')
             x1 += 90
 
-        # self.set_font_size(core.DEFAULT_FONT_SIZE)
+        return {'w':x1-90}
 
     
 

@@ -34,6 +34,7 @@ def add_gsea(svg: SVGFigure,
              h: Optional[float] = None,
              xoffset: int = 80,
              title: Optional[str] = None,
+             showtitle:bool = True,
              phens=None,
              cmap=plt.cm.seismic,
              mode: str = 'up',
@@ -75,9 +76,12 @@ def add_gsea(svg: SVGFigure,
 
             break
 
+    ln = name.lower()
+
     for f in os.listdir(dir):
+        fl = f.lower()
         print(dir, f, name)
-        if name in f and 'xls' in f:
+        if ln in fl.lower() and 'xls' in f:
             print(f'gene hits: {f}')
             df_hits = pd.read_csv(f'{dir}/{f}', sep='\t', header=0)
             break
@@ -89,7 +93,7 @@ def add_gsea(svg: SVGFigure,
             df_rep = pd.read_csv(f'{dir}/{f}', sep='\t', header=0)
 
             for i in range(df_rep.shape[0]):
-                nes_map[df_rep['NAME'][i]] = (
+                nes_map[df_rep['NAME'][i].lower()] = (
                     df_rep['NES'][i], df_rep['FDR q-val'][i], df_rep['NOM p-val'][i])
 
     starty = y
@@ -182,12 +186,15 @@ def add_gsea(svg: SVGFigure,
         else:
             h = scale_factor * w
 
-    if isinstance(title, str):
+    if showtitle:
+        if title is None:
+            title = name
+
         if n == -1:
             n = genes
 
-        title = '{} (n={} {})'.format(title, n, mode)
-        svg.add_text_bb(title, x=x+xoffset,
+        title = f'{title} (n={n:,})'
+        svg.add_text_bb(title, x=x+xoffset+w/2,
                         y=y,
                         w=w,
                         align='c',
@@ -295,24 +302,26 @@ def add_gsea(svg: SVGFigure,
 
     # add labels
 
-    print(nes_map)
-    if name in nes_map:
+    print('nes_map', ln, nes_map)
+    if ln in nes_map:
         if label_pos == 'upper right':
-            svg.add_text_bb(f'NES: {nes_map[name][0]:.2f}', x=w-100)
+            x1 = w - 100
+            svg.add_text_bb(f'NES: {nes_map[ln][0]:.2f}', x=x1, y=y)
 
             if stat == 'q':
-                svg.add_text_bb(f'q: {nes_map[name][1]:.2f}', x=w-100, y=35)
+                svg.add_text_bb(f'q: {nes_map[ln][1]:.2f}', x=x1, y=y+35)
             else:
-                svg.add_text_bb(f'p: {nes_map[name][2]:.2f}', x=w-100, y=35)
+                svg.add_text_bb(f'p: {nes_map[ln][2]:.2f}', x=x1, y=y+35)
         else:
-            svg.add_text_bb(f'NES: {nes_map[name][0]:.2f}', x=90, y=scaleh-60)
+            x1 = 90
+            svg.add_text_bb(f'NES: {nes_map[ln][0]:.2f}', x=x1, y=scaleh-60)
 
             if stat == 'q':
                 svg.add_text_bb(
-                    f'q: {nes_map[name][1]:.2f}', x=90, y=scaleh-25)
+                    f'q: {nes_map[ln][1]:.2f}', x=x1, y=scaleh-25)
             else:
                 svg.add_text_bb(
-                    f'p: {nes_map[name][2]:.2f}', x=90, y=scaleh-25)
+                    f'p: {nes_map[ln][2]:.2f}', x=x1, y=scaleh-25)
 
     #
     # draw hits

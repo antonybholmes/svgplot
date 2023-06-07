@@ -42,9 +42,9 @@ class SVGFigureBase:
                          self._int_view[1] / grid[0])
         self._subgrid_xy = (self._grid_xy[0] / grid[1],
                             self._grid_xy[1] / grid[0])
-        self._offset = (0, 0)
+        self._offset = [0, 0]
         self._sub_offset = (0, 0)
-        self._trans = [(0, 0)]
+        self._trans = [[0, 0]]
         self._mode = 'grid'
         self._font_size = core.DEFAULT_FONT_SIZE
         self._heading_font_size = core.HEADING_FONT_SIZE
@@ -91,16 +91,27 @@ class SVGFigureBase:
         return round(num, 5)
 
     def set_offset(self, x: int = 0, y: int = 0):
-        self._offset = (x, y)
+        self._offset = [x, y]
+        # move to another location and reset sub locations
+        self.set_sub_cell(0, 0)
+        self._trans = [[0, 0]]
+
+    def set_offset_x(self, x: int = 0):
+        self._offset[0] = x
+        self.set_sub_cell(0, 0)
+        self._trans = [[0, 0]]
+    
+    def set_offset_y(self, y: int = 0):
+        self._offset[1] = y
+        self.set_sub_cell(0, 0)
+        self._trans = [[0, 0]]
 
     def set_sub_offset(self, x: int = 0, y: int = 0):
         self._sub_offset = (x, y)
 
     def set_cell(self, row: int = 0, col: int = 0):
         self.set_offset(col * self._grid_xy[0], row * self._grid_xy[1])
-        self.set_sub_cell(0, 0)
-        self.t(0, 0)
-
+        
         return self
 
     def set_sub_cell(self, row: int = 0, col: int = 0):
@@ -163,7 +174,7 @@ class SVGFigureBase:
             y = self._trans[-1][1]
 
         # self._trans = (x * self._scale_xy[0], y * self._scale_xy[1])
-        self._trans.append((x, y))
+        self._trans.append([x, y])
 
     def undo_t(self) -> None:
         """
@@ -171,6 +182,10 @@ class SVGFigureBase:
         """
         if len(self._trans) > 1:
             loc = self._trans.pop()
+
+    @property
+    def translation(self) -> list[int]:
+        return self._trans[-1]
 
     def rot(self, elem, rotate: Optional[float] = None) -> None:
         if rotate is None or (isinstance(rotate, int) and rotate == 0):
@@ -307,7 +322,7 @@ class SVGFigureBase:
              spacing=0,
              weight=core.DEFAULT_FONT_WEIGHT,
              css: Optional[Mapping[str, str]] = None,
-             baseline="auto",
+             baseline="middle",
              text_anchor="start") -> None:
 
         if size is None:
@@ -327,7 +342,8 @@ class SVGFigureBase:
                               insert=(x, y),
                               style=core.format_css_params(_css),
                               dominant_baseline=baseline,
-                              text_anchor=text_anchor)
+                              text_anchor=text_anchor,
+                              font_weight=weight)
 
     def add_text(self,
                  label,
@@ -340,7 +356,7 @@ class SVGFigureBase:
                  weight: str = core.DEFAULT_FONT_WEIGHT,
                  rotate: float = 0,
                  css: Optional[Mapping[str, str]] = None,
-                 baseline="auto",
+                 baseline="middle",
                  text_anchor="start") -> None:
         return self.add_rot_trans(self.text(label,
                                             color=color,
@@ -498,7 +514,7 @@ class SVGFigureBase:
         align = align.lower()
         orientation = orientation.lower()
 
-        y1 = self.get_font_y(y, h, size=size, weight=weight, family=family)
+        #y1 = self.get_font_y(y, h, size=size, weight=weight, family=family)
 
         if orientation == 'v':
             # x = self.get_font_y(x, w, size=size, weight=weight)
@@ -524,20 +540,19 @@ class SVGFigureBase:
             # else:
             self.add_text(label,
                           x=x,
-                          y=y1,
+                          y=y,
                           color=color,
                           size=size,
                           weight=weight,
                           family=family,
                           rotate=-90,
-                          text_anchor=TEXT_ANCHOR_MAP[align],
-                          baseline=BASELINE_MAP_MAP['c'])
+                          text_anchor=TEXT_ANCHOR_MAP[align])
         elif orientation == 'a':
             x = self.get_font_y(x, w, size=size, weight=weight, family=family)
 
             self.add_text(label,
                           x=x,
-                          y=y1,
+                          y=y,
                           color=color,
                           size=size,
                           weight=weight,
@@ -545,10 +560,10 @@ class SVGFigureBase:
                           rotate=-45,
                           text_anchor=TEXT_ANCHOR_MAP[align])
         else:
-            print(label, align, TEXT_ANCHOR_MAP[align])
+            #print(label, align, TEXT_ANCHOR_MAP[align])
             self.add_text(label,
                           x,
-                          y=y1,
+                          y=y,
                           size=size,
                           color=color,
                           weight=weight,

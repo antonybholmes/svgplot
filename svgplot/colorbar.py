@@ -9,7 +9,7 @@ import matplotlib
 
 def add_h_colorbar(svg: SVGFigure,
                    pos: tuple[int, int] = (0, 0),
-                   dim: tuple[int, int] = (300, 25),
+                   dim: tuple[int, int] = (200, 25),
                    steps=15,
                    cmap=matplotlib.cm.viridis,
                    ticks=None,

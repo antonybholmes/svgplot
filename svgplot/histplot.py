@@ -24,6 +24,7 @@ def add_histplot(svg: SVGFigure,
                  bins: int = 70,
                  pos: tuple[int, int] = (0, 0),
                  bar_color: str = '#AACCFF',
+                 bar_opacity: float = 0.7,
                  bar_blend: bool = True,
                  show_bars: bool = True,
                  xaxis_kws: Mapping[str, Union[int, float, str, bool]] = {},
@@ -99,7 +100,7 @@ def add_histplot(svg: SVGFigure,
             dfx = data
 
         color = bar_color
-        op = 1
+        op = bar_opacity
 
         if ho in opacity:
             op = opacity[ho]
@@ -151,7 +152,7 @@ def add_histplot(svg: SVGFigure,
             dfp['y'] = hist
 
             add_lineplot(svg, dfp, x='x', y='y', axes=axes, smooth_kws={
-                         'smooth': True}, xaxis_kws={'show': False}, yaxis_kws={'show': False}, fill=color if _line_kws['fill'] else 'none', fill_opacity=op)
+                         'smooth': _line_kws['smooth']}, xaxis_kws={'show': False}, yaxis_kws={'show': False}, fill=color if _line_kws['fill'] else 'none', fill_opacity=op)
 
             # cs = CubicSpline(bin_edges[0:-1], hist)
             # # np.linspace(x_sm.min(), x_sm.max(), 200)

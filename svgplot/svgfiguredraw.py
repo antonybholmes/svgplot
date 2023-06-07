@@ -135,7 +135,8 @@ class SVGFigureDraw(SVGFigureBase):
              fill_opacity=1,
              stroke=core.STROKE_SIZE,
              dashed=False,
-             rounding=0):
+             rounding=0,
+             shape_rendering='crispEdges'):
 
         if dashed:
             style = core.css_params('fill', fill, 'fill-opacity', fill_opacity,
@@ -148,7 +149,8 @@ class SVGFigureDraw(SVGFigureBase):
                                          size=(self.unit(w), self.unit(h)),
                                          style=style,
                                          rx=rounding,
-                                         ry=rounding),
+                                         ry=rounding,
+                                         shape_rendering=shape_rendering),
                           x=x,
                           y=y)
         # return self._svg.rect(insert=(self.x(x), self.y(y)),
@@ -471,7 +473,8 @@ class SVGFigureDraw(SVGFigureBase):
                           h + p2,
                           color=color,
                           fill=fill,
-                          stroke=stroke)
+                          stroke=stroke
+                          )
 
     def add_bullet(self,
                    label,

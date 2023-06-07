@@ -55,7 +55,7 @@ def add_homer_motifs_by_range(svg: SVGFigure,
         y1 += offset
 
 
-def parse_homer_motifs(file: str,rev_comp:bool=False):
+def parse_homer_motifs(file: str, rev_comp: bool = False):
     motifs = []
     bases = []
     name = ''
@@ -113,7 +113,7 @@ def add_homer_motif(svg: SVGFigure,
                     title_pos=TitlePos.TOP,
                     letter_width: int = 48,
                     gap: int = 50):
-    
+
     motifs = parse_homer_motifs(file, rev_comp)
 
     print(len(motifs))

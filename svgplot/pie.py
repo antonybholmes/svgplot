@@ -87,7 +87,15 @@ def add_pie_chart(svg: SVGFigure,
                 x1 = x + lr * math.sin(angle4)
                 y1 = y - lr * math.cos(angle4)
 
-            svg.add_text_bb(labels[i % labels.size], x=x1, y=y1,
-                            align='c', color=labelcolors[i % labelcolors.size])
+            label = labels[i % labels.size]
+
+            if isinstance(label, str):
+                label = [label]
+
+            y2 = y1
+            for l in label:
+                svg.add_text_bb(l, x=x1, y=y2,
+                                align='c', color=labelcolors[i % labelcolors.size])
+                y2 += 40
 
             angle1 += angle2

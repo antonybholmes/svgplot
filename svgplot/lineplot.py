@@ -47,7 +47,7 @@ def add_lineplot(svg: SVGFigure,
     # set some defaults
     _show_axes = graph._get_default_axes_kws(xaxis_kws, yaxis_kws)
 
-    _smooth_kws = {'smooth': False, 'steps': 200, 'zero_ends':True}
+    _smooth_kws = {'smooth': False, 'steps': 300, 'zero_ends':True}
     _smooth_kws.update(smooth_kws)
 
     xp, yp = pos
@@ -91,7 +91,7 @@ def add_lineplot(svg: SVGFigure,
             # np.linspace(x_sm.min(), x_sm.max(), 200)
             xd = np.linspace(xaxis.lim[0], xaxis.lim[1], _smooth_kws['steps'])
             yd = cs(xd)  # spline(x, y, x_smooth)
-
+            print('smoothing')
 
 
         points = []
