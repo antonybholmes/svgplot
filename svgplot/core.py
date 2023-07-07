@@ -107,6 +107,7 @@ def clamp(x):
     return max(0, min(int(x * 255), 255))
 
 def rgbtohex(rgba):
+    
     return '#{:02x}{:02x}{:02x}'.format(clamp(rgba[0]), clamp(rgba[1]), clamp(rgba[2]))
 
 def rgbatohex(rgba):

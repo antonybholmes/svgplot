@@ -319,8 +319,6 @@ def add_single_cell_col_labels(svg: SVGFigure,
 			color = clusters.get_color(
 				altId) if clusters is not None else 'black'
 
-			print('blob', col, altId, color)
-
 			for mode in modes:
 				if mode == 'short':
 					group = clusters.get_short_group(
@@ -385,8 +383,8 @@ def add_single_cell_col_labels(svg: SVGFigure,
 		#
 
 		if 'clusters' in group_map:
-			gy -= padding
-			gx = x  # + cell[0] / 2
+			gy -= padding/2
+			gx = x  + cell[0] / 2
 
 			# keep track of longest string to work out how much
 			# vertical space to allocate
@@ -448,7 +446,7 @@ def add_single_cell_col_labels(svg: SVGFigure,
 
 				if grouporientation == 'a':
 					# plot at 45 deg angle
-					gx2 = gx - svg.get_font_h() * 0.5
+					gx2 = gx # - svg.get_font_h() * 0.5
 					svg.add_text_bb(g,
 									x=gx2,
 									y=gy,
@@ -469,9 +467,9 @@ def add_single_cell_col_labels(svg: SVGFigure,
 					else:
 						words = [g]
 
-					gx2 = gx - (svg.get_font_h() +
-								linespacing) / 2 * (len(words) - 1)
-
+					gx2 = gx + gw/2 - (svg.get_font_h() +
+					 			linespacing) / 2 * (len(words) - 1)
+					#gx2 = gx
 					for word in words:
 						svg.add_text_bb(word,
 										x=gx2,

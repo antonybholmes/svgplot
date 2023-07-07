@@ -23,7 +23,7 @@ def _get_fill_kws(kws: Mapping[str, Union[int, float, bool, str]]) -> dict[str, 
 
 
 def _get_default_x_kws(kws: Mapping[str, Union[int, float, bool, str]] = {}) -> Mapping[str, Union[int, float, bool, str]]:
-    ret = {'show': True, 'label': True, 'stroke': 3, 'title_offset': 70,
+    ret = {'show': True, 'show_line':True, 'label': True, 'stroke': 3, 'title_offset': 70,
            'ticklabeloffset':0,
            'clip': True, 'label_pos': 'c', 'invert': False}
     ret.update(kws)
@@ -31,7 +31,7 @@ def _get_default_x_kws(kws: Mapping[str, Union[int, float, bool, str]] = {}) -> 
 
 
 def _get_default_y_kws(kws: Mapping[str, Union[int, float, bool, str]] = {}) -> Mapping[str, Union[int, float, bool, str]]:
-    ret = {'show': True, 'label': True, 'stroke': 3, 'title_offset': 120,'ticklabeloffset':0,
+    ret = {'show': True, 'show_line':True, 'label': True, 'stroke': 3, 'title_offset': 120,'ticklabeloffset':0,
            'clip': True, 'label_pos': 'c', 'invert': False}
     ret.update(kws)
     return ret
@@ -67,6 +67,7 @@ def add_axes(svg: SVGFigure,
                    ticks=xaxis.ticks,
                    ticklabels=xaxis.ticklabels,
                    showticks=True,
+                   showline=_show_axes[0]['show_line'],
                    stroke=_show_axes[0]['stroke'],
                    showlabel=_show_axes[0]['label'],
                    title_offset=_show_axes[0]['title_offset'],
@@ -84,6 +85,7 @@ def add_axes(svg: SVGFigure,
                    ticks=yaxis.ticks,
                    ticklabels=yaxis.ticklabels,
                    showticks=True,
+                   showline=_show_axes[1]['show_line'],
                    stroke=_show_axes[1]['stroke'],
                    showlabel=_show_axes[1]['label'],
                    title_offset=_show_axes[1]['title_offset'],
@@ -306,7 +308,7 @@ def add_y_axis(svg:SVGFigure,
         else:
             ticky = y + axis.w - axis.scale(tick)
 
-        #print(i, ticklabels)
+        print(i, ticklabels)
         ticklabel = ticklabels[i]
 
         if not isinstance(ticklabel, str):
