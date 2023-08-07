@@ -1,10 +1,11 @@
 from typing import Optional
+
+import matplotlib
+import numpy as np
+
+from . import core, graph
 from .axis import Axis
 from .svgfigure import SVGFigure
-from . import core
-from . import graph
-import numpy as np
-import matplotlib
 
 
 def add_h_colorbar(svg: SVGFigure,
