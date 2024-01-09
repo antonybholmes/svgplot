@@ -5,10 +5,11 @@ Created on Thu May 31 17:15:07 2018
 
 @author: antony
 """
-import matplotlib
-import os
-import numpy as np
 import math
+import os
+
+import matplotlib
+import numpy as np
 
 ALPHA = 0.8
 MARKER_SIZE = 10
@@ -29,3 +30,4 @@ BWR_MATCALC_CMAP = matplotlib.colors.LinearSegmentedColormap.from_list('bwr', ['
 BWR_CMAP = matplotlib.colors.LinearSegmentedColormap.from_list('bwr', ['#0066cf', '#ffffff', '#ff0000'])
 BWR2_CMAP = matplotlib.colors.LinearSegmentedColormap.from_list('bwr', ['#002266', '#ffffff', '#ff0000'], N=255)
 REDS_CMAP = matplotlib.colors.LinearSegmentedColormap.from_list('reds', ['#ffd5d5', '#ff0000'], N=255)
+BLUES_CMAP = matplotlib.colors.LinearSegmentedColormap.from_list('blues', ['#e6f0ff', '#003d99'], N=255)

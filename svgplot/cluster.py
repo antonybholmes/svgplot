@@ -1,15 +1,16 @@
 from typing import Any, Optional, Union
-import numpy as np
+
 import libplot
 import matplotlib
+import numpy as np
 import pandas as pd
-from scipy.cluster.hierarchy import linkage, dendrogram
 from scipy.cluster import hierarchy
-from . import matrix
-from . import core
+from scipy.cluster.hierarchy import dendrogram, linkage
+
+from . import core, matrix
 from .svgfigure import SVGFigure
 
-DEFAULT_HEATMAP_KWS = {'show': True, 'gridcolor':core.GRID_COLOR, 'framecolor':'black'}
+DEFAULT_HEATMAP_KWS = {'show': True, 'gridcolor':core.GRID_COLOR, 'framecolor':'black', 'col_colors':{}, 'col_color_height':0}
 
 def add_clustermap(svg: SVGFigure,
                    df: pd.DataFrame,
@@ -186,7 +187,8 @@ def add_clustermap(svg: SVGFigure,
                 x2 = x1
                 for li, label in enumerate(labels):
                     if label in col_color[1]:
-                        svg.add_rect(x2, y1, cell[0], color_height, fill=col_color[1][label])
+                        # use larger cell size to cover white gaps between adjacent elements in svg
+                        svg.add_rect(x2, y1, cell[0] * 1.5 if li < len(labels)-1 else cell[0], color_height, fill=col_color[1][label])
   
                     x2 += cell[0]
 
@@ -295,7 +297,7 @@ def add_clustermap(svg: SVGFigure,
                     [rename_cols[x] if x in rename_cols else x for x in labels])
 
                 matrix.add_yticklabels(svg, labels, pos=(
-                    x1, y1), colors=xticklabel_colors)
+                    x1, y1), colors=xticklabel_colors, cell=cell)
 
                 y1 += cell[1] * labels.size + ysplitgap
                 ys1 = ys2
@@ -328,7 +330,7 @@ def add_clustermap(svg: SVGFigure,
                     [rename_cols[x] if x in rename_cols else x for x in labels])
 
                 matrix.add_xticklabels(svg, labels, pos=(
-                    x1, y1), colors=xticklabel_colors)
+                    x1, y1), colors=xticklabel_colors, cell=cell)
 
                 x1 += cell[0] * labels.size + xsplitgap
                 xs1 = xs2

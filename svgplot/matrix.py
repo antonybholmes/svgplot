@@ -3,15 +3,17 @@
 """
 @author: antony
 """
-import numpy as np
 from typing import Optional, Union
+
 import libplot
 import matplotlib
+import numpy as np
+import pandas
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
+
 from . import core
 from .svgfigure import SVGFigure
-from sklearn.preprocessing import StandardScaler
-import pandas
 
 DEFAULT_CELL = (50, 50)
 DEFAULT_COLORBAR_CELL = (50, 25)
@@ -184,7 +186,7 @@ def add_heatmap(svg: SVGFigure,
     if show and col_color_height > 0 and len(col_colors) > 0:
         x1 = x
         xs1 = 0
-        y1 = y - 30 - col_color_height
+        y1 = y - col_color_height - 10
 
         x1 = x
         xs1 = 0

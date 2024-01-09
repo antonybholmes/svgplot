@@ -1,14 +1,15 @@
+import json
+import math
+import re
 from turtle import pos
 from typing import List, Optional, Union
-from . import core
-from .svgfigurebase import SVGFigureBase
-from .axis import Axis
 
-import re
-import numpy as np
-import json
 import matplotlib
-import math
+import numpy as np
+
+from . import core
+from .axis import Axis
+from .svgfigurebase import SVGFigureBase
 
 """
 Add features for drawing to base class
@@ -19,29 +20,28 @@ TWO_PI_RADS = 2 * math.pi
 
 
 class SVGFigureDraw(SVGFigureBase):
-    def __init__(self,
-                 file:str,
-                 size: tuple[float, float] = (279, 216),
-                 view: Optional[tuple[int, int]] = None, #(2790, 2160),
-                 grid: tuple[int, int] = (12, 12),
-                 border:int=100):
-        super().__init__(file,
-                         size=size,
-                         view=view,
-                         grid=grid,
-                         border=border)
+    def __init__(
+        self,
+        file: str,
+        size: tuple[float, float] = (279, 216),
+        view: Optional[tuple[int, int]] = None,  # (2790, 2160),
+        grid: tuple[int, int] = (12, 12),
+        border: int = 100,
+    ):
+        super().__init__(file, size=size, view=view, grid=grid, border=border)
 
-    def arc(self,
-            angle1=0,
-            angle2=0,
-            x=0,
-            y=0,
-            w=200,
-            h=200,
-            color='black',
-            fill='red',
-            stroke=core.STROKE_SIZE):
-
+    def arc(
+        self,
+        angle1=0,
+        angle2=0,
+        x=0,
+        y=0,
+        w=200,
+        h=200,
+        color="black",
+        fill="red",
+        stroke=core.STROKE_SIZE,
+    ):
         # angle1 = math.pi/4 #- PIE_START_ANGLE
         # angle2 = math.pi/4 # - PIE_START_ANGLE
 
@@ -52,194 +52,399 @@ class SVGFigureDraw(SVGFigureBase):
 
         large_arc = 1 if angle2 - angle1 >= 180 else 0
 
-        return self.rot_trans(self._svg.path(d=f"M 0 -{r} A {r} {r} 0 {large_arc} 1 {x2} {y2} L 0 0 Z",
-                                             style=SVGFigureDraw.polygon_params(color=color, fill=fill, stroke=stroke)),
-                              x=x,
-                              y=y,
-                              rotate=(angle1, 0, 0))
+        return self.rot_trans(
+            self._svg.path(
+                d=f"M 0 -{r} A {r} {r} 0 {large_arc} 1 {x2} {y2} L 0 0 Z",
+                style=SVGFigureDraw.polygon_params(
+                    color=color, fill=fill, stroke=stroke
+                ),
+            ),
+            x=x,
+            y=y,
+            rotate=(angle1, 0, 0),
+        )
 
-    def add_arc(self,
-                angle1=0,
-                angle2=0,
-                x=0,
-                y=0,
-                w=200,
-                h=200,
-                color='black',
-                fill='red',
-                stroke=1):
-        self.add(self.arc(angle1=angle1, angle2=angle2, x=x, y=y,
-                 w=w, h=h, color=color, fill=fill, stroke=stroke))
+    def add_arc(
+        self,
+        angle1=0,
+        angle2=0,
+        x=0,
+        y=0,
+        w=200,
+        h=200,
+        color="black",
+        fill="red",
+        stroke=1,
+    ):
+        self.add(
+            self.arc(
+                angle1=angle1,
+                angle2=angle2,
+                x=x,
+                y=y,
+                w=w,
+                h=h,
+                color=color,
+                fill=fill,
+                stroke=stroke,
+            )
+        )
 
-    def line(self,
-             x1:float=0,
-             y1:float=0,
-             x2:Optional[float]=None,
-             y2:Optional[float]=None,
-             color:str='black',
-             stroke:int=core.STROKE_SIZE,
-             dashed:bool=False,
-             clip_path:str = 'none'):
-
+    def line(
+        self,
+        x1: float = 0,
+        y1: float = 0,
+        x2: Optional[float] = None,
+        y2: Optional[float] = None,
+        color: str = "black",
+        stroke: Optional[int] = None,
+        dashed: bool = False,
+        clip_path: str = "none",
+    ):
         if x2 is None:
             x2 = x1
 
         if y2 is None:
             y2 = y1
 
+        if stroke is None:
+            stroke = self._stroke
+
         if dashed:
             style = core.css_params(
-                'stroke', color, 'stroke-width', stroke, 'stroke-dasharray', 10)
+                "stroke", color, "stroke-width", stroke, "stroke-dasharray", 10
+            )
         else:
-            style = core.css_params('stroke', color, 'stroke-width', stroke)
+            style = core.css_params("stroke", color, "stroke-width", stroke)
 
-        return self._svg.line((self.x(x1), self.y(y1)),
-                              (self.x(x2), self.y(y2)),
-                              style=style,
-                              clip_path=clip_path)
+        return self._svg.line(
+            (self.x(x1), self.y(y1)),
+            (self.x(x2), self.y(y2)),
+            style=style,
+            clip_path=clip_path,
+        )
 
-    def add_line(self,
-                 x1:float=0,
-                 y1:float=0,
-                 x2:Optional[float]=None,
-                 y2:Optional[float]=None,
-                 color:str='black',
-                 stroke:int=core.STROKE_SIZE,
-                 dashed:bool=False,
-                 clip_path:str = 'none'):
-        self.add(self.line(x1, y1, x2, y2, color=color,
-                 stroke=stroke, dashed=dashed, clip_path=clip_path))
+    def add_line(
+        self,
+        x1: float = 0,
+        y1: float = 0,
+        x2: Optional[float] = None,
+        y2: Optional[float] = None,
+        color: str = "black",
+        stroke: Optional[int] = None,
+        dashed: bool = False,
+        clip_path: str = "none",
+    ):
+        self.add(
+            self.line(
+                x1,
+                y1,
+                x2,
+                y2,
+                color=color,
+                stroke=stroke,
+                dashed=dashed,
+                clip_path=clip_path,
+            )
+        )
 
-    def polyline(self, points,
-                 color='black',
-                 stroke=core.STROKE_SIZE,
-                 fill='none',
-                 fill_opacity=1):
+    def polyline(
+        self,
+        points,
+        color="black",
+        stroke=core.STROKE_SIZE,
+        fill="none",
+        fill_opacity=1,
+    ):
         points = [[self.x(point[0]), self.y(point[1])] for point in points]
         style = core.css_params(
-            'stroke', color, 'stroke-width', stroke, 'fill', fill, 'fill-opacity', fill_opacity)
+            "stroke",
+            color,
+            "stroke-width",
+            stroke,
+            "fill",
+            fill,
+            "fill-opacity",
+            fill_opacity,
+        )
 
         return self._svg.polyline(points, style=style)
 
-    def add_polyline(self, points, color='black', stroke=core.STROKE_SIZE, fill_opacity=1, fill='none'):
-        self.add(self.polyline(points, color=color, stroke=stroke,
-                               fill=fill, fill_opacity=fill_opacity))
+    def add_polyline(
+        self,
+        points,
+        color="black",
+        stroke=core.STROKE_SIZE,
+        fill_opacity=1,
+        fill="none",
+    ):
+        self.add(
+            self.polyline(
+                points, color=color, stroke=stroke, fill=fill, fill_opacity=fill_opacity
+            )
+        )
 
-    def rect(self,
-             x=0,
-             y=0,
-             w=0,
-             h=0,
-             color='none',
-             fill='none',
-             fill_opacity=1,
-             stroke=core.STROKE_SIZE,
-             dashed=False,
-             rounding=0,
-             shape_rendering='crispEdges'):
+    def rect(
+        self,
+        x=0,
+        y=0,
+        w=0,
+        h=0,
+        color="none",
+        fill="none",
+        fill_opacity=1,
+        stroke: Optional[int] = None,
+        dashed=False,
+        rounding=0,
+        shape_rendering="crispEdges",
+    ):
+        if stroke is None:
+            stroke = self._stroke
 
         if dashed:
-            style = core.css_params('fill', fill, 'fill-opacity', fill_opacity,
-                                       'stroke', color, 'stroke-width', stroke, 'stroke-dasharray', 10)
+            style = core.css_params(
+                "fill",
+                fill,
+                "fill-opacity",
+                fill_opacity,
+                "stroke",
+                color,
+                "stroke-width",
+                stroke,
+                "stroke-dasharray",
+                10,
+            )
         else:
             style = core.css_params(
-                'fill', fill, 'fill-opacity', fill_opacity, 'stroke', color, 'stroke-width', stroke)
+                "fill",
+                fill,
+                "fill-opacity",
+                fill_opacity,
+                "stroke",
+                color,
+                "stroke-width",
+                stroke,
+            )
 
-        return self.trans(self._svg.rect(insert=(0, 0),
-                                         size=(self.unit(w), self.unit(h)),
-                                         style=style,
-                                         rx=rounding,
-                                         ry=rounding,
-                                         shape_rendering=shape_rendering),
-                          x=x,
-                          y=y)
+        return self.trans(
+            self._svg.rect(
+                insert=(0, 0),
+                size=(self.unit(w), self.unit(h)),
+                style=style,
+                rx=rounding,
+                ry=rounding,
+                shape_rendering=shape_rendering,
+            ),
+            x=x,
+            y=y,
+        )
         # return self._svg.rect(insert=(self.x(x), self.y(y)),
         #                      size=(self.unit(w), self.unit(h)),
         #                      style=SVGFigureDraw.polygon_params(color=color, fill=fill, stroke=stroke))
 
-    def add_rect(self, x=0, y=0, w=0, h=0, color='none', fill='none', fill_opacity=1, stroke=core.STROKE_SIZE, dashed=False, rounding: int = 0):
-        self.add(self.rect(x, y, w, h, color=color, fill=fill,
-                 fill_opacity=fill_opacity, stroke=stroke, dashed=dashed, rounding=rounding))
+    def add_rect(
+        self,
+        x: int = 0,
+        y: int = 0,
+        w: int = 0,
+        h: int = 0,
+        color: str = "none",
+        fill: str = "none",
+        fill_opacity: float = 1,
+        stroke: Optional[int] = None,
+        dashed: bool = False,
+        rounding: int = 0,
+    ):
+        self.add(
+            self.rect(
+                x,
+                y,
+                w,
+                h,
+                color=color,
+                fill=fill,
+                fill_opacity=fill_opacity,
+                stroke=stroke,
+                dashed=dashed,
+                rounding=rounding,
+            )
+        )
 
-    def circle(self,
-               x=0,
-               y=0,
-               w=0,
-               color='none',
-               fill='none',
-               fill_opacity=1,
-               stroke=core.STROKE_SIZE):
+    def circle(
+        self,
+        x: int = 0,
+        y: int = 0,
+        w: int = 0,
+        color: str = "none",
+        opacity: float = 1,
+        fill: str = "none",
+        fill_opacity: str = 1,
+        stroke: Optional[int] = None,
+    ):
         r = w / 2
 
-        return self.trans(self._svg.circle(center=(0, 0),
-                                           r=self.unit(r),
-                                           style=SVGFigureDraw.polygon_params(color=color, fill=fill, stroke=stroke, fill_opacity=fill_opacity)),
-                          x=x,
-                          y=y)
+        if stroke is None:
+            stroke = self._stroke
 
-    def add_circle(self,
-                   x=0,
-                   y=0,
-                   w=0,
-                   color='none',
-                   fill='none',
-                   fill_opacity=1,
-                   stroke=core.STROKE_SIZE):
-        self.add(self.circle(x, y, w, color=color, fill=fill,
-                 fill_opacity=fill_opacity, stroke=stroke))
+        return self.trans(
+            self._svg.circle(
+                center=(0, 0),
+                r=self.unit(r),
+                style=SVGFigureDraw.polygon_params(
+                    color=color,
+                    opacity=opacity,
+                    fill=fill,
+                    stroke=stroke,
+                    fill_opacity=fill_opacity,
+                ),
+            ),
+            x=x,
+            y=y,
+        )
 
-    def ellipse(self,
-                x=0,
-                y=0,
-                w=0,
-                h=0,
-                color='none',
-                fill='none',
-                stroke=core.STROKE_SIZE):
+    def add_circle(
+        self,
+        x: int = 0,
+        y: int = 0,
+        w: int = 0,
+        color: str = "none",
+        opacity: float = 1,
+        fill: str = "none",
+        fill_opacity: float = 1,
+        stroke: Optional[int] = None,
+    ):
+        self.add(
+            self.circle(
+                x,
+                y,
+                w,
+                color=color,
+                opacity=opacity,
+                fill=fill,
+                fill_opacity=fill_opacity,
+                stroke=stroke,
+            )
+        )
 
-        return self.trans(self._svg.ellipse(center=(0, 0),
-                                            r=(self.unit(w/2), self.unit(h/2)),
-                                            style=SVGFigureDraw.polygon_params(color=color, fill=fill, stroke=stroke)),
-                          x=x,
-                          y=y)
+    def ellipse(
+        self, x=0, y=0, w=0, h=0, color="none", fill="none", stroke=core.STROKE_SIZE
+    ):
+        return self.trans(
+            self._svg.ellipse(
+                center=(0, 0),
+                r=(self.unit(w / 2), self.unit(h / 2)),
+                style=SVGFigureDraw.polygon_params(
+                    color=color, fill=fill, stroke=stroke
+                ),
+            ),
+            x=x,
+            y=y,
+        )
 
-    def add_ellipse(self,
-                    x=0,
-                    y=0,
-                    w=0,
-                    h=0,
-                    color='none',
-                    fill='none',
-                    stroke=core.STROKE_SIZE):
+    def add_ellipse(
+        self, x=0, y=0, w=0, h=0, color="none", fill="none", stroke=core.STROKE_SIZE
+    ):
         self.add(self.ellipse(x, y, w, h, color=color, fill=fill, stroke=stroke))
 
     @staticmethod
-    def polygon_params(color='none', fill='none', fill_opacity=1, stroke=core.STROKE_SIZE):
+    def polygon_params(
+        color="none", opacity=1, fill="none", fill_opacity=1, stroke=core.STROKE_SIZE
+    ):
         if color is None:
             stroke = 0
 
-        return core.css_params('fill', fill, 'fill-opacity', fill_opacity, 'stroke', color, 'stroke-width', stroke)
+        return core.css_params(
+            "fill",
+            fill,
+            "fill-opacity",
+            fill_opacity,
+            "stroke",
+            color,
+            "stroke-opacity",
+            opacity,
+            "stroke-width",
+            stroke,
+            "paint-order",
+            "stroke",
+        )
 
-    def base_polygon(self, points, color='none', fill='none', fill_opacity=1, stroke=core.STROKE_SIZE):
-        return self._svg.polygon(points=points, style=SVGFigureDraw.polygon_params(color=color, fill=fill, stroke=stroke, fill_opacity=fill_opacity))
+    def base_polygon(
+        self,
+        points,
+        color="none",
+        opacity=1,
+        fill="none",
+        fill_opacity=1,
+        stroke=core.STROKE_SIZE,
+    ):
+        return self._svg.polygon(
+            points=points,
+            style=SVGFigureDraw.polygon_params(
+                color=color,
+                opacity=opacity,
+                fill=fill,
+                stroke=stroke,
+                fill_opacity=fill_opacity,
+            ),
+        )
 
-    def polygon(self, points, x=0, y=0, color='none', fill='none', fill_opacity=1, stroke=core.STROKE_SIZE):
-        return self.trans(self.base_polygon(points=points, color=color, fill=fill, fill_opacity=fill_opacity, stroke=stroke), x=x, y=y)
+    def polygon(
+        self,
+        points,
+        x=0,
+        y=0,
+        color="none",
+        opacity=1,
+        fill="none",
+        fill_opacity=1,
+        stroke=core.STROKE_SIZE,
+    ):
+        return self.trans(
+            self.base_polygon(
+                points=points,
+                color=color,
+                opacity=opacity,
+                fill=fill,
+                fill_opacity=fill_opacity,
+                stroke=stroke,
+            ),
+            x=x,
+            y=y,
+        )
 
-    def add_polygon(self, points, x=0, y=0, color='none', fill='none', fill_opacity=1, stroke=core.STROKE_SIZE):
-        return self.add(self.polygon(points, x, y, color=color, fill=fill, fill_opacity=fill_opacity, stroke=stroke))
+    def add_polygon(
+        self,
+        points,
+        x=0,
+        y=0,
+        color="none",
+        opacity=1,
+        fill="none",
+        fill_opacity=1,
+        stroke=core.STROKE_SIZE,
+    ):
+        return self.add(
+            self.polygon(
+                points,
+                x,
+                y,
+                color=color,
+                opacity=opacity,
+                fill=fill,
+                fill_opacity=fill_opacity,
+                stroke=stroke,
+            )
+        )
 
-    def lr_triangle(self, x=0, y=0, w=0, h=0, color='none', fill='none'):
-        points = np.array([(0, h),
-                           (w, h),
-                           (w, 0)], dtype=float)
+    def lr_triangle(self, x=0, y=0, w=0, h=0, color="none", fill="none"):
+        points = np.array([(0, h), (w, h), (w, 0)], dtype=float)
 
         return self.trans(self.base_polygon(points, color=color, fill=fill), x=x, y=y)
 
-    def add_lr_triangle(self, x=0, y=0, w=0, h=0, color='none', fill='none'):
+    def add_lr_triangle(self, x=0, y=0, w=0, h=0, color="none", fill="none"):
         self.add(self.lr_triangle(x=x, y=y, w=w, h=h, color=color, fill=fill))
 
-    def arrow(self, x=0, y=0, color='none', fill='none', scale=1, rotate=None):
+    def arrow(self, x=0, y=0, color="none", fill="none", scale=1, rotate=None):
         """
         Creates a large arrow for highlighting items
 
@@ -257,25 +462,20 @@ class SVGFigureDraw(SVGFigureBase):
                 3 oclock/east = 0 degrees
         """
 
-        points = np.array([(0, -20),
-                           (20, -20),
-                           (20, -40),
-                           (70, 0),
-                           (20, 40),
-                           (20, 20),
-                           (0, 20)], dtype=float)
+        points = np.array(
+            [(0, -20), (20, -20), (20, -40), (70, 0), (20, 40), (20, 20), (0, 20)],
+            dtype=float,
+        )
 
         points *= scale
 
-        return self.trans(self.rot(self.base_polygon(points, color=color, fill=fill), rotate=rotate), x=x, y=y)
+        return self.trans(
+            self.rot(self.base_polygon(points, color=color, fill=fill), rotate=rotate),
+            x=x,
+            y=y,
+        )
 
-    def add_arrow(self,
-                  x=0,
-                  y=0,
-                  color='none',
-                  fill='none',
-                  rotate=None,
-                  scale=1):
+    def add_arrow(self, x=0, y=0, color="none", fill="none", rotate=None, scale=1):
         """
         Add a large arrow for highlighting items to svg canvas.
 
@@ -295,8 +495,9 @@ class SVGFigureDraw(SVGFigureBase):
             How much to scale the arrow by
         """
 
-        self.add(self.arrow(x=x, y=y, color=color,
-                 fill=fill, rotate=rotate, scale=scale))
+        self.add(
+            self.arrow(x=x, y=y, color=color, fill=fill, rotate=rotate, scale=scale)
+        )
 
     def _axis_arrow_head(self, stroke=core.STROKE_SIZE, color=core.COLOR_BLACK):
         """
@@ -308,141 +509,167 @@ class SVGFigureDraw(SVGFigureBase):
             Hex color
         """
 
-        return self.base_polygon(points=[(0, -7), (0, 7), (12, 0)], fill=color, stroke=stroke)
+        return self.base_polygon(
+            points=[(0, -7), (0, 7), (12, 0)], fill=color, stroke=stroke
+        )
 
-    def add_label_axis(self,
-                       label,
-                       pos:tuple[int, int] = (0, 0),
-                       dim:str='x',
-                       size:int=core.DEFAULT_FONT_SIZE,
-                       color:str=core.COLOR_BLACK,
-                       w:int=core.ARROW_LENGTH,
-                       padding:int=20,
-                       margin:int=10,
-                       position:str='middle',
-                       arrow:bool=True,
-                       weight:str='normal'):
-
+    def add_label_axis(
+        self,
+        label,
+        pos: tuple[int, int] = (0, 0),
+        dim: str = "x",
+        size: int = core.DEFAULT_FONT_SIZE,
+        color: str = core.COLOR_BLACK,
+        w: int = core.ARROW_LENGTH,
+        padding: int = 20,
+        margin: int = 10,
+        position: str = "middle",
+        arrow: bool = True,
+        weight: str = "normal",
+    ):
         x, y = pos
 
         dim = dim.lower()
 
         sw = self.get_string_width(label, weight=weight)
 
-        if dim == 'x':
-            if position == 'top':
-                self.add_text_bb(label, y=y, w=w, align='c')
+        if dim == "x":
+            if position == "top":
+                self.add_text_bb(label, y=y, w=w, align="c")
                 y += self.get_font_h()
 
                 x1 = padding + (w - sw) / 2 - margin
 
                 self.add_line(x + padding, y, x + w - padding, y, color=color)
-                self.add_trans(self._axis_arrow_head(
-                    color=color), x=x + w - padding, y=y)
-            elif position == 'bottom':
+                self.add_trans(
+                    self._axis_arrow_head(color=color), x=x + w - padding, y=y
+                )
+            elif position == "bottom":
                 self.add_line(x + padding, y, x + w - padding, y, color=color)
-                self.add_trans(self._axis_arrow_head(
-                    color=color), x=x + w - padding, y=y)
-                self.add_text(label,
-                              self._get_font_center_x(label, x, w),
-                              y=y + self.get_font_h(size=size) + 10,
-                              color=color,
-                              size=size,
-                              weight=weight)
+                self.add_trans(
+                    self._axis_arrow_head(color=color), x=x + w - padding, y=y
+                )
+                self.add_text(
+                    label,
+                    self._get_font_center_x(label, x, w),
+                    y=y + self.get_font_h(size=size) + 10,
+                    color=color,
+                    size=size,
+                    weight=weight,
+                )
             else:
                 # middle
                 sw = self.get_string_width(label)
-                self.add_text_bb(label, y=y, w=w, align='c')
+                self.add_text_bb(label, y=y, w=w, align="c")
 
                 x1 = (w - sw) / 2 - margin
-                self.add_line(x1=x+padding, y1=y, x2=x1, y2=y, color=color)
+                self.add_line(x1=x + padding, y1=y, x2=x1, y2=y, color=color)
 
-                self.add_line(x1=x1 + sw + margin, y1=y, x2=x +
-                              w-padding, y2=y, color=color)
-                self.add_trans(self._axis_arrow_head(
-                    color=color), x=x + w - padding, y=y)
+                self.add_line(
+                    x1=x1 + sw + margin, y1=y, x2=x + w - padding, y2=y, color=color
+                )
+                self.add_trans(
+                    self._axis_arrow_head(color=color), x=x + w - padding, y=y
+                )
 
         else:
-            if position == 'top':
+            if position == "top":
                 self.add_line(x, y - padding, x, y - w + padding, color=color)
 
                 if arrow:
-                    self.add_rot_trans(self._axis_arrow_head(
-                        color=color), x=x, y=y - w + padding, rotate=-90)
+                    self.add_rot_trans(
+                        self._axis_arrow_head(color=color),
+                        x=x,
+                        y=y - w + padding,
+                        rotate=-90,
+                    )
 
-                self.add_rot_trans(self.text(label,
-                                             color=color,
-                                             size=size,
-                                             weight=weight),
-                                   x=x-10,
-                                   y=y - (w - sw) / 2,
-                                   rotate=-90)
+                self.add_rot_trans(
+                    self.text(label, color=color, size=size, weight=weight),
+                    x=x - 10,
+                    y=y - (w - sw) / 2,
+                    rotate=-90,
+                )
             else:
                 y2 = y - (w - sw) / 2 + margin
 
-                self.add_line(x1=x, y1=y-padding, x2=x, y2=y2, color=color)
-                self.add_line(x1=x, y1=y2 - sw - 2 * margin,
-                              x2=x, y2=y-w+padding, color=color)
+                self.add_line(x1=x, y1=y - padding, x2=x, y2=y2, color=color)
+                self.add_line(
+                    x1=x, y1=y2 - sw - 2 * margin, x2=x, y2=y - w + padding, color=color
+                )
 
                 if arrow:
-                    self.add_rot_trans(self._axis_arrow_head(
-                        color=color), x=x, y=y - w + padding, rotate=-90)
+                    self.add_rot_trans(
+                        self._axis_arrow_head(color=color),
+                        x=x,
+                        y=y - w + padding,
+                        rotate=-90,
+                    )
 
-                self.add_rot_trans(self.text(label,
-                                             color=color,
-                                             size=size,
-                                             weight=weight),
-                                   x=x+self.get_font_h()/3,
-                                   y=y-(w-sw)/2,
-                                   rotate=-90)
+                self.add_rot_trans(
+                    self.text(label, color=color, size=size, weight=weight),
+                    x=x + self.get_font_h() / 3,
+                    y=y - (w - sw) / 2,
+                    rotate=-90,
+                )
 
-    def add_axis(self,
-                 label,
-                 x=0,
-                 y=0,
-                 dim='x',
-                 size=core.DEFAULT_FONT_SIZE,
-                 color=core.COLOR_BLACK,
-                 w=core.ARROW_LENGTH,
-                 stroke=core.AXIS_STROKE):
+    def add_axis(
+        self,
+        label,
+        x=0,
+        y=0,
+        dim="x",
+        size=core.DEFAULT_FONT_SIZE,
+        color=core.COLOR_BLACK,
+        w=core.ARROW_LENGTH,
+        stroke=core.AXIS_STROKE,
+    ):
         dim = dim.lower()
 
-        if dim == 'x':
-            #svg = self.core.add(self.core.svg(x=self.unit(x), y=self.unit(y + 5), width=w, height=w, viewBox='0 0 10 10'))
+        if dim == "x":
+            # svg = self.core.add(self.core.svg(x=self.unit(x), y=self.unit(y + 5), width=w, height=w, viewBox='0 0 10 10'))
             self.add_line(x, y, x + w, y, color=color, stroke=stroke)
-            self.add_trans(self._axis_arrow_head(
-                color=color, stroke=stroke), x=x+w, y=y)
-            self.add_text(label, x, y + self.get_font_h(size=size) +
-                          10, color=color, size=size)  # , rotate=(-90, 0, 0))
+            self.add_trans(
+                self._axis_arrow_head(color=color, stroke=stroke), x=x + w, y=y
+            )
+            self.add_text(
+                label, x, y + self.get_font_h(size=size) + 10, color=color, size=size
+            )  # , rotate=(-90, 0, 0))
         else:
-            #svg = self.core.add(self.core.svg(x=self.unit(x - 5), y=self.unit(y), width=w, height=w, viewBox='0 0 10 10'))
+            # svg = self.core.add(self.core.svg(x=self.unit(x - 5), y=self.unit(y), width=w, height=w, viewBox='0 0 10 10'))
             self.add_line(x, y, x, y - w, color=color, stroke=stroke)
-            self.add_rot_trans(self._axis_arrow_head(
-                color=color, stroke=stroke), x, y - w, rotate=-90)
-            self.add_rot_trans(self.text(label, color=color,
-                                         size=size), x - 10, y, rotate=-90)
+            self.add_rot_trans(
+                self._axis_arrow_head(color=color, stroke=stroke), x, y - w, rotate=-90
+            )
+            self.add_rot_trans(
+                self.text(label, color=color, size=size), x - 10, y, rotate=-90
+            )
 
-    def add_axes(self,
-                 labelx='',
-                 labely='',
-                 x=0,
-                 y=0,
-                 color=core.COLOR_BLACK,
-                 w=core.ARROW_LENGTH,
-                 size=core.DEFAULT_FONT_SIZE):
-        self.add_axis(labelx, x, y, dim='x', color=color, size=size, w=w)
-        self.add_axis(labely, x, y, dim='y', color=color, size=size, w=w)
+    def add_axes(
+        self,
+        labelx="",
+        labely="",
+        x=0,
+        y=0,
+        color=core.COLOR_BLACK,
+        w=core.ARROW_LENGTH,
+        size=core.DEFAULT_FONT_SIZE,
+    ):
+        self.add_axis(labelx, x, y, dim="x", color=color, size=size, w=w)
+        self.add_axis(labely, x, y, dim="y", color=color, size=size, w=w)
 
-    def add_frame(self,
-                  x=0,
-                  y=0,
-                  w=0,
-                  h=0,
-                  padding=0,
-                  color=core.COLOR_BLACK,
-                  fill='none',
-                  shape='rect',
-                  stroke=core.STROKE_SIZE):
+    def add_frame(
+        self,
+        x=0,
+        y=0,
+        w=0,
+        h=0,
+        padding=0,
+        color=core.COLOR_BLACK,
+        fill="none",
+        shape="rect",
+        stroke=core.STROKE_SIZE,
+    ):
         """
         Print a frame either outlined or filled.
         """
@@ -451,43 +678,45 @@ class SVGFigureDraw(SVGFigureBase):
 
         p2 = padding * 2
 
-        if shape == 'c' or shape == 'circle':
-            self.add_circle(x - padding,
-                            y - padding,
-                            w + p2,
-                            color=color,
-                            fill=fill,
-                            stroke=stroke)
-        if shape == 'e':
-            self.add_ellipse(x - padding,
-                             y - padding,
-                             w + p2,
-                             h + p2,
-                             color=color,
-                             fill=fill,
-                             stroke=stroke)
+        if shape == "c" or shape == "circle":
+            self.add_circle(
+                x - padding, y - padding, w + p2, color=color, fill=fill, stroke=stroke
+            )
+        if shape == "e":
+            self.add_ellipse(
+                x - padding,
+                y - padding,
+                w + p2,
+                h + p2,
+                color=color,
+                fill=fill,
+                stroke=stroke,
+            )
         else:
-            self.add_rect(x - padding,
-                          y - padding,
-                          w + p2,
-                          h + p2,
-                          color=color,
-                          fill=fill,
-                          stroke=stroke
-                          )
+            self.add_rect(
+                x - padding,
+                y - padding,
+                w + p2,
+                h + p2,
+                color=color,
+                fill=fill,
+                stroke=stroke,
+            )
 
-    def add_bullet(self,
-                   label,
-                   x=0,
-                   y=0,
-                   color=core.COLOR_BLACK,
-                   s=core.BULLET_SIZE,
-                   h=core.LABEL_HEIGHT,
-                   text_color=None,
-                   shape='c',
-                   outline=None,
-                   fill_opacity=1,
-                   stroke=2):
+    def add_bullet(
+        self,
+        label,
+        x=0,
+        y=0,
+        color=core.COLOR_BLACK,
+        s=core.BULLET_SIZE,
+        h=core.LABEL_HEIGHT,
+        text_color=None,
+        shape="c",
+        outline=None,
+        fill_opacity=1,
+        stroke=2,
+    ):
         """
 
         Parameters
@@ -503,20 +732,32 @@ class SVGFigureDraw(SVGFigureBase):
         if text_color is None:
             text_color = color
 
-        if shape == 'c':
-            self.add_circle(x=x, y=y, w=s,
-                            color=outline, fill=color, stroke=stroke, fill_opacity=fill_opacity)
+        if shape == "c":
+            self.add_circle(
+                x=x,
+                y=y,
+                w=s,
+                color=outline,
+                fill=color,
+                stroke=stroke,
+                fill_opacity=fill_opacity,
+            )
         else:
-            self.add_rect(x=x, y=y-s/2, w=s,
-                          h=s, color=outline, fill=color, stroke=stroke, fill_opacity=fill_opacity)
+            self.add_rect(
+                x=x,
+                y=y - s / 2,
+                w=s,
+                h=s,
+                color=outline,
+                fill=color,
+                stroke=stroke,
+                fill_opacity=fill_opacity,
+            )
 
         # For testing only
-        #self.add_frame(x, y, 200, h)
+        # self.add_frame(x, y, 200, h)
 
-        self.add_text_bb(label,
-                         x=x + s * 1.5,
-                         y=y,
-                         color=text_color)
+        self.add_text_bb(label, x=x + s * 1.5, y=y, color=text_color)
 
     def base_image(self, file, w=None, h=None):
         if w is None and h is None:
@@ -528,11 +769,13 @@ class SVGFigureDraw(SVGFigureBase):
         if h is None:
             h = core.scaled_image_h(file, w)
 
-        image = self._svg.image(href=file,
-                                insert=(0, 0),
-                                width=self.unit(w),
-                                height=self.unit(h),
-                                preserveAspectRatio='none')
+        image = self._svg.image(
+            href=file,
+            insert=(0, 0),
+            width=self.unit(w),
+            height=self.unit(h),
+            preserveAspectRatio="none",
+        )
         return w, h, image
 
     def image(self, file, x=0, y=0, w=None, h=None):
@@ -552,27 +795,29 @@ class SVGFigureDraw(SVGFigureBase):
 
         return w, h, image
 
-    def add_image(self,
-                  file,
-                  x=0,
-                  y=0,
-                  w=None,
-                  h=None,
-                  title='',
-                  subtitle='',
-                  titleposition='bottom',
-                  frame=False,
-                  padding=30,
-                  weight='normal'):
+    def add_image(
+        self,
+        file,
+        x=0,
+        y=0,
+        w=None,
+        h=None,
+        title="",
+        subtitle="",
+        titleposition="bottom",
+        frame=False,
+        padding=30,
+        weight="normal",
+    ):
         starty = y
 
-        if titleposition == 'top' and title != '':
-            self.add_text_bb(title, x=x, y=y, w=w, align='c', weight=weight)
+        if titleposition == "top" and title != "":
+            self.add_text_bb(title, x=x, y=y, w=w, align="c", weight=weight)
 
             y += self.get_font_h() + padding
 
-            if subtitle != '':
-                self.add_text_bb(subtitle, x=x, y=y, w=w, align='c')
+            if subtitle != "":
+                self.add_text_bb(subtitle, x=x, y=y, w=w, align="c")
 
                 y += self.get_font_h() + padding
 
@@ -581,58 +826,65 @@ class SVGFigureDraw(SVGFigureBase):
         self.add(image)
 
         if frame:
-            self.add_frame(x, y, w, h, color='black')
+            self.add_frame(x, y, w, h, color="black")
 
-        if titleposition == 'bottom' and title != '':
-            self.add_text_bb(title, x=x, y=y + h + padding, w=w, align='c')
+        if titleposition == "bottom" and title != "":
+            self.add_text_bb(title, x=x, y=y + h + padding, w=w, align="c")
 
             h += self.get_font_h() + 20
 
-            if subtitle != '':
-                self.add_text_bb(subtitle, x=x, y=y + h +
-                                 padding, w=w, align='c')
+            if subtitle != "":
+                self.add_text_bb(subtitle, x=x, y=y + h + padding, w=w, align="c")
 
                 h += self.get_font_h() + padding
 
-            #h += self.get_font_h() + padding
+            # h += self.get_font_h() + padding
 
         return w, h + (y - starty)
 
-    def add_leg(self,
-                id,
-                defaultpos: bool = True,
-                size=10,
-                align='l',
-                mode='main',
-                weight='normal'):
-
-        if align == 'l':
+    def add_leg(
+        self,
+        id,
+        defaultpos: bool = True,
+        size=10,
+        align="l",
+        mode="main",
+        weight="normal",
+    ):
+        if align == "l":
             self.set_cell(self.grid[0], 0)
-        elif align == 'm':
+        elif align == "m":
             self.set_cell(self.grid[0], self.grid[1] / 2)
         else:
             self.set_cell(align[0], align[1])
 
-        if mode == 'main':
+        if mode == "main":
             f = open(
-                '/ifs/scratch/cancer/Lab_RDF/abh2138/scRNA/data/samples/human/10X/rdf/restricted_grch38/manuscript/v6/legends_v2.json', 'r')
+                "/ifs/scratch/cancer/Lab_RDF/abh2138/scRNA/data/samples/human/10X/rdf/restricted_grch38/manuscript/v6/legends_v2.json",
+                "r",
+            )
         else:
-            f = open('/ifs/scratch/cancer/Lab_RDF/abh2138/scRNA/data/samples/human/10X/rdf/restricted_grch38/manuscript/v6/supp_legends.json', 'r')
+            f = open(
+                "/ifs/scratch/cancer/Lab_RDF/abh2138/scRNA/data/samples/human/10X/rdf/restricted_grch38/manuscript/v6/supp_legends.json",
+                "r",
+            )
 
         data = json.load(f)
 
-        self.add_text('{}'.format(data[id]), css={'font-weight': weight})
+        self.add_text("{}".format(data[id]), css={"font-weight": weight})
 
-    def add_sup_fig(self,
-                    id,
-                    defaultpos=True,
-                    size=10,
-                    newlines=[],
-                    spacings=[],
-                    showtitle=True,
-                    showtext=True,
-                    top=False,
-                    weight='normal'):
+    def add_sup_fig(
+        self,
+        id,
+        defaultpos=True,
+        size=10,
+        newlines=[],
+        spacings=[],
+        showtitle=True,
+        showtext=True,
+        top=False,
+        weight="normal",
+    ):
         """
         Add a bolded figure name to a page.
 
@@ -647,7 +899,10 @@ class SVGFigureDraw(SVGFigureBase):
         legends = {}
         titles = {}
 
-        f = open('/ifs/scratch/cancer/Lab_RDF/abh2138/scRNA/data/samples/human/10X/rdf/restricted_grch38/manuscript/v6/supp_legends_v2.txt', 'r')
+        f = open(
+            "/ifs/scratch/cancer/Lab_RDF/abh2138/scRNA/data/samples/human/10X/rdf/restricted_grch38/manuscript/v6/supp_legends_v2.txt",
+            "r",
+        )
 
         r = 0
 
@@ -655,7 +910,7 @@ class SVGFigureDraw(SVGFigureBase):
             line = line.strip()
 
             if r % 3 == 0:
-                matcher = re.search(r'(S\d+). (.+)\.', line)
+                matcher = re.search(r"(S\d+). (.+)\.", line)
                 fid = matcher.group(1)
                 title = line  # matcher.group(2)
                 titles[fid] = title
@@ -715,7 +970,7 @@ class SVGFigureDraw(SVGFigureBase):
             #            lines = []
 
             sp = 0
-            s2 = text.find(' ')
+            s2 = text.find(" ")
             s3 = 0
             while s2 != -1:
                 sub = text[s3:s2]
@@ -732,20 +987,20 @@ class SVGFigureDraw(SVGFigureBase):
                     lines.append(sub)
 
                 sp = s2
-                s2 = text.find(' ', s2 + 1)
+                s2 = text.find(" ", s2 + 1)
 
             if s3 != -1:
                 lines.append(text[s3:])
 
         # calc spacing
 
-#
-#        for line in lines:
-#            n = len(re.findall(r' ', line))
-#            print(n)
-#            spacings.append((ml / self.get_string_width(line) - 1) / n * spacing)
-#
-#        spacings[-1] = 0
+        #
+        #        for line in lines:
+        #            n = len(re.findall(r' ', line))
+        #            print(n)
+        #            spacings.append((ml / self.get_string_width(line) - 1) / n * spacing)
+        #
+        #        spacings[-1] = 0
 
         offset = 0  # (self.__int_view[0] - ml)
 
@@ -756,22 +1011,22 @@ class SVGFigureDraw(SVGFigureBase):
             self.inc(x=offset, y=-(len(lines) * self.get_font_h() * 1.6))
 
         if showtitle:
-            self.add_text('{}'.format(title), css={'font-weight': weight})
+            self.add_text("{}".format(title), css={"font-weight": weight})
         else:
-            self.add_text('Figure {}.'.format(id), css={'font-weight': weight})
+            self.add_text("Figure {}.".format(id), css={"font-weight": weight})
 
         self.inc(y=self.get_font_h() * 1.6)
 
         for i in range(0, len(lines)):
             line = lines[i]
-            panels = re.findall(r'\([A-Z]\)', line)
+            panels = re.findall(r"\([A-Z]\)", line)
 
             css = {}
 
             if len(spacings) > i:
-                css['word-spacing'] = '{}'.format(spacings[i])  # '5em'
+                css["word-spacing"] = "{}".format(spacings[i])  # '5em'
 
-            #print(i, css)
+            # print(i, css)
 
             p = self.add_trans()  # add_group()
             a = self.text()
@@ -787,7 +1042,7 @@ class SVGFigureDraw(SVGFigureBase):
                 if len(sub) > 0:
                     a.add(self.tspan(sub, css=css))
 
-                a.add(self.tspan(panel, css={'font-weight': weight}))
+                a.add(self.tspan(panel, css={"font-weight": weight}))
 
                 s1 = s2 + len(panel)
 
@@ -798,13 +1053,8 @@ class SVGFigureDraw(SVGFigureBase):
 
             p.add(a)
 
-            #self.add_line(x1=0, y1=0, x2=self.get_string_width(line), y2=0, color='red')
+            # self.add_line(x1=0, y1=0, x2=self.get_string_width(line), y2=0, color='red')
 
             self.inc(y=self.get_font_h() * 1.6)
 
         self.set_font_size(core.DEFAULT_FONT_SIZE)
-
-
-
-
-    

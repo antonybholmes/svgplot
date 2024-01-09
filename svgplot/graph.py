@@ -1,10 +1,12 @@
-from typing import Mapping, Optional, Union, Any
+import math
 from collections.abc import Iterable
+from typing import Any, Mapping, Optional, Union
+
+import numpy as np
+
+from . import svgfiguredraw
 from .axis import Axis
 from .svgfigure import SVGFigure
-from . import svgfiguredraw
-import numpy as np
-import math
 
 STROKE_SIZE = 2
 TICK_SIZE = 10
@@ -13,41 +15,77 @@ AXIS_STROKE = 2
 MINOR_TICK_STROKE = 2
 
 
-def _get_fill_kws(kws: Mapping[str, Union[int, float, bool, str]]) -> dict[str, Union[int, float, bool, str]]:
+def _get_fill_kws(
+    kws: Mapping[str, Union[int, float, bool, str]]
+) -> dict[str, Union[int, float, bool, str]]:
     if kws is None:
         kws = {}
 
-    ret = {'show': True, 'shape': 'x', 'size': 8}
+    ret = {"show": True, "shape": "x", "size": 8}
     ret.update(kws)
     return ret
 
 
-def _get_default_x_kws(kws: Mapping[str, Union[int, float, bool, str]] = {}) -> Mapping[str, Union[int, float, bool, str]]:
-    ret = {'show': True, 'show_line':True, 'label': True, 'stroke': 3, 'title_offset': 70,
-           'ticklabeloffset':0,
-           'clip': True, 'label_pos': 'c', 'invert': False}
+def _get_default_x_kws(
+    kws: Mapping[str, Union[int, float, bool, str]] = {}
+) -> Mapping[str, Union[int, float, bool, str]]:
+    ret = {
+        "show": True,
+        "show_line": True,
+        "label": True,
+        "stroke": 3,
+        "title_offset": 70,
+        "ticklabeloffset": 0,
+        "ticks": None,
+        "ticklabels": None,
+        "clip": True,
+        "label_pos": "c",
+        "invert": False,
+        "showticks": True,
+        "showticklabels": True,
+    }
     ret.update(kws)
     return ret
 
 
-def _get_default_y_kws(kws: Mapping[str, Union[int, float, bool, str]] = {}) -> Mapping[str, Union[int, float, bool, str]]:
-    ret = {'show': True, 'show_line':True, 'label': True, 'stroke': 3, 'title_offset': 120,'ticklabeloffset':0,
-           'clip': True, 'label_pos': 'c', 'invert': False}
+def _get_default_y_kws(
+    kws: Mapping[str, Union[int, float, bool, str]] = {}
+) -> Mapping[str, Union[int, float, bool, str]]:
+    ret = {
+        "show": True,
+        "show_line": True,
+        "label": True,
+        "stroke": 3,
+        "title_offset": 120,
+        "ticklabeloffset": 0,
+        "clip": True,
+        "label_pos": "c",
+        "invert": False,
+        "showticks": True,
+        "showticklabels": True,
+    }
     ret.update(kws)
     return ret
 
 
-def _get_default_axes_kws(xaxis_kws: Mapping[str, Union[int, float, bool, str]] = {},
-                          yaxis_kws: Mapping[str, Union[int, float, bool, str]] = {}) -> list[Mapping[str, Union[int, float, bool, str]]]:
+def _get_default_axes_kws(
+    xaxis_kws: Mapping[str, Union[int, float, bool, str]] = {},
+    yaxis_kws: Mapping[str, Union[int, float, bool, str]] = {},
+) -> list[Mapping[str, Union[int, float, bool, str]]]:
     return (_get_default_x_kws(xaxis_kws), _get_default_y_kws(yaxis_kws))
 
 
-def add_axes(svg: SVGFigure,
-             pos: tuple[float, float] = (0, 0),
-             axes: tuple[Axis, Axis] = None,
-             xaxis_kws: Optional[Union[bool, str, Mapping[str,
-                                                          Union[int, float, str, bool]]]] = None,
-             yaxis_kws: Optional[Union[bool, str, Mapping[str, Union[int, float, str, bool]]]] = None) -> None:
+def add_axes(
+    svg: SVGFigure,
+    pos: tuple[float, float] = (0, 0),
+    axes: tuple[Axis, Axis] = None,
+    xaxis_kws: Optional[
+        Union[bool, str, Mapping[str, Union[int, float, str, bool]]]
+    ] = None,
+    yaxis_kws: Optional[
+        Union[bool, str, Mapping[str, Union[int, float, str, bool]]]
+    ] = None,
+) -> None:
     x, y = pos
 
     xaxis, yaxis = axes
@@ -55,41 +93,54 @@ def add_axes(svg: SVGFigure,
     # set some defaults
     _show_axes = _get_default_axes_kws(xaxis_kws, yaxis_kws)
 
-    if _show_axes[0]['show']:
+    if _show_axes[0]["show"]:
         y1 = y
 
-        if not _show_axes[1]['invert']:
+        if not _show_axes[1]["invert"]:
             y1 = y + yaxis.w
 
-        add_x_axis(svg,
-                   pos=(x, y1),
-                   axis=xaxis,
-                   ticks=xaxis.ticks,
-                   ticklabels=xaxis.ticklabels,
-                   showticks=True,
-                   showline=_show_axes[0]['show_line'],
-                   stroke=_show_axes[0]['stroke'],
-                   showlabel=_show_axes[0]['label'],
-                   title_offset=_show_axes[0]['title_offset'],
-                   label_pos=_show_axes[0]['label_pos'],
-                   ticklabel_offset=_show_axes[0]['ticklabeloffset'])
+        ticks = _show_axes[0]["ticks"]
+
+        if ticks is None:
+            ticks = xaxis.ticks
+
+        ticklabels = _show_axes[0]["ticklabels"]
+
+        if ticklabels is None:
+            ticklabels = xaxis.ticklabels
+
+        add_x_axis(
+            svg,
+            pos=(x, y1),
+            axis=xaxis,
+            ticks=ticks,
+            ticklabels=ticklabels,
+            showline=_show_axes[0]["show_line"],
+            stroke=_show_axes[0]["stroke"],
+            showlabel=_show_axes[0]["label"],
+            title_offset=_show_axes[0]["title_offset"],
+            label_pos=_show_axes[0]["label_pos"],
+            ticklabel_offset=_show_axes[0]["ticklabeloffset"],
+        )
 
         # if _show_axes[0]['label']:
         #     svg.add_text_bb(xaxis.label, x=xaxis.w/2, y=y1 +
         #                     _show_axes[0]['title_offset'], align='c')
 
-    if _show_axes[1]['show']:
-        add_y_axis(svg,
-                   pos=pos,
-                   axis=yaxis,
-                   ticks=yaxis.ticks,
-                   ticklabels=yaxis.ticklabels,
-                   showticks=True,
-                   showline=_show_axes[1]['show_line'],
-                   stroke=_show_axes[1]['stroke'],
-                   showlabel=_show_axes[1]['label'],
-                   title_offset=_show_axes[1]['title_offset'],
-                   invert=_show_axes[1]['invert'])
+    if _show_axes[1]["show"]:
+        add_y_axis(
+            svg,
+            pos=pos,
+            axis=yaxis,
+            ticks=yaxis.ticks,
+            ticklabels=yaxis.ticklabels,
+            showticks=_show_axes[1]["showticks"],
+            showline=_show_axes[1]["show_line"],
+            stroke=_show_axes[1]["stroke"],
+            showlabel=_show_axes[1]["label"],
+            title_offset=_show_axes[1]["title_offset"],
+            invert=_show_axes[1]["invert"],
+        )
 
         # if show_axes[1]['label']:
         #    svg.add_text_bb(yaxis.label, x=-60, y=y+yaxis.w/2, align='c', orientation='v')
@@ -97,29 +148,30 @@ def add_axes(svg: SVGFigure,
     return xaxis.w, yaxis.w
 
 
-def add_x_axis(svg,
-               pos: tuple[Union[int, float], Union[int, float]] = (0, 0),
-               axis: Axis = Axis(lim=[0, 100], w=200, ticks=[
-                                 0, 20, 40, 60, 80, 100]),
-               ticks: Optional[Iterable[Union[int, float]]] = None,
-               ticklabels: Optional[Iterable[Union[str, int, float]]] = None,
-               label: Optional[str] = None,
-               padding: int = TICK_SIZE,
-               showticks: bool = True,
-               inside: bool = False,
-               showline: bool = True,
-               minorticks: Optional[Iterable[Union[int, float]]] = None,
-               ticksize: int = TICK_SIZE,
-               minorticksize: int = MINOR_TICK_SIZE,
-               stroke: int = AXIS_STROKE,
-               tickstroke: Optional[int] = None,
-               minortickstroke: Optional[int] = None,
-               invert: bool = False,
-               showlabel: bool = True,
-               title_offset: Optional[int] = None,
-               label_pos: str = 'center',
-               ticklabel_offset:int = 0):
-
+def add_x_axis(
+    svg,
+    pos: tuple[Union[int, float], Union[int, float]] = (0, 0),
+    axis: Axis = Axis(lim=[0, 100], w=200, ticks=[0, 20, 40, 60, 80, 100]),
+    ticks: Optional[Iterable[Union[int, float]]] = None,
+    ticklabels: Optional[Iterable[Union[str, int, float]]] = None,
+    label: Optional[str] = None,
+    padding: int = TICK_SIZE,
+    showticks: bool = True,
+    showticklabels: bool = True,
+    inside: bool = False,
+    showline: bool = True,
+    minorticks: Optional[Iterable[Union[int, float]]] = None,
+    ticksize: int = TICK_SIZE,
+    minorticksize: int = MINOR_TICK_SIZE,
+    stroke: int = AXIS_STROKE,
+    tickstroke: Optional[int] = None,
+    minortickstroke: Optional[int] = None,
+    invert: bool = False,
+    showlabel: bool = True,
+    title_offset: Optional[int] = None,
+    label_pos: str = "center",
+    ticklabel_offset: int = 0,
+):
     x, y = pos
 
     if tickstroke is None:
@@ -138,7 +190,7 @@ def add_x_axis(svg,
 
     if ticklabels is None:
         if ticks is not None:
-            ticklabels = ticks
+            ticklabels = [f"{t:,}", ticks]
         else:
             ticklabels = axis.ticklabels
 
@@ -173,35 +225,37 @@ def add_x_axis(svg,
 
         if showticks:
             if inside:
-                svg.add_line(x1=tickx, y1=y-ticksize,
-                             x2=tickx, y2=y, stroke=tickstroke)
+                svg.add_line(
+                    x1=tickx, y1=y - ticksize, x2=tickx, y2=y, stroke=tickstroke
+                )
                 y1 = y + svg.get_font_h()
             else:
-                svg.add_line(x1=tickx, y1=y, x2=tickx, y2=y +
-                             ticksize, stroke=tickstroke)
+                svg.add_line(
+                    x1=tickx, y1=y, x2=tickx, y2=y + ticksize, stroke=tickstroke
+                )
                 y1 = y + ticksize / 2 + svg.get_font_h() + ticklabel_offset
 
-            if label_pos == 'inner':
-                align = 'r' if i == len(ticks) - 1 else 'l'
-                print(ticklabel, align, 'align')
+            if label_pos == "inner":
+                align = "r" if i == len(ticks) - 1 else "l"
                 svg.add_text_bb(ticklabel, x=tickx, y=y1, align=align)
             else:
-                #print(tickx, ticklabel)
-
-                if '^' in ticklabel:
-                    t, sup = ticklabel.split('^')
+                if "^" in ticklabel:
+                    t, sup = ticklabel.split("^")
                 else:
                     t = ticklabel
                     sup = None
 
-                svg.add_text_bb(t, x=tickx, y=y1, align='c')
-                
+                svg.add_text_bb(t, x=tickx, y=y1, align="c")
+
                 if sup is not None:
-                    svg.add_text_bb(sup, x=tickx+20, y=y1-15, size=6)
-                #pass
+                    svg.add_text_bb(sup, x=tickx + 20, y=y1 - 15, size=6)
         else:
-            svg.add_text_bb(ticklabel, x=tickx, y=y +
-                            svg.get_font_h() + ticklabel_offset, align='c')
+            svg.add_text_bb(
+                ticklabel,
+                x=tickx,
+                y=y + svg.get_font_h() + ticklabel_offset,
+                align="c",
+            )
 
     if minorticks is not None:
         for i in range(0, len(minorticks)):
@@ -217,18 +271,28 @@ def add_x_axis(svg,
 
             if showticks:
                 if inside:
-                    svg.add_line(x1=tickx, y1=y-minorticksize,
-                                 x2=tickx, y2=y, stroke=minortickstroke)
+                    svg.add_line(
+                        x1=tickx,
+                        y1=y - minorticksize,
+                        x2=tickx,
+                        y2=y,
+                        stroke=minortickstroke,
+                    )
                 else:
-                    svg.add_line(x1=tickx, y1=y, x2=tickx, y2=y +
-                                 minorticksize, stroke=minortickstroke)
+                    svg.add_line(
+                        x1=tickx,
+                        y1=y,
+                        x2=tickx,
+                        y2=y + minorticksize,
+                        stroke=minortickstroke,
+                    )
 
     if showlabel and isinstance(label, str) and label != "":
         if title_offset is None:
             if showticks:
-                title_offset = 2*padding+2*svg.get_font_h()
+                title_offset = 2 * padding + 2 * svg.get_font_h()
             else:
-                title_offset = padding+2*svg.get_font_h()
+                title_offset = padding + 2 * svg.get_font_h()
 
         if invert:
             x1 = x - axis.w
@@ -236,35 +300,36 @@ def add_x_axis(svg,
             x1 = x
 
         if showticks:
-            svg.add_text_bb(label, x=x1+axis.w/2, y=y+title_offset, align='c')
+            svg.add_text_bb(label, x=x1 + axis.w / 2, y=y + title_offset, align="c")
         else:
-            svg.add_text_bb(label, x=x1+axis.w/2, y=y+title_offset, align='c')
+            svg.add_text_bb(label, x=x1 + axis.w / 2, y=y + title_offset, align="c")
 
     # svg.set_font_size(DEFAULT_FONT_SIZE)
 
 
-def add_y_axis(svg:SVGFigure,
-               pos: tuple[Union[int, float], Union[int, float]] = (0, 0),
-               axis: Axis = Axis(lim=[0, 100], w=200),
-               ticks: Optional[Iterable[Union[int, float]]] = None,
-               ticklabels: Optional[Iterable[Union[str, int, float]]] = None,
-               label: Optional[str] = None,
-               padding: int = TICK_SIZE,
-               showticks: bool = True,
-               inside: bool = False,
-               showline: bool = True,
-               side: str = 'l',
-               stroke: int = AXIS_STROKE,
-               minorticks: Optional[Iterable[Union[int, float]]] = None,
-               ticksize: int = TICK_SIZE,
-               tickstroke: Optional[int] = None,
-               minorticksize: int = MINOR_TICK_SIZE,
-               minortickstroke: Optional[int] = None,
-               title_offset: Optional[int] = None,
-               tickcolor: str = 'black',
-               showlabel: bool = True,
-               invert: bool = False):
-
+def add_y_axis(
+    svg: SVGFigure,
+    pos: tuple[Union[int, float], Union[int, float]] = (0, 0),
+    axis: Axis = Axis(lim=[0, 100], w=200),
+    ticks: Optional[Iterable[Union[int, float]]] = None,
+    ticklabels: Optional[Iterable[Union[str, int, float]]] = None,
+    label: Optional[str] = None,
+    padding: int = TICK_SIZE,
+    showticks: bool = True,
+    inside: bool = False,
+    showline: bool = True,
+    side: str = "l",
+    stroke: int = AXIS_STROKE,
+    minorticks: Optional[Iterable[Union[int, float]]] = None,
+    ticksize: int = TICK_SIZE,
+    tickstroke: Optional[int] = None,
+    minorticksize: int = MINOR_TICK_SIZE,
+    minortickstroke: Optional[int] = None,
+    title_offset: Optional[int] = None,
+    tickcolor: str = "black",
+    showlabel: bool = True,
+    invert: bool = False,
+):
     x, y = pos
 
     if tickstroke is None:
@@ -294,8 +359,9 @@ def add_y_axis(svg:SVGFigure,
     mw = 0
 
     if showline:
-        svg.add_line(x1=x, y1=y-stroke/2, y2=y+axis.w +
-                     stroke/2, x2=x, stroke=stroke)
+        svg.add_line(
+            x1=x, y1=y - stroke / 2, y2=y + axis.w + stroke / 2, x2=x, stroke=stroke
+        )
 
     for i in range(0, len(ticks)):
         tick = ticks[i]
@@ -308,7 +374,6 @@ def add_y_axis(svg:SVGFigure,
         else:
             ticky = y + axis.w - axis.scale(tick)
 
-        print(i, ticklabels)
         ticklabel = ticklabels[i]
 
         if not isinstance(ticklabel, str):
@@ -316,34 +381,44 @@ def add_y_axis(svg:SVGFigure,
 
         if showticks:
             if inside:
-                if side == 'r':
-                    svg.add_line(x1=x-ticksize, y1=ticky, x2=x,
-                                 y2=ticky, stroke=tickstroke)
-                    svg.add_text_bb(ticklabel, x=x+ticksize,
-                                    y=ticky, color=tickcolor)
+                if side == "r":
+                    svg.add_line(
+                        x1=x - ticksize, y1=ticky, x2=x, y2=ticky, stroke=tickstroke
+                    )
+                    svg.add_text_bb(ticklabel, x=x + ticksize, y=ticky, color=tickcolor)
                 else:
-                    svg.add_line(x1=x, y1=ticky, x2=x+ticksize,
-                                 y2=ticky, stroke=tickstroke)
-                    svg.add_text_bb(ticklabel, x=x-ticksize,
-                                    y=ticky, align='r', color=tickcolor)
+                    svg.add_line(
+                        x1=x, y1=ticky, x2=x + ticksize, y2=ticky, stroke=tickstroke
+                    )
+                    svg.add_text_bb(
+                        ticklabel, x=x - ticksize, y=ticky, align="r", color=tickcolor
+                    )
             else:
-                if side == 'r':
-                    svg.add_line(x1=x, y1=ticky, x2=x+ticksize,
-                                 y2=ticky, stroke=tickstroke)
-                    svg.add_text_bb(ticklabel, x=x+2*ticksize,
-                                    y=ticky, color=tickcolor)
+                if side == "r":
+                    svg.add_line(
+                        x1=x, y1=ticky, x2=x + ticksize, y2=ticky, stroke=tickstroke
+                    )
+                    svg.add_text_bb(
+                        ticklabel, x=x + 2 * ticksize, y=ticky, color=tickcolor
+                    )
                 else:
-                    svg.add_line(x1=x-ticksize, y1=ticky, x2=x,
-                                 y2=ticky, stroke=tickstroke)
-                    svg.add_text_bb(ticklabel, x=x-2*ticksize,
-                                    y=ticky, align='r', color=tickcolor)
+                    svg.add_line(
+                        x1=x - ticksize, y1=ticky, x2=x, y2=ticky, stroke=tickstroke
+                    )
+                    svg.add_text_bb(
+                        ticklabel,
+                        x=x - 2 * ticksize,
+                        y=ticky,
+                        align="r",
+                        color=tickcolor,
+                    )
         else:
-            if side == 'r':
-                svg.add_text_bb(ticklabel, x=x+ticksize,
-                                y=ticky, color=tickcolor)
+            if side == "r":
+                svg.add_text_bb(ticklabel, x=x + ticksize, y=ticky, color=tickcolor)
             else:
-                svg.add_text_bb(ticklabel, x=x-padding, y=ticky,
-                                align='r', color=tickcolor)
+                svg.add_text_bb(
+                    ticklabel, x=x - padding, y=ticky, align="r", color=tickcolor
+                )
 
         mw = max(mw, svg.get_string_width(ticklabel))
 
@@ -361,19 +436,39 @@ def add_y_axis(svg:SVGFigure,
 
             if showticks:
                 if inside:
-                    if side == 'r':
-                        svg.add_line(x1=x-minorticksize, y1=ticky,
-                                     x2=x, y2=ticky, stroke=minortickstroke)
+                    if side == "r":
+                        svg.add_line(
+                            x1=x - minorticksize,
+                            y1=ticky,
+                            x2=x,
+                            y2=ticky,
+                            stroke=minortickstroke,
+                        )
                     else:
-                        svg.add_line(x1=x, y1=ticky, x2=x+minorticksize,
-                                     y2=ticky, stroke=minortickstroke)
+                        svg.add_line(
+                            x1=x,
+                            y1=ticky,
+                            x2=x + minorticksize,
+                            y2=ticky,
+                            stroke=minortickstroke,
+                        )
                 else:
-                    if side == 'r':
-                        svg.add_line(x1=x, y1=ticky, x2=x+minorticksize,
-                                     y2=ticky, stroke=minortickstroke)
+                    if side == "r":
+                        svg.add_line(
+                            x1=x,
+                            y1=ticky,
+                            x2=x + minorticksize,
+                            y2=ticky,
+                            stroke=minortickstroke,
+                        )
                     else:
-                        svg.add_line(x1=x-minorticksize, y1=ticky,
-                                     x2=x, y2=ticky, stroke=minortickstroke)
+                        svg.add_line(
+                            x1=x - minorticksize,
+                            y1=ticky,
+                            x2=x,
+                            y2=ticky,
+                            stroke=minortickstroke,
+                        )
 
     if showlabel and isinstance(label, str) and label != "":
         if title_offset is None:
@@ -381,26 +476,26 @@ def add_y_axis(svg:SVGFigure,
 
         y1 = y + axis.w / 2
 
-        svg.add_text_bb(label,
-                        x=x-title_offset,
-                        y=y1,
-                        orientation='v',
-                        align='c')
+        svg.add_text_bb(label, x=x - title_offset, y=y1, orientation="v", align="c")
 
     # svg.set_font_size(DEFAULT_FONT_SIZE)
 
 
-def add_y_percent_axis(svg,
-                       axis: Axis = Axis(lim=[0, 100], w=200),
-                       pos: tuple[float, float] = (0, 0),
-                       ticks=[0, 20, 40, 60, 80, 100],
-                       minorticks=None,  # range(5, 100, 5),
-                       label: str = ''):
-    add_y_axis(svg,
-               axis=axis,
-               pos=pos,
-               ticks=ticks,
-               label=label + ' (%)',
-               # ['0%', '20%', '40%', '60%', '80%', '100%'],
-               ticklabels=ticks,
-               minorticks=minorticks)
+def add_y_percent_axis(
+    svg,
+    axis: Axis = Axis(lim=[0, 100], w=200),
+    pos: tuple[float, float] = (0, 0),
+    ticks=[0, 20, 40, 60, 80, 100],
+    minorticks=None,  # range(5, 100, 5),
+    label: str = "",
+):
+    add_y_axis(
+        svg,
+        axis=axis,
+        pos=pos,
+        ticks=ticks,
+        label=label + " (%)",
+        # ['0%', '20%', '40%', '60%', '80%', '100%'],
+        ticklabels=ticks,
+        minorticks=minorticks,
+    )

@@ -1,17 +1,18 @@
-import os
 import math
+import os
 import re
 from typing import Optional
-import pandas as pd
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from matplotlib.colors import Normalize
-from . import core
-from . import graph
+
+from . import core, graph
 from .axis import Axis
 from .svgfigure import SVGFigure
 
-LINE_GREEN = '#00b359'  # '#90EE90'
+LINE_GREEN = "#00b359"  # '#90EE90'
 
 
 class _MidpointNormalize(Normalize):
@@ -26,31 +27,37 @@ class _MidpointNormalize(Normalize):
         return np.ma.masked_array(np.interp(value, x, y))
 
 
-def add_gsea(svg: SVGFigure,
-             name: str,
-             dir: str,
-             pos: tuple[float, float] = (0, 0),
-             w: int = 400,
-             h: Optional[float] = None,
-             xoffset: int = 80,
-             title: Optional[str] = None,
-             showtitle:bool = True,
-             phens=None,
-             cmap=plt.cm.seismic,
-             mode: str = 'up',
-             stroke: int = 4,
-             scale_factor: float = 0.7,
-             n: int = -1,
-             weight: str = 'normal',
-             titleoffset: int = 20,
-             showsnr: bool = True,
-             show_gene_indices: bool = True,
-             label_pos: str = 'upper right',
-             show_y_label: bool = True,
-             stat: str = 'q',
-             le_fill_opacity: float = 0.3,
-             bar_colors = ['red', 'royalblue'],
-             label_colors = []):
+def add_gsea(
+    svg: SVGFigure,
+    name: str,
+    dir: str,
+    pos: tuple[float, float] = (0, 0),
+    w: int = 400,
+    h: Optional[float] = None,
+    xoffset: int = 80,
+    title: Optional[str] = None,
+    showtitle: bool = True,
+    phenotypes: Optional[list[str]] = None,
+    cmap: str = plt.cm.seismic,
+    mode: str = "up",
+    stroke: int = 4,
+    line_stroke: int = 4,
+    scale_factor: float = 0.7,
+    n: int = -1,
+    title_weight: str = "normal",
+    titleoffset: int = 20,
+    showsnr: bool = True,
+    show_gene_indices: bool = True,
+    label_pos: str = "upper right",
+    ylabel: str = "Enrichment",
+    show_y_label: bool = True,
+    stat: str = "q",
+    le_fill_opacity: float = 0.3,
+    bar_colors=["red", "royalblue"],
+    label_colors=[],
+    line_color: str = LINE_GREEN,
+    show_leading_edge: bool = True,
+):
     """
     Add a gsea plot onto a page. This method adds axes labels to reduce
     scaling effect on fonts.
@@ -66,13 +73,13 @@ def add_gsea(svg: SVGFigure,
     # find gene ranking
 
     for f in os.listdir(dir):
-        if 'ranked_gene' in f and 'xls' in f:
-            print(f'gene rank: {f}')
-            df_gene_ranks = pd.read_csv(f'{dir}/{f}', sep='\t', header=0)
+        if "ranked_gene" in f and ("xls" in f or "tsv" in f):
+            print(f"gene rank: {f}")
+            df_gene_ranks = pd.read_csv(f"{dir}/{f}", sep="\t", header=0)
 
-            matcher = re.search('ranked_gene_list_(.+?)_versus_(.+?)_', f)
-            if phens is None:
-                phens = [matcher.group(1), matcher.group(2)]
+            matcher = re.search("ranked_gene_list_(.+?)_versus_(.+?)_", f)
+            if phenotypes is None:
+                phenotypes = [matcher.group(1), matcher.group(2)]
 
             break
 
@@ -80,33 +87,39 @@ def add_gsea(svg: SVGFigure,
 
     for f in os.listdir(dir):
         fl = f.lower()
-        print(dir, f, name)
-        if ln in fl.lower() and 'xls' in f:
-            print(f'gene hits: {f}')
-            df_hits = pd.read_csv(f'{dir}/{f}', sep='\t', header=0)
+        # print(dir, f, name)
+        if ln in fl.lower() and ("xls" in f or "tsv" in f):
+            print(f"gene hits: {f}")
+            df_hits = pd.read_csv(f"{dir}/{f}", sep="\t", header=0)
             break
 
     nes_map = {}
 
     for f in os.listdir(dir):
-        if 'gsea_report_for_' in f and 'xls' in f:
-            df_rep = pd.read_csv(f'{dir}/{f}', sep='\t', header=0)
+        if "gsea_report_for_" in f and ("xls" in f or "tsv" in f):
+            df_rep = pd.read_csv(f"{dir}/{f}", sep="\t", header=0)
 
             for i in range(df_rep.shape[0]):
-                nes_map[df_rep['NAME'][i].lower()] = (
-                    df_rep['NES'][i], df_rep['FDR q-val'][i], df_rep['NOM p-val'][i])
+                nes_map[df_rep["NAME"][i].lower()] = (
+                    df_rep["NES"][i],
+                    df_rep["FDR q-val"][i],
+                    df_rep["NOM p-val"][i],
+                    df_rep["SIZE"][i],
+                )
 
     starty = y
 
-    #subtitle = df.iloc[0, 0]
-    #subtitle = subtitle.replace('0.000', '0.0')
-    #subtitles = subtitle.replace(' ', '').split(',')
+    # subtitle = df.iloc[0, 0]
+    # subtitle = subtitle.replace('0.000', '0.0')
+    # subtitles = subtitle.replace(' ', '').split(',')
 
     xmax = df_gene_ranks.shape[0]
     xticks = [0, df_gene_ranks.shape[0]]
 
-    ymin = df_hits['RUNNING ES'].min()
-    ymax = df_hits['RUNNING ES'].max()
+    ymin = df_hits["RUNNING ES"].min()
+    ymax = df_hits["RUNNING ES"].max()
+
+    print(ymin, ymax)
 
     genes = df_gene_ranks.shape[0]
 
@@ -114,7 +127,7 @@ def add_gsea(svg: SVGFigure,
 
     if ymax > 0:
         ymax = math.ceil(ymax * 10) / 10
-        if ymax < 0.2:
+        if ymax < 0.1:
             ymax = 0
     else:
         ymax = math.floor(ymax * 10) / 10
@@ -124,17 +137,17 @@ def add_gsea(svg: SVGFigure,
     else:
         ymin = math.floor(ymin * 10) / 10
 
-    hits = df_hits['RANK IN GENE LIST'].values
+    hits = df_hits["RANK IN GENE LIST"].values
 
-    zero_cross = df_gene_ranks[df_gene_ranks['SCORE'] > 0].shape[0]
+    zero_cross = df_gene_ranks[df_gene_ranks["SCORE"] > 0].shape[0]
 
-    snr = df_gene_ranks['SCORE'].values
+    snr = df_gene_ranks["SCORE"].values
 
-    #norm = _MidpointNormalize(vmin=snr.min(), midpoint=0, vmax=snr.max())
+    # norm = _MidpointNormalize(vmin=snr.min(), midpoint=0, vmax=snr.max())
     norm = _MidpointNormalize(vmin=0, midpoint=zero_cross, vmax=xmax)
 
-    plotx = df_hits['RANK IN GENE LIST'].values
-    ploty = df_hits['RUNNING ES'].values
+    plotx = df_hits["RANK IN GENE LIST"].values
+    ploty = df_hits["RUNNING ES"].values
 
     # fix ends
 
@@ -146,16 +159,16 @@ def add_gsea(svg: SVGFigure,
         plotx = np.append(plotx, genes)
         ploty = np.append(ploty, 0)
 
-    df_hits_lead = df_hits[df_hits['CORE ENRICHMENT'] == 'Yes']
+    df_hits_lead = df_hits[df_hits["CORE ENRICHMENT"] == "Yes"]
 
-    xlead = df_hits_lead['RANK IN GENE LIST'].values
-    ylead = df_hits_lead['RUNNING ES'].values
+    xlead = df_hits_lead["RANK IN GENE LIST"].values
+    ylead = df_hits_lead["RUNNING ES"].values
 
     #  leading edge on left
     if xlead[0] < zero_cross:
-        if xlead[0] != 0:
-            xlead = np.insert(xlead, 0, 0)
-            ylead = np.insert(ylead, 0, 0)
+        # if xlead[0] != 0:
+        xlead = np.insert(xlead, 0, 0)
+        ylead = np.insert(ylead, 0, 0)
 
         xlead = np.append(xlead, xlead[-1])
         ylead = np.append(ylead, 0)
@@ -163,12 +176,12 @@ def add_gsea(svg: SVGFigure,
         xlead = np.insert(xlead, 0, xlead[0])
         ylead = np.insert(ylead, 0, 0)
 
-        if xlead[-1] != genes:
-            xlead = np.append(xlead, genes)
-            ylead = np.append(ylead, 0)
+        # if xlead[-1] != genes:
+        xlead = np.append(xlead, genes)
+        ylead = np.append(ylead, 0)
 
-    #ylead[0] = 0
-    #ylead[-1] = 0
+    # ylead[0] = 0
+    # ylead[-1] = 0
 
     # fix for plotting leading edge
     # if xlead[0] < zero_cross:
@@ -178,7 +191,7 @@ def add_gsea(svg: SVGFigure,
 
     # ylead = np.append(ylead, 0)
 
-    #heatmap = file.replace('gsea_plot', 'heat_map').replace('params.txt', 'png')
+    # heatmap = file.replace('gsea_plot', 'heat_map').replace('params.txt', 'png')
 
     if w is None or h is None:
         if w is None:
@@ -191,38 +204,47 @@ def add_gsea(svg: SVGFigure,
             title = name
 
         if n == -1:
-            n = genes
+            n = nes_map[ln][3]  # genes
 
-        title = f'{title} (n={n:,})'
-        svg.add_text_bb(title, x=x+xoffset+w/2,
-                        y=y,
-                        w=w,
-                        align='c',
-                        weight=weight)
+        title = f"{title} (n={n:,})"
+
+        svg.add_text_bb(
+            title, x=x + xoffset + w / 2, y=y, w=w, align="c", weight=title_weight
+        )
         y += svg.get_font_h() + titleoffset  # 0.5 * padding
 
     scaleh = scale_factor * h
 
     xaxis = Axis(lim=[0, xmax], w=w)
-    yaxis = Axis(lim=[ymin, ymax], w=scaleh,
-                 label='Enrichment' if show_y_label else '')
+    yaxis = Axis(lim=[ymin, ymax], w=scaleh, label=ylabel if show_y_label else "")
 
     # leading edge
-    points = [[xoffset + xaxis.scale(px), y + scaleh - yaxis.scale(py)]
-              for px, py in zip(xlead, ylead)]
-    svg.add_polyline(points, color='none',
-                     fill=LINE_GREEN, stroke=stroke, fill_opacity=le_fill_opacity)
+
+    if show_leading_edge:
+        points = [
+            [xoffset + xaxis.scale(px), y + scaleh - yaxis.scale(py)]
+            for px, py in zip(xlead, ylead)
+        ]
+        svg.add_polyline(
+            points,
+            color="none",
+            fill=line_color,
+            stroke=0,
+            fill_opacity=le_fill_opacity,
+        )
 
     # scale points
-    points = [[xoffset + xaxis.scale(px), y + scaleh - yaxis.scale(py)]
-              for px, py in zip(plotx, ploty)]
+    points = [
+        [xoffset + xaxis.scale(px), y + scaleh - yaxis.scale(py)]
+        for px, py in zip(plotx, ploty)
+    ]
 
     # python light green as html
-    svg.add_polyline(points, color=LINE_GREEN, stroke=stroke)
+    svg.add_polyline(points, color=line_color, stroke=line_stroke)
 
-    #hw, hh, hi = svg.base_image(heatmap, w=w, h=h*0.06)
+    # hw, hh, hi = svg.base_image(heatmap, w=w, h=h*0.06)
 
-    #print(hi, hw, hh)
+    # print(hi, hw, hh)
 
     #
     # subtitles
@@ -233,9 +255,9 @@ def add_gsea(svg: SVGFigure,
     # else:
     #     svg.set_font_size(core.DEFAULT_FONT_SIZE)
 
-    #svg.add_text_bb(subtitle, x=x+xoffset, y=y, w=w, align='c')
-    #y += svg.get_font_h()
-    #svg.add_trans(hi, x=x+xoffset, y=y+h-hh)
+    # svg.add_text_bb(subtitle, x=x+xoffset, y=y, w=w, align='c')
+    # y += svg.get_font_h()
+    # svg.add_trans(hi, x=x+xoffset, y=y+h-hh)
 
     # if float(subtitles[1].split('=')[1]) < 0.05:
     #     pcolor = 'black'
@@ -269,7 +291,7 @@ def add_gsea(svg: SVGFigure,
     # if smallfont:
     #     svg.set_font_size(core.FIGURE_FONT_SIZE)
 
-    #ticks = [ymin, round((((ymax+ymin) / 2) * 10) / 10, 1), ymax]
+    # ticks = [ymin, round((((ymax+ymin) / 2) * 10) / 10, 1), ymax]
     ticks = [ymin, ymax]
 
     if ymin == 0:
@@ -286,42 +308,43 @@ def add_gsea(svg: SVGFigure,
 
     print(ymin, ymax, ticks)
 
-    graph.add_y_axis(svg,
-                     pos=(xoffset, y),
-                     axis=yaxis,
-                     ticks=ticks,
-                     padding=core.TICK_SIZE,
-                     showticks=True,
-                     stroke=stroke)
+    graph.add_y_axis(
+        svg,
+        pos=(xoffset, y),
+        axis=yaxis,
+        ticks=ticks,
+        padding=core.TICK_SIZE,
+        showticks=True,
+        stroke=stroke,
+    )
 
     # draw line at y =0
 
     y1 = y + scaleh - yaxis.scale(0)  # (0 - ymin) / (ymax - ymin) * scaleh
 
-    svg.add_line(x1=xoffset, y1=y1, x2=xoffset+w, y2=y1, stroke=stroke)
+    svg.add_line(x1=xoffset, y1=y1, x2=xoffset + w, y2=y1, stroke=stroke)
 
     # add labels
 
-    print('nes_map', ln, nes_map)
+    print("nes_map", ln, nes_map)
     if ln in nes_map:
-        if label_pos == 'upper right':
+        if label_pos == "upper right":
             x1 = w - 100
-            svg.add_text_bb(f'NES: {nes_map[ln][0]:.2f}', x=x1, y=y)
+            svg.add_text_bb(f"NES: {nes_map[ln][0]:.2f}", x=x1, y=y)
 
-            if stat == 'q':
-                svg.add_text_bb(f'q: {nes_map[ln][1]:.2f}', x=x1, y=y+35)
+            if stat == "q":
+                svg.add_text_bb(f"q: {nes_map[ln][1]:.2f}", x=x1, y=y + 35)
             else:
-                svg.add_text_bb(f'p: {nes_map[ln][2]:.2f}', x=x1, y=y+35)
+                svg.add_text_bb(f"p: {nes_map[ln][2]:.2f}", x=x1, y=y + 35)
         else:
             x1 = 90
-            svg.add_text_bb(f'NES: {nes_map[ln][0]:.2f}', x=x1, y=scaleh-60)
+            y1 = scaleh * 1
+            svg.add_text_bb(f"NES: {nes_map[ln][0]:.2f}", x=x1, y=y1)
 
-            if stat == 'q':
-                svg.add_text_bb(
-                    f'q: {nes_map[ln][1]:.2f}', x=x1, y=scaleh-25)
+            if stat == "q":
+                svg.add_text_bb(f"q: {nes_map[ln][1]:.2f}", x=x1, y=y1 + 30)
             else:
-                svg.add_text_bb(
-                    f'p: {nes_map[ln][2]:.2f}', x=x1, y=scaleh-25)
+                svg.add_text_bb(f"p: {nes_map[ln][2]:.2f}", x=x1, y=y1 + 30)
 
     #
     # draw hits
@@ -337,10 +360,10 @@ def add_gsea(svg: SVGFigure,
         else:
             color = bar_colors[1]
 
-        svg.add_line(x1=x1, y1=y, x2=x1, y2=y+sh, color=color)
+        svg.add_line(x1=x1, y1=y, x2=x1, y2=y + sh, color=color)
 
     # add frame around colorbar
-    #svg.add_frame(xoffset, y=y-h*0.06, w=w, h=h*0.06)
+    # svg.add_frame(xoffset, y=y-h*0.06, w=w, h=h*0.06)
 
     #
     # heat bar
@@ -386,12 +409,22 @@ def add_gsea(svg: SVGFigure,
 
     y += sh + svg.get_font_h()
 
-    if isinstance(phens, list) or isinstance(phens, tuple):
-        #y += svg.get_font_h() - 5
+    if isinstance(phenotypes, list) or isinstance(phenotypes, tuple):
+        # y += svg.get_font_h() - 5
 
-        svg.add_text_bb(phens[0], x=xoffset, y=y, color=label_colors[0] if len(label_colors) > 0 else bar_colors[0])
-        svg.add_text_bb(phens[1], x=xoffset + w, y=y,
-                        align='r', color=label_colors[1] if len(label_colors) > 0 else bar_colors[1])
+        svg.add_text_bb(
+            phenotypes[0],
+            x=xoffset,
+            y=y,
+            color=label_colors[0] if len(label_colors) > 0 else bar_colors[0],
+        )
+        svg.add_text_bb(
+            phenotypes[1],
+            x=xoffset + w,
+            y=y,
+            align="r",
+            color=label_colors[1] if len(label_colors) > 0 else bar_colors[1],
+        )
     # else:
     #     svg.add_line(x1=xoffset, y1=y, x2=xoffset, y2=y+padding)
 
@@ -418,42 +451,53 @@ def add_gsea(svg: SVGFigure,
     #
 
     if showsnr:
-
         m = round(int(max(abs(snr)) * 10) / 10, 1)
         ymin = -m
         ymax = m
         scaleh = h * 0.3
-        yaxis = Axis(lim=[ymin, ymax], w=scaleh, label='SNR')
+        yaxis = Axis(lim=[ymin, ymax], w=scaleh, label="SNR")
 
-        svg.add_y_axis(x=xoffset,
-                       y=y,
-                       axis=yaxis,
-                       ticks=[-m, 0, m],
-                       padding=core.TICK_SIZE,
-                       showticks=True,
-                       stroke=stroke)
+        svg.add_y_axis(
+            x=xoffset,
+            y=y,
+            axis=yaxis,
+            ticks=[-m, 0, m],
+            padding=core.TICK_SIZE,
+            showticks=True,
+            stroke=stroke,
+        )
 
         # gray
         points = [[xoffset + xaxis.scale(0), y + scaleh - yaxis.scale(0)]]
-        points.extend([[xoffset + xaxis.scale(px), y + scaleh - yaxis.scale(py)]
-                      for px, py in zip(range(0, xmax), snr)])
         points.extend(
-            [[xoffset + xaxis.scale(xmax), y + scaleh - yaxis.scale(0)]])
-        svg.add_polyline(points, color='none',
-                         fill='#4d4d4d', stroke=stroke, fill_opacity=0.3)
+            [
+                [xoffset + xaxis.scale(px), y + scaleh - yaxis.scale(py)]
+                for px, py in zip(range(0, xmax), snr)
+            ]
+        )
+        points.extend([[xoffset + xaxis.scale(xmax), y + scaleh - yaxis.scale(0)]])
+        svg.add_polyline(
+            points, color="none", fill="#4d4d4d", stroke=stroke, fill_opacity=0.3
+        )
 
         x1 = xoffset + xaxis.scale(zero_cross)
-        svg.add_line(x1=x1, y2=y+scaleh-yaxis.scale(ymax), x2=x1,
-                     y1=y+scaleh-yaxis.scale(ymin), stroke=stroke, dashed=True)
+        svg.add_line(
+            x1=x1,
+            y2=y + scaleh - yaxis.scale(ymax),
+            x2=x1,
+            y1=y + scaleh - yaxis.scale(ymin),
+            stroke=stroke,
+            dashed=True,
+        )
 
         # draw line at y =0
         y1 = y + scaleh - yaxis.scale(0)
-        #svg.add_line(x1=xoffset, y1=y1, x2=xoffset+w, y2=y1, stroke=core.AXIS_STROKE)
+        # svg.add_line(x1=xoffset, y1=y1, x2=xoffset+w, y2=y1, stroke=core.AXIS_STROKE)
 
         y += scaleh + 40
 
     if show_gene_indices:
-        svg.add_text_bb(str(0), x=xoffset, y=y, align='c')
-        svg.add_text_bb(f'{genes:,}', x=xoffset+w, y=y, align='c')
+        svg.add_text_bb(str(0), x=xoffset, y=y, align="c")
+        svg.add_text_bb(f"{genes:,}", x=xoffset + w, y=y, align="c")
 
     return w + xoffset, y - starty + 2 * svg.get_font_h()

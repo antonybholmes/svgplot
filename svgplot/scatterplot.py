@@ -1,11 +1,11 @@
 from optparse import Option
 from typing import Mapping, Optional, Union
-import numpy as np
+
 import matplotlib
-from . import axis
+import numpy as np
+
+from . import axis, graph, legend
 from .svgfigure import SVGFigure
-from . import graph
-from . import legend
 
 DEFAULT_COLORS = matplotlib.colormaps['tab10'].colors
 
@@ -17,8 +17,6 @@ def add_scatterplot(svg: SVGFigure,
                     hue: Optional[Union[str, list[str]]] = None,
                     hue_order: list[str] = [],
                     palette: Union[str, Mapping[str, str]] = DEFAULT_COLORS,
-                    size: Optional[Union[str, list[str]]] = None,
-                    size_order: list[str] = [],
                     sizes: Union[int, str, Mapping[str, int]] = 20,
                     title: str = '',
                     pos: tuple[int, int] = (0, 0),
@@ -34,7 +32,7 @@ def add_scatterplot(svg: SVGFigure,
             hue = data.index.values
         else:
             hue = data[hue].values
-            print('hue by name', hue)
+       
 
     if hue is None:
         hue = [''] * data.shape[0]
@@ -46,30 +44,32 @@ def add_scatterplot(svg: SVGFigure,
         hue_order = np.array(sorted(set(hue)))
 
     hue_idx = {}
-    print('hue', 'order')
+
     for ho in hue_order:
         hue_idx[ho] = np.array([i for i in range(hue.size) if ho == hue[i]])
 
-    if isinstance(size, str):
-        if size == '.index':
-            size = data.index.values
-        else:
-            size = data[size].values
+    #if isinstance(size, str):
+    #    if size == '.index':
+    #        size = data.index.values
+    #    else:
+    #        size = data[size].values
 
-    if size is None:
-        size = [''] * data.shape[0]
+    #if size is None:
+    #    size = [''] * data.shape[0]
 
-    size = np.array(size)
+    #size = np.array(size)
 
-    if len(size_order) == 0:
-        size_order = np.array(sorted(set(size)))
+    # if len(size_order) == 0:
+    #     print('size', size)
+    #     size_order = np.array(sorted(set(size)))
 
     if isinstance(sizes, int):
-        sizes = {so: size for so in size_order}
+        sizes = {so: sizes for so in hue_order}
     elif isinstance(sizes, list):
-        sizes = {so: sizes[i % len(sizes)] for i, so in enumerate(size_order)}
+        sizes = {so: sizes[i % len(sizes)] for i, so in enumerate(hue_order)}
     else:
         pass
+
 
     if not isinstance(sizes, dict):
         raise Exception("sizes must be a dict")
@@ -108,11 +108,11 @@ def add_scatterplot(svg: SVGFigure,
     for ho in hue_order:
 
         idx = hue_idx[ho]
-        print('oh', ho, idx)
+
         d_x = data[x].values[idx]
         d_y = data[y].values[idx]
 
-        hue_size = size[idx]
+        hue_size = sizes[ho] #size[idx]
 
         points = []
 
@@ -133,12 +133,10 @@ def add_scatterplot(svg: SVGFigure,
 
         for i, p in enumerate(points):
             # size label for this point
-            phs = hue_size[i]
+            #phs = hue_size[i]
 
             # get size from lookup in sizes
-            point_size = sizes[phs]
-
-            print('cheese', i, phs, point_size)
+            point_size = hue_size #sizes[phs]
 
             svg.add_circle(x=p[0], y=p[1], w=point_size, fill=palette[ho])
 

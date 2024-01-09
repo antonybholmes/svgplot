@@ -4,17 +4,19 @@ Created on Sat May  8 21:12:57 2021
 
 @author: Antony
 """
+import math
 from typing import Mapping, Optional, Tuple, Union
-import numpy as np
-import pandas as pd
-from . import core
-from .svgfiguredraw import SVGFigureDraw
-from .axis import Axis
+
+import lib10x
 import libplot
 import matplotlib
+import numpy as np
+import pandas as pd
 from scipy.stats import zscore
-import math
-import lib10x
+
+from . import core
+from .axis import Axis
+from .svgfiguredraw import SVGFigureDraw
 
 
 class SVGFigurePlot(SVGFigureDraw):
@@ -357,7 +359,8 @@ class SVGFigurePlot(SVGFigureDraw):
                         pos:tuple[int, int] = (0, 0),
                         sizes:Optional[list[float]] = None,
                         labels:Optional[list[str]] = None,
-                        linecolor='black'):
+                        linecolor='black',
+                        gap=50):
 
         x1, y = pos
 
@@ -376,9 +379,11 @@ class SVGFigurePlot(SVGFigureDraw):
             self.add_circle(x1, y, dot_size, fill='gray', color=linecolor)
             self.add_text_bb(labels[i], x1,
                              y+sizes.max()+10, align='c')
-            x1 += 90
+            
+            if i < len(sizes) - 1:
+                x1 += dot_size/2 + gap + sizes[i + 1]/2
 
-        return {'w':x1-90}
+        return {'w':x1+sizes[-1]/2}
 
     
 

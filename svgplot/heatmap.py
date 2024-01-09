@@ -1,6 +1,7 @@
 import collections
-from .svgfigure import SVGFigure
+
 from . import core
+from .svgfigure import SVGFigure
 
 DEFAULT_CELL = [30, 26]
 DEFAULT_LIMITS = [-2, 2]
@@ -143,7 +144,7 @@ def heatmap_label_cols(svg: SVGFigure,
 
                     if orientation == 'v':
                         svg.add_text_bb(g,
-                                        x=gx,
+                                        x=gx + cell[0] / 2 + 3,
                                         y=gy,
                                         w=cell[0],
                                         color=color,

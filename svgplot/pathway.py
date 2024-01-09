@@ -26,7 +26,7 @@ def pathway_heatmap(svg: SVGFigure,
                     showunclass=True,
                     labelrows=True,
                     ignore={},
-                    labelcase='upper'):
+                    labelcase='mixed'):
     """ 
     A heatmap split into row and column blocks
 
@@ -169,7 +169,8 @@ def pathway_heatmap(svg: SVGFigure,
         # svg.set_font_size(core.FIGURE_FONT_SIZE)
 
         hx = w + padding
-        hy = y + cell[1] / 2
+        # add small offset to make it look better
+        hy = y + cell[1] / 2 + 3
 
         for gene_set in gene_sets:
             gene_set = gene_set.replace('HALLMARK', 'HM')

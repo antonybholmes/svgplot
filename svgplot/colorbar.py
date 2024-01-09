@@ -77,7 +77,7 @@ def add_h_colorbar(svg: SVGFigure,
         #xoff = xaxis.scale(step_x)
         w1 = w - x_off
         col = core.rgbtohex(cmap(int(step_color_x * max_color_index)))
-        print(stepi, step_color_x, step_color_x, int(step_color_x * max_color_index), col)
+        #print(stepi, step_color_x, step_color_x, int(step_color_x * max_color_index), col)
         svg.add_rect(x=x+x_off, y=y, w=w1, h=h, fill=col)
         x_off += x_inc
 
