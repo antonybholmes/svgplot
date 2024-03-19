@@ -117,16 +117,16 @@ def add_lineplot(
             used.add(id)
 
             if _show_axes[1]["invert"]:
-                point = (
+                point = [
                     xp + xaxis.scale(xs),
                     yp + yaxis.scale(yd[xi], clip=_show_axes[1]["clip"]),
-                )
+                ]
 
             else:
-                point = (
+                point = [
                     xp + xaxis.scale(xs),
                     yp + yaxis.w - yaxis.scale(yd[xi], clip=_show_axes[1]["clip"]),
-                )
+                ]
 
             # points.append(point)
 

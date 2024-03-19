@@ -9,7 +9,13 @@ import svgplot
 # https://bioconductor.org/packages/release/bioc/vignettes/universalmotif/inst/doc/IntroductionToSequenceMotifs.pdf
 
 BASE_IDS = {0: "A", 1: "C", 2: "G", 3: "T"}
-BASE_COLORS = {"A": "mediumseagreen", "G": "orange", "C": "royalblue", "T": "red"}
+BASE_COLORS = {
+    "A": "mediumseagreen",
+    "G": "orange",
+    "C": "royalblue",
+    "T": "red",
+    "-": "black",
+}
 
 # tweak letters to appear the same height
 Y_SCALE_FACTORS = {"A": 1.02, "C": 1, "G": 1, "T": 1.02}
@@ -126,8 +132,22 @@ def add_homer_motif(
 ):
     motifs = parse_homer_motifs(file, rev_comp)
 
-    print(len(motifs))
+    add_homer_motifs(
+        svg, motifs, mode, rev_comp, pos, height, title_pos, letter_width, gap
+    )
 
+
+def add_homer_motifs(
+    svg: SVGFigure,
+    motifs: list,
+    mode: Mode = Mode.PROB,
+    rev_comp=False,
+    pos: tuple[int, int] = (0, 0),
+    height: int = 100,
+    title_pos=TitlePos.TOP,
+    letter_width: int = 48,
+    gap: int = 50,
+):
     x, y = pos
 
     x_scale_factor = letter_width / LW
@@ -139,15 +159,13 @@ def add_homer_motif(
 
     y1 = y
 
-    print(motifs[0])
-
     for motif in motifs:
         name = motif[0]
         df = motif[2]
         df = df.div(df.sum(axis=1), axis=0)
 
-        print(name)
-        print(df)
+        #print(name)
+        #print(df)
 
         x1 = x
 

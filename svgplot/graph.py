@@ -190,7 +190,7 @@ def add_x_axis(
 
     if ticklabels is None:
         if ticks is not None:
-            ticklabels = [f"{t:,}", ticks]
+            ticklabels = [f"{t:,}" for t in ticks]
         else:
             ticklabels = axis.ticklabels
 

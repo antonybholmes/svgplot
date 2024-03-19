@@ -61,6 +61,7 @@ def _add_swarm(svg: SVGFigure,
 
     dot_positions = [y + yaxis.w - yaxis.scale(p) for p in sorted(data_points)]
 
+    # heuristic to spread dots if they overlap on y
     groups = []
 
     x_lim = [x - xaxis.w, x + xaxis.w]
@@ -242,7 +243,7 @@ def add_swarm(svg: SVGFigure,
             dp = data_points[colori]
 
             if _swarm_kws['show']:
-                swarm._add_swarm(svg,
+                _add_swarm(svg,
                                  dp,
                                  axes=(xaxis, yaxis),
                                  dot_size=_swarm_kws['dot_size'],
