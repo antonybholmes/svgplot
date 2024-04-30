@@ -136,6 +136,25 @@ def add_homer_motif(
         svg, motifs, mode, rev_comp, pos, height, title_pos, letter_width, gap
     )
 
+def add_homer_motif_by_name(
+    svg: SVGFigure,
+    name: str,
+    file: str,
+    mode: Mode = Mode.PROB,
+    rev_comp=False,
+    pos: tuple[int, int] = (0, 0),
+    height: int = 100,
+    title_pos=TitlePos.TOP,
+    letter_width: int = 48,
+    gap: int = 50,
+):
+    motifs = parse_homer_motifs(file, rev_comp)
+
+    motifs = list(filter(lambda motif: motif[0] == name, motifs))
+
+    add_homer_motifs(
+        svg, motifs, mode, rev_comp, pos, height, title_pos, letter_width, gap
+    )
 
 def add_homer_motifs(
     svg: SVGFigure,
@@ -173,7 +192,7 @@ def add_homer_motifs(
 
         if title_pos == TitlePos.TOP:
             svg.add_text_bb(
-                name, x=x + letter_width * df.shape[0] / 2, y=y1 - 30, align="c"
+                name.split('/')[0], x=x + letter_width * df.shape[0] / 2, y=y1 - 30, align="c"
             )
         elif title_pos == TitlePos.RIGHT:
             svg.add_text_bb(name, x=x + w + 50, y=y1 + height / 2)
@@ -249,3 +268,5 @@ def add_homer_motifs(
             x1 += letter_width
 
         y1 += 2 * height
+
+    
