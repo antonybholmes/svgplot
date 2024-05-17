@@ -36,17 +36,19 @@ class Axis:
         label: str = "",
         ticks: Optional[Iterable[Union[int, float]]] = None,
         ticklabels: Optional[Iterable[Union[str, int, float]]] = None,
+        invert: bool = False,
         w: int = 500,
         clip=False,
     ):
         self._lim = lim
         self._range = self._lim[1] - self._lim[0]
-        self._scale_factor = w / self._range
+        self._scale_factor = 1 / self._range
         self._label = label
         self._ticks = []
         self._ticklabels = []
         self._w = w
         self._clip = clip
+        self._invert = invert
 
         if isinstance(ticks, Iterable):
             self._ticks.extend(ticks)
@@ -113,7 +115,19 @@ class Axis:
         if self._clip or clip:
             x = max(min(x, self.lim[1]), self.lim[0])
 
-        return (x - self._lim[0]) * self._scale_factor
+        norm = (x - self._lim[0]) / self._range
+
+        scale = norm * self._w
+
+        #if self._invert:
+        #    scale = self._w - scale
+
+        #print(norm)
+
+        #if self._invert:
+        #    norm = 1 - norm
+
+        return scale
 
     def scale_clip(self, x: float) -> float:
         return self.scale(x, clip=True)

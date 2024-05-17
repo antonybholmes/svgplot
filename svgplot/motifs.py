@@ -70,13 +70,13 @@ def add_homer_motifs_by_range(
         y1 += offset
 
 
-def parse_homer_motifs(file: str, rev_comp: bool = False):
+def parse_homer_motifs(file: str, rev: bool = False, comp: bool = False):
     motifs = []
     bases = []
     name = ""
     score = -1
 
-    print(file)
+    # print(file)
 
     with open(file, "r") as f:
         for line in f:
@@ -84,9 +84,15 @@ def parse_homer_motifs(file: str, rev_comp: bool = False):
 
             if line.startswith(">"):
                 if len(bases) > 0:
-                    print(file, name)
+                    # print(file, name)
                     df = pd.DataFrame(bases, columns=["a", "c", "g", "t"])
-                    if rev_comp:
+
+                    if rev:
+                        # reverse rows
+                        df = df.iloc[::-1]
+
+                    if comp:
+                        # swap bases
                         dfrc = pd.DataFrame()
                         dfrc["a"] = df.iloc[:, 3].values
                         dfrc["c"] = df.iloc[:, 2].values
@@ -106,15 +112,107 @@ def parse_homer_motifs(file: str, rev_comp: bool = False):
     # add the last motif
     df = pd.DataFrame(bases, columns=["a", "c", "g", "t"])
 
-    if rev_comp:
+    if rev:
+        df = df.iloc[::-1]
+
+    if comp:
         dfrc = pd.DataFrame()
-        dfrc["a"] = df.iloc[:, 3].values[::-1]
-        dfrc["c"] = df.iloc[:, 2].values[::-1]
-        dfrc["g"] = df.iloc[:, 1].values[::-1]
-        dfrc["t"] = df.iloc[:, 0].values[::-1]
+        dfrc["a"] = df.iloc[:, 3].values
+        dfrc["c"] = df.iloc[:, 2].values
+        dfrc["g"] = df.iloc[:, 1].values
+        dfrc["t"] = df.iloc[:, 0].values
         df = dfrc
 
+        # dfrc = pd.DataFrame()
+        # dfrc["a"] = df.iloc[:, 3].values[::-1]
+        # dfrc["c"] = df.iloc[:, 2].values[::-1]
+        # dfrc["g"] = df.iloc[:, 1].values[::-1]
+        # dfrc["t"] = df.iloc[:, 0].values[::-1]
+        # df = dfrc
+
     motifs.append([name, score, df])
+
+    return motifs
+
+
+def parse_meme_motifs(
+    file: str, rev: bool = False, comp: bool = False
+) -> dict[str, pd.DataFrame]:
+    motifs = {}
+
+    bases = []
+
+    # print(file)
+
+    bases = []
+
+    with open(file, "r") as f:
+        for line in f:
+            line = line.strip()
+
+            # print(line)
+
+            if line.startswith("MOTIF"):
+                if len(bases) > 0:
+                    # print(file, name)
+                    df = pd.DataFrame(bases, columns=["a", "c", "g", "t"])
+
+                    if rev:
+                        # reverse rows
+                        df = df.iloc[::-1]
+
+                    if comp:
+                        # swap bases
+                        dfrc = pd.DataFrame()
+                        dfrc["a"] = df.iloc[:, 3].values
+                        dfrc["c"] = df.iloc[:, 2].values
+                        dfrc["g"] = df.iloc[:, 1].values
+                        dfrc["t"] = df.iloc[:, 0].values
+                        df = dfrc
+
+                    ret = [alt_id, 0, df]
+                    motifs[id] = ret
+                    motifs[alt_id] = ret
+                    # reset so we find the next motif
+                    bases = []
+
+                tokens = line.split()
+
+                id = tokens[1]
+
+                if len(tokens) > 2:
+                    alt_id = tokens[2]
+                else:
+                    alt_id = id
+            elif len(line) > 0 and line[0].isdigit():
+                bases.append([float(x) for x in line.split()])
+            else:
+                pass
+
+    # add the last motif
+    df = pd.DataFrame(bases, columns=["a", "c", "g", "t"])
+
+    if rev:
+        df = df.iloc[::-1]
+
+    if comp:
+        dfrc = pd.DataFrame()
+        dfrc["a"] = df.iloc[:, 3].values
+        dfrc["c"] = df.iloc[:, 2].values
+        dfrc["g"] = df.iloc[:, 1].values
+        dfrc["t"] = df.iloc[:, 0].values
+        df = dfrc
+
+        # dfrc = pd.DataFrame()
+        # dfrc["a"] = df.iloc[:, 3].values[::-1]
+        # dfrc["c"] = df.iloc[:, 2].values[::-1]
+        # dfrc["g"] = df.iloc[:, 1].values[::-1]
+        # dfrc["t"] = df.iloc[:, 0].values[::-1]
+        # df = dfrc
+
+    ret = [alt_id, 0, df]
+    motifs[id] = ret
+    motifs[alt_id] = ret
 
     return motifs
 
@@ -132,40 +230,50 @@ def add_homer_motif(
 ):
     motifs = parse_homer_motifs(file, rev_comp)
 
-    add_homer_motifs(
-        svg, motifs, mode, rev_comp, pos, height, title_pos, letter_width, gap
-    )
+    add_motifs(svg, motifs, mode, rev_comp, pos, height, title_pos, letter_width, gap)
+
 
 def add_homer_motif_by_name(
     svg: SVGFigure,
     name: str,
     file: str,
     mode: Mode = Mode.PROB,
-    rev_comp=False,
+    rev=False,
+    comp=False,
     pos: tuple[int, int] = (0, 0),
     height: int = 100,
     title_pos=TitlePos.TOP,
     letter_width: int = 48,
     gap: int = 50,
+    align: str = "left",
 ):
-    motifs = parse_homer_motifs(file, rev_comp)
+    motifs = parse_homer_motifs(file, rev, comp)
 
     motifs = list(filter(lambda motif: motif[0] == name, motifs))
 
-    add_homer_motifs(
-        svg, motifs, mode, rev_comp, pos, height, title_pos, letter_width, gap
+    add_motifs(
+        svg,
+        motifs,
+        mode=mode,
+        pos=pos,
+        height=height,
+        title_pos=title_pos,
+        letter_width=letter_width,
+        gap=gap,
+        align=align,
     )
 
-def add_homer_motifs(
+
+def add_motifs(
     svg: SVGFigure,
-    motifs: list,
+    motifs: list[pd.DataFrame],
     mode: Mode = Mode.PROB,
-    rev_comp=False,
     pos: tuple[int, int] = (0, 0),
     height: int = 100,
     title_pos=TitlePos.TOP,
     letter_width: int = 48,
     gap: int = 50,
+    align: str = "left",
 ):
     x, y = pos
 
@@ -183,19 +291,25 @@ def add_homer_motifs(
         df = motif[2]
         df = df.div(df.sum(axis=1), axis=0)
 
-        #print(name)
-        #print(df)
+        # print(name)
+        # print(df)
 
         x1 = x
 
         w = letter_width * df.shape[0]
 
+        if align == "right":
+            x1 -= w
+
         if title_pos == TitlePos.TOP:
             svg.add_text_bb(
-                name.split('/')[0], x=x + letter_width * df.shape[0] / 2, y=y1 - 30, align="c"
+                name.split("/")[0],
+                x=x1 + letter_width * df.shape[0] / 2,
+                y=y1 - 30,
+                align="c",
             )
         elif title_pos == TitlePos.RIGHT:
-            svg.add_text_bb(name, x=x + w + 50, y=y1 + height / 2)
+            svg.add_text_bb(name, x=x1 + w + 50, y=y1 + height / 2)
         else:
             pass
 
@@ -204,8 +318,8 @@ def add_homer_motifs(
             pos=(x1, y1 + height),
             axis=svgplot.Axis(
                 lim=[0, df.shape[0]],
-                ticks=[x + 0.5 for x in range(df.shape[0])],
-                ticklabels=[x + 1 for x in range(df.shape[0])],
+                ticks=[x + 0.5 for x in range(1, df.shape[0], 2)],
+                ticklabels=[x + 1 for x in range(1, df.shape[0], 2)],
                 w=letter_width * df.shape[0],
             ),
         )
@@ -268,5 +382,3 @@ def add_homer_motifs(
             x1 += letter_width
 
         y1 += 2 * height
-
-    
