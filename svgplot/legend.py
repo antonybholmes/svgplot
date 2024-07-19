@@ -9,7 +9,8 @@ def add_legend(svg: SVGFigure,
                pos: tuple[int, int] = (0, 0),
                fill_opacity: Optional[Union[float,
                                             str, Mapping[str, float]]] = 1,
-               style='bullet'):
+               style:str='bullet',
+               shape:str='c'):
     """Adds a legend to the plot
 
     Args:
@@ -56,5 +57,5 @@ def add_legend(svg: SVGFigure,
     else:
         for ho in hue_order:
             svg.add_bullet(
-                ho, x=x, y=y, color=colors[ho], fill_opacity=opacity[ho])
+                ho, x=x, y=y, color=colors[ho], fill_opacity=opacity[ho], shape=shape)
             y += 40

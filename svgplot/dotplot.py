@@ -88,7 +88,7 @@ def add_dot_plot(
     if len(frac_filter) == 0:
         frac_filter = {g: 0 for g in groups}
 
-    # as is mode is for when you have precalculated
+    # as is mode is for when you have precalculated averages
     data_mode = "as.is"
 
     if df_exp is None:
@@ -106,14 +106,14 @@ def add_dot_plot(
 
     idx = []
 
-    for plot_column in genes:
-        i = np.where(df_data.index == plot_column)[0]
+    for gene in genes:
+        i = np.where(df_data.index == gene)[0]
 
         if i.size > 0:
             i = i[0]
             idx.append(i)
         else:
-            i = np.where(df_data.index.str.endswith(f";{plot_column}"))[0]
+            i = np.where(df_data.index.str.endswith(f";{gene}"))[0]
 
             if i.size > 0:
                 i = i[0]
@@ -121,14 +121,14 @@ def add_dot_plot(
             else:
                 pass
 
-    # keep only the genes of interest
+    # keep only the genes of interest in order
     df_data = df_data.iloc[idx, :]
 
     # make sure exp table in same order
     idx = np.array([np.where(df_exp.index == g)[0][0] for g in df_data.index])
     df_exp = df_exp.iloc[idx, :]
 
-    group_exp_avg = np.zeros((df_data.shape[0], ncols))
+    group_exp_mean = np.zeros((df_data.shape[0], ncols))
 
     i = 0
     colnames = []
@@ -149,7 +149,7 @@ def add_dot_plot(
                 t = df_exp.iloc[:, idx]
                 m = t.mean(axis=1)
 
-            group_exp_avg[:, i] = m
+            group_exp_mean[:, i] = m
             i += 1
 
     colnames = np.array(colnames)
@@ -200,8 +200,8 @@ def add_dot_plot(
 
                     # if custom z scores not supplied, make it
                     if df_z_group is None:
-                        print("wii")
-                        z_group = zscore(group_exp_avg, axis=1)
+                        print("making zscores", group_exp_mean.shape)
+                        z_group = zscore(group_exp_mean, axis=1)
                         df_z_group = pd.DataFrame(
                             z_group, index=df_exp.index, columns=colnames
                         )
@@ -209,10 +209,6 @@ def add_dot_plot(
                     # find column in group table and
                     idx = np.where(df_z_group.columns == col)[0][0]
                     plot_exp_map[col] = df_z_group.iloc[:, idx].values
-
-                    if col == "PBL-2":
-                        print("PBL-2 s")
-                        print(df_z_group)
                 else:
                     print("z-score klein")
                     plot_exp_map[col] = np.mean(df_z.iloc[:, idx].values, axis=1)
@@ -282,26 +278,26 @@ def add_dot_plot(
     # print('frac', fracs)
 
     for group in groups:
-        for plot_column in group["items"]:
+        for gene in group["items"]:
             y1 = y
 
-            m = plot_exp_map[plot_column]
-            fracs = fraction_map[plot_column]
+            m = plot_exp_map[gene]
+            fracs = fraction_map[gene]
             # m = t.mean(axis=1)
 
             if show_col_labels:
-                if plot_column in label_colors:
-                    color = label_colors[plot_column]
+                if gene in label_colors:
+                    color = label_colors[gene]
                 else:
                     color = "black"
 
                 if col_label_orientation == "v":
                     svg.add_text_bb(
-                        plot_column, x1, y1 - title_offset, orientation="v", color=color
+                        gene, x1, y1 - title_offset, orientation="v", color=color
                     )
                 else:
                     svg.add_text_bb(
-                        plot_column,
+                        gene,
                         x1,
                         y1 - title_offset,
                         orientation="h",

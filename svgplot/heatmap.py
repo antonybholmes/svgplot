@@ -1,4 +1,5 @@
 import collections
+from typing import Optional
 
 from . import core
 from .svgfigure import SVGFigure

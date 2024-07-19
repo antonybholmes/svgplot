@@ -357,15 +357,17 @@ class SVGFigurePlot(SVGFigureDraw):
 
     def dot_plot_legend(self,
                         pos:tuple[int, int] = (0, 0),
+                        align:str = "c",
+                        dot_sizes: tuple[int, int] = (8, 26),
                         sizes:Optional[list[float]] = None,
                         labels:Optional[list[str]] = None,
                         linecolor='black',
-                        gap=50):
+                        gap=80):
 
         x1, y = pos
 
         if sizes is None:
-            sizes = [max(8, f * 30) for f in [0.25, 0.5, 0.75, 1]]
+            sizes = [max(dot_sizes[0], f * dot_sizes[1]) for f in [0.25, 0.5, 0.75, 1]]
 
         sizes = np.array(sizes)
 
@@ -373,6 +375,13 @@ class SVGFigurePlot(SVGFigureDraw):
             labels = [f'{int(f * 100)}%' for f in [0.25, 0.5, 0.75, 1]]
 
         labels = np.array(labels)
+
+        if align == "c":
+            w = 0
+            for i, s in enumerate(sizes[0:-1]):
+                dot_size = s
+                w += dot_size/2 + gap + sizes[i + 1]/2
+            x1 -= w/2
 
         for i, s in enumerate(sizes):
             dot_size = s

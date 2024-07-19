@@ -390,12 +390,12 @@ class SVGFigureBase:
         text_anchor="start",
     ) -> None:
         if size is None:
-            size = self._font_size
+            size = f"{self.get_scale_font_size(self._font_size)}px" 
 
         _css = {
             "fill": color,
             "font-family": family,
-            "font-size": "{}px".format(self.get_scale_font_size(size)),
+            "font-size": size,
             "font-weight": weight,
             "letter-spacing": spacing,
         }

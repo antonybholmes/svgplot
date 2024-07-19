@@ -136,7 +136,7 @@ def parse_homer_motifs(file: str, rev: bool = False, comp: bool = False):
 
 
 def parse_meme_motifs(
-    file: str, rev: bool = False, comp: bool = False
+    file: str, rev: bool = False, comp: bool = False, merge_ids: bool = False
 ) -> dict[str, pd.DataFrame]:
     motifs = {}
 
@@ -171,7 +171,10 @@ def parse_meme_motifs(
                         df = dfrc
 
                     ret = [alt_id, 0, df]
-                    motifs[id] = ret
+
+                    if not merge_ids:
+                        motifs[id] = ret
+                    
                     motifs[alt_id] = ret
                     # reset so we find the next motif
                     bases = []
@@ -182,6 +185,9 @@ def parse_meme_motifs(
 
                 if len(tokens) > 2:
                     alt_id = tokens[2]
+
+                    if merge_ids:
+                        alt_id = f"{id}_{alt_id}"
                 else:
                     alt_id = id
             elif len(line) > 0 and line[0].isdigit():
@@ -272,8 +278,9 @@ def add_motifs(
     height: int = 100,
     title_pos=TitlePos.TOP,
     letter_width: int = 48,
-    gap: int = 50,
+    show_x_ticks: bool = True,
     align: str = "left",
+    alt_ticks: bool = True,
 ):
     x, y = pos
 
@@ -298,6 +305,8 @@ def add_motifs(
 
         w = letter_width * df.shape[0]
 
+ 
+
         if align == "right":
             x1 -= w
 
@@ -312,14 +321,24 @@ def add_motifs(
             svg.add_text_bb(name, x=x1 + w + 50, y=y1 + height / 2)
         else:
             pass
+        
+        # switch to using every other tick if the motif is long
+        alt_ticks = df.shape[0] > 12
+
+        if alt_ticks:
+            ticks = [x + 0.5 for x in range(1, df.shape[0] + 1, 2)]
+            ticklabels = [x + 1 for x in range(1, df.shape[0] + 1, 2)]
+        else:
+            ticks = [x + 0.5 for x in range(0, df.shape[0] + 1, 1)]
+            ticklabels = [x + 1 for x in range(0, df.shape[0] + 1, 1)]
 
         svgplot.add_x_axis(
             svg,
             pos=(x1, y1 + height),
             axis=svgplot.Axis(
                 lim=[0, df.shape[0]],
-                ticks=[x + 0.5 for x in range(1, df.shape[0], 2)],
-                ticklabels=[x + 1 for x in range(1, df.shape[0], 2)],
+                ticks=ticks if show_x_ticks else [],
+                ticklabels=ticklabels if show_x_ticks else [],
                 w=letter_width * df.shape[0],
             ),
         )
@@ -374,8 +393,11 @@ def add_motifs(
                     baseline="auto",
                 )
                 t = svg.scale(t, x=x_scale_factor, y=y_scale)
+                
                 t = svg.trans(t, x=x1, y=y3)
                 svg.add(t)
+
+                 
 
                 y3 -= h
 

@@ -119,8 +119,8 @@ class Axis:
 
         scale = norm * self._w
 
-        #if self._invert:
-        #    scale = self._w - scale
+        if self._invert:
+            scale = self._w - scale
 
         #print(norm)
 
