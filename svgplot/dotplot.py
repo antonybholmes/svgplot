@@ -24,6 +24,7 @@ def add_dot_plot(
     df_cols: pd.DataFrame,
     genes: list[str],
     groups: list[str] = [],
+    title_map: dict[str, str] = {},
     groupby: str = "Phenotype",
     df_z_group: Optional[pd.DataFrame] = None,
     use_zscore: bool = True,
@@ -293,7 +294,12 @@ def add_dot_plot(
 
                 if col_label_orientation == "v":
                     svg.add_text_bb(
-                        gene, x1, y1 - title_offset, orientation="v", color=color
+                        title_map.get(gene, gene),
+                        x1,
+                        y1 - title_offset,
+                        orientation="v",
+                        color=color,
+                        weight="bold",
                     )
                 else:
                     svg.add_text_bb(
@@ -380,6 +386,7 @@ def add_dot_plot(
         #    y1 += gap[1]
 
     w, h = x1 - gap[0] - margin, y1
+    # h -= gap[1]
 
     y1 += 50
 

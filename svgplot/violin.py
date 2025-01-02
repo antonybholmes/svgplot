@@ -276,11 +276,18 @@ def add_violinplot(
             else:
                 d = data[data[x] == x_label][y]
 
+            print(d.values)
+
             kde, bw_used = _fit_kde(d.values, _bw_kws["bw"])
 
             x_d = _kde_support(
                 d.values, bw=bw_used, cut=_bw_kws["cut"], gridsize=_bw_kws["gridsize"]
             )
+
+            print('---')
+            print(type(x_d))
+            print(x_d)
+            print(x_d.dtype)
 
             density = kde.evaluate(x_d)
 

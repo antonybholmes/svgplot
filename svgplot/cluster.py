@@ -186,10 +186,14 @@ def add_clustermap(svg: SVGFigure,
                 labels = df.columns[xs1:xs2]
                 x2 = x1
                 for li, label in enumerate(labels):
-                    if label in col_color[1]:
-                        # use larger cell size to cover white gaps between adjacent elements in svg
-                        svg.add_rect(x2, y1, cell[0] * 1.5 if li < len(labels)-1 else cell[0], color_height, fill=col_color[1][label])
-  
+                    
+                    for color_label in col_color[1]:
+                        if color_label in label:
+ 
+                            # use larger cell size to cover white gaps between adjacent elements in svg
+                            svg.add_rect(x2, y1, cell[0] * 1.5 if li < len(labels)-1 else cell[0], color_height, fill=col_color[1][color_label])
+                            break
+
                     x2 += cell[0]
 
                 svg.add_frame(x=x1, y=y1, w=x2-x1, h=color_height)

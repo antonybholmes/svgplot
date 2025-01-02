@@ -160,8 +160,8 @@ def add_boxplot(svg: SVGFigure,
 
     data_points = []
 
-    for labeli, x_label in enumerate(x_order):
-        for huei, hue_label in enumerate(hue_order):
+    for _, x_label in enumerate(x_order):
+        for _, hue_label in enumerate(hue_order):
             if hue_label != '':
                 d = data[(data[x] == x_label) & (data[hue] == hue_label)][y]
             else:

@@ -14,6 +14,20 @@ from .svgfigure import SVGFigure
 
 LINE_GREEN = "#00b359"  # '#90EE90'
 
+def safe_float_conversion(string_value, default_value=0):
+    """Converts a string to a float, handling potential errors.
+
+    Args:
+        string_value: The string to convert.
+        default_value: The value to return if conversion fails.
+
+    Returns:
+        The float value if conversion is successful, otherwise the default value.
+    """
+    try:
+        return float(string_value)
+    except (ValueError, TypeError):
+        return default_value
 
 class _MidpointNormalize(Normalize):
     def __init__(svg, vmin=None, vmax=None, midpoint=None, clip=False):
@@ -38,11 +52,9 @@ def add_gsea(
     title: Optional[str] = None,
     showtitle: bool = True,
     phenotypes: Optional[list[str]] = None,
-    cmap: str = plt.cm.seismic,
-    mode: str = "up",
     stroke: int = 4,
     line_stroke: int = 4,
-    scale_factor: float = 0.7,
+    scale_factor: float = 0.65,
     n: int = -1,
     title_weight: str = "normal",
     titleoffset: int = 20,
@@ -53,10 +65,11 @@ def add_gsea(
     show_y_label: bool = True,
     stat: str = "q",
     le_fill_opacity: float = 0.3,
-    bar_colors=["red", "royalblue"],
-    label_colors=[],
+    bar_colors=["red", "blue"],
+    label_colors=["red", "blue"],
     line_color: str = LINE_GREEN,
     show_leading_edge: bool = True,
+    rename: Optional[dict[str]] = {},
 ):
     """
     Add a gsea plot onto a page. This method adds axes labels to reduce
@@ -100,10 +113,16 @@ def add_gsea(
             df_rep = pd.read_csv(f"{dir}/{f}", sep="\t", header=0)
 
             for i in range(df_rep.shape[0]):
+                nes = safe_float_conversion(df_rep["NES"][i], 0)
+
+                q = safe_float_conversion(df_rep["FDR q-val"][i], 1)
+ 
+                p = safe_float_conversion(df_rep["NOM p-val"][i], 1)
+
                 nes_map[df_rep["NAME"][i].lower()] = (
-                    df_rep["NES"][i],
-                    df_rep["FDR q-val"][i],
-                    df_rep["NOM p-val"][i],
+                    nes,
+                    q,
+                    p,
                     df_rep["SIZE"][i],
                 )
 
@@ -326,7 +345,7 @@ def add_gsea(
 
     # add labels
 
-    print("nes_map", ln, nes_map)
+    print("nes_map", ln, nes_map[ln])
     if ln in nes_map:
         if label_pos == "upper right":
             x1 = w - 100
@@ -409,17 +428,18 @@ def add_gsea(
 
     y += sh + svg.get_font_h()
 
+    print(rename)
     if isinstance(phenotypes, list) or isinstance(phenotypes, tuple):
         # y += svg.get_font_h() - 5
 
         svg.add_text_bb(
-            phenotypes[0],
+            rename.get(phenotypes[0], phenotypes[0]),
             x=xoffset,
             y=y,
             color=label_colors[0] if len(label_colors) > 0 else bar_colors[0],
         )
         svg.add_text_bb(
-            phenotypes[1],
+            rename.get(phenotypes[1], phenotypes[1]),
             x=xoffset + w,
             y=y,
             align="r",
