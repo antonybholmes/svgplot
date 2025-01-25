@@ -7,7 +7,6 @@ Created on Sat May  8 21:12:57 2021
 import math
 from typing import Mapping, Optional, Tuple, Union
 
-import lib10x
 import libplot
 import matplotlib
 import numpy as np

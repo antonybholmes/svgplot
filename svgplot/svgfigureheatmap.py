@@ -11,8 +11,6 @@ from typing import Optional
 import numpy as np
 import libplot
 import matplotlib
-import yaml
-import libscrna
 import pandas as pd
 
 from . import core
