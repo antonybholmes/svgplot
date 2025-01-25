@@ -56,6 +56,8 @@ def add_lineplot(
     if _fill_kws["color"] is None or _fill_kws["color"].lower() == "none":
         _fill_kws["color"] = "none"
 
+    print(_fill_kws)
+
     _smooth_kws = {"smooth": False, "steps": 300, "zero_ends": True}
     _smooth_kws.update(smooth_kws)
 
