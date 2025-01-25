@@ -23,9 +23,7 @@ from PIL import ImageFont
 import re
 import tkinter as Tkinter
 import tkinter.font as tkFont
-sys.path.append(
-    "/ifs/scratch/cancer/Lab_RDF/abh2138/scRNA/data/samples/human/10X/rdf/restricted_grch38/manuscript/")
-
+ 
 L1 = 's'
 L2 = '^'
 L3 = 'v'
@@ -292,6 +290,7 @@ def get_text_metrics(text,
             t2 += 'a'
 
     text = text.replace('c', 'a')
+    print(family)
     imf = ImageFont.truetype(family, size)
     s = imf.getsize(text)
     w = np.sum([imf.getsize(c)[0] for c in text])

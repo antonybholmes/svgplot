@@ -1,10 +1,7 @@
-import math
 from collections.abc import Iterable
-from typing import Any, Mapping, Optional, Union
+from typing import Mapping, Optional, Union
 
-import numpy as np
 
-from . import svgfiguredraw
 from .axis import Axis
 from .svgfigure import SVGFigure
 
