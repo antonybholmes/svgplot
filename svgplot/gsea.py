@@ -14,6 +14,7 @@ from .svgfigure import SVGFigure
 
 LINE_GREEN = "#00b359"  # '#90EE90'
 
+
 def safe_float_conversion(string_value, default_value=0):
     """Converts a string to a float, handling potential errors.
 
@@ -28,6 +29,7 @@ def safe_float_conversion(string_value, default_value=0):
         return float(string_value)
     except (ValueError, TypeError):
         return default_value
+
 
 class _MidpointNormalize(Normalize):
     def __init__(svg, vmin=None, vmax=None, midpoint=None, clip=False):
@@ -57,12 +59,11 @@ def add_gsea(
     scale_factor: float = 0.65,
     n: int = -1,
     title_weight: str = "normal",
-    titleoffset: int = 20,
+    titleoffset: int = 30,
     showsnr: bool = True,
     show_gene_indices: bool = True,
     label_pos: str = "upper right",
     ylabel: str = "Enrichment",
-    show_y_label: bool = True,
     stat: str = "q",
     le_fill_opacity: float = 0.3,
     bar_colors=["red", "blue"],
@@ -116,7 +117,7 @@ def add_gsea(
                 nes = safe_float_conversion(df_rep["NES"][i], 0)
 
                 q = safe_float_conversion(df_rep["FDR q-val"][i], 1)
- 
+
                 p = safe_float_conversion(df_rep["NOM p-val"][i], 1)
 
                 nes_map[df_rep["NAME"][i].lower()] = (
@@ -235,7 +236,7 @@ def add_gsea(
     scaleh = scale_factor * h
 
     xaxis = Axis(lim=[0, xmax], w=w)
-    yaxis = Axis(lim=[ymin, ymax], w=scaleh, label=ylabel if show_y_label else "")
+    yaxis = Axis(lim=[ymin, ymax], w=scaleh, label=ylabel)
 
     # leading edge
 
@@ -426,7 +427,7 @@ def add_gsea(
     # else:
     #     svg.set_font_size(core.DEFAULT_FONT_SIZE)
 
-    y += sh + svg.get_font_h()
+    y += sh + svg.get_font_h() + 10
 
     print(rename)
     if isinstance(phenotypes, list) or isinstance(phenotypes, tuple):
