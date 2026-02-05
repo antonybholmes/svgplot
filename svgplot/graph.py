@@ -1,7 +1,6 @@
 from collections.abc import Iterable
 from typing import Mapping, Optional, Union
 
-
 from .axis import Axis
 from .svgfigure import SVGFigure
 
@@ -13,7 +12,7 @@ MINOR_TICK_STROKE = 2
 
 
 def _get_fill_kws(
-    kws: Mapping[str, Union[int, float, bool, str]]
+    kws: Mapping[str, Union[int, float, bool, str]],
 ) -> dict[str, Union[int, float, bool, str]]:
     if kws is None:
         kws = {}
@@ -24,12 +23,12 @@ def _get_fill_kws(
 
 
 def _get_default_x_kws(
-    kws: Mapping[str, Union[int, float, bool, str]] = {}
+    kws: Mapping[str, Union[int, float, bool, str]] = {},
 ) -> Mapping[str, Union[int, float, bool, str]]:
     ret = {
         "show": True,
         "show_line": True,
-        "label": True,
+        "showlabel": True,
         "stroke": 3,
         "title_offset": 70,
         "ticklabeloffset": 0,
@@ -46,12 +45,12 @@ def _get_default_x_kws(
 
 
 def _get_default_y_kws(
-    kws: Mapping[str, Union[int, float, bool, str]] = {}
+    kws: Mapping[str, Union[int, float, bool, str]] = {},
 ) -> Mapping[str, Union[int, float, bool, str]]:
     ret = {
         "show": True,
         "show_line": True,
-        "label": True,
+        "showlabel": True,
         "stroke": 3,
         "title_offset": 120,
         "ticklabeloffset": 0,
@@ -114,7 +113,7 @@ def add_axes(
             ticklabels=ticklabels,
             showline=_show_axes[0]["show_line"],
             stroke=_show_axes[0]["stroke"],
-            showlabel=_show_axes[0]["label"],
+            showlabel=_show_axes[0]["showlabel"],
             title_offset=_show_axes[0]["title_offset"],
             label_pos=_show_axes[0]["label_pos"],
             ticklabel_offset=_show_axes[0]["ticklabeloffset"],
@@ -123,6 +122,8 @@ def add_axes(
         # if _show_axes[0]['label']:
         #     svg.add_text_bb(xaxis.label, x=xaxis.w/2, y=y1 +
         #                     _show_axes[0]['title_offset'], align='c')
+
+    print("sdfsdfs f", _show_axes[1])
 
     if _show_axes[1]["show"]:
         add_y_axis(
@@ -134,7 +135,7 @@ def add_axes(
             showticks=_show_axes[1]["showticks"],
             showline=_show_axes[1]["show_line"],
             stroke=_show_axes[1]["stroke"],
-            showlabel=_show_axes[1]["label"],
+            showlabel=_show_axes[1]["showlabel"],
             title_offset=_show_axes[1]["title_offset"],
             invert=_show_axes[1]["invert"],
         )
@@ -215,7 +216,11 @@ def add_x_axis(
         else:
             tickx = x + axis.scale(tick)  # (tick - ylim[0]) / yrange * h
 
-        ticklabel = ticklabels[i]
+        ticklabel = (
+            ticklabels[i]
+            if showticklabels and ticklabels is not None and len(ticklabels) > i
+            else ""
+        )
 
         if not isinstance(ticklabel, str):
             ticklabel = str(ticklabel)
@@ -242,7 +247,7 @@ def add_x_axis(
                     t = ticklabel
                     sup = None
 
-                svg.add_text_bb(t, x=tickx, y=y1, align="c")
+                svg.add_text_bb(t, x=tickx, y=y1 + 10, align="c")
 
                 if sup is not None:
                     svg.add_text_bb(sup, x=tickx + 20, y=y1 - 15, size=6)
@@ -371,6 +376,7 @@ def add_y_axis(
         else:
             ticky = y + axis.w - axis.scale(tick)
 
+        print("ticky", ticklabels, i, ticks)
         ticklabel = ticklabels[i]
 
         if not isinstance(ticklabel, str):
@@ -468,6 +474,7 @@ def add_y_axis(
                         )
 
     if showlabel and isinstance(label, str) and label != "":
+        print("yzz", title_offset)
         if title_offset is None:
             title_offset = max(80, mw + 20 + 4 * padding)
 

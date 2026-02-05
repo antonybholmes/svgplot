@@ -56,7 +56,8 @@ def add_gsea(
     phenotypes: Optional[list[str]] = None,
     stroke: int = 4,
     line_stroke: int = 4,
-    scale_factor: float = 0.65,
+    hit_stroke: int = 4,
+    scale_factor: float = 0.7,  # 65,
     n: int = -1,
     title_weight: str = "normal",
     titleoffset: int = 30,
@@ -71,6 +72,7 @@ def add_gsea(
     line_color: str = LINE_GREEN,
     show_leading_edge: bool = True,
     rename: Optional[dict[str]] = {},
+    invert: bool = False,
 ):
     """
     Add a gsea plot onto a page. This method adds axes labels to reduce
@@ -97,6 +99,13 @@ def add_gsea(
 
             break
 
+    if invert:
+        df_gene_ranks["SCORE"] = -df_gene_ranks["SCORE"]
+        df_gene_ranks = df_gene_ranks.iloc[::-1]
+        phenotypes = [phenotypes[1], phenotypes[0]]
+
+    genes = df_gene_ranks.shape[0]
+
     ln = name.lower()
 
     for f in os.listdir(dir):
@@ -105,6 +114,17 @@ def add_gsea(
         if ln in fl.lower() and ("xls" in f or "tsv" in f):
             print(f"gene hits: {f}")
             df_hits = pd.read_csv(f"{dir}/{f}", sep="\t", header=0)
+
+            if invert:
+                df_hits["RUNNING ES"] = -df_hits["RUNNING ES"]
+                # reverse whole table
+                df_hits = df_hits.iloc[::-1]
+                # flip back
+                df_hits["NAME"] = df_hits["NAME"].values[::-1]
+                df_hits["RANK IN GENE LIST"] = (
+                    genes - df_hits["RANK IN GENE LIST"].values + 1
+                )
+
             break
 
     nes_map = {}
@@ -115,6 +135,9 @@ def add_gsea(
 
             for i in range(df_rep.shape[0]):
                 nes = safe_float_conversion(df_rep["NES"][i], 0)
+
+                if invert:
+                    nes = -nes
 
                 q = safe_float_conversion(df_rep["FDR q-val"][i], 1)
 
@@ -134,16 +157,11 @@ def add_gsea(
     # subtitles = subtitle.replace(' ', '').split(',')
 
     xmax = df_gene_ranks.shape[0]
-    xticks = [0, df_gene_ranks.shape[0]]
 
     ymin = df_hits["RUNNING ES"].min()
     ymax = df_hits["RUNNING ES"].max()
 
     print(ymin, ymax)
-
-    genes = df_gene_ranks.shape[0]
-
-    xmid = xmax / 2
 
     if ymax > 0:
         ymax = math.ceil(ymax * 10) / 10
@@ -358,7 +376,7 @@ def add_gsea(
                 svg.add_text_bb(f"p: {nes_map[ln][2]:.2f}", x=x1, y=y + 35)
         else:
             x1 = 90
-            y1 = scaleh * 1
+            y1 = y + scaleh - 60
             svg.add_text_bb(f"NES: {nes_map[ln][0]:.2f}", x=x1, y=y1)
 
             if stat == "q":
@@ -380,7 +398,7 @@ def add_gsea(
         else:
             color = bar_colors[1]
 
-        svg.add_line(x1=x1, y1=y, x2=x1, y2=y + sh, color=color)
+        svg.add_line(x1=x1, y1=y, x2=x1, y2=y + sh, color=color, stroke=hit_stroke)
 
     # add frame around colorbar
     # svg.add_frame(xoffset, y=y-h*0.06, w=w, h=h*0.06)

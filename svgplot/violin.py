@@ -1,17 +1,16 @@
+import collections
+from enum import Enum
 from optparse import Option
 from typing import Any, Optional, Union
-from scipy.stats import gaussian_kde
-import pandas as pd
-from .svgfigure import SVGFigure
+
 import matplotlib
-from scipy.stats import mannwhitneyu
-from enum import Enum
 import numpy as np
-from . import core
+import pandas as pd
+from scipy.stats import gaussian_kde, mannwhitneyu
+
+from . import boxplot, core, graph, swarm
 from .axis import Axis
-from . import graph
-from . import swarm
-from . import boxplot
+from .svgfigure import SVGFigure
 
 
 class StatsMode(Enum):
@@ -93,7 +92,7 @@ def _add_violin(
 
     points = np.concatenate([points1, points2])
 
-    svg.add_polygon(points, fill=color, fill_opacity=opacity)
+    svg.add_polygon(points, color=color, fill=color, fill_opacity=opacity)
 
 
 def _fit_kde(x, bw):
@@ -126,7 +125,7 @@ def add_violinplot(
     x: str = "",
     y: str = "",
     hue: Optional[str] = None,
-    x_order: Optional[list[str]] = None,
+    order: Optional[list[str]] = None,
     hue_order: Optional[list[str]] = [""],
     palette: Optional[list[str]] = None,
     scale: str = "area",
@@ -137,7 +136,8 @@ def add_violinplot(
     x_gap: int = 20,
     title_offset: int = -50,
     show_legend: bool = False,
-    stats_mode: StatsMode = StatsMode.SHOW,
+    stats_mode: Optional[str] = "show",
+    stats_file: Optional[str] = None,
     bw_kws: Optional[dict[str, Any]] = None,
     x_kws: Optional[dict[str, Any]] = None,
     y_kws: Optional[dict[str, Any]] = None,
@@ -155,6 +155,7 @@ def add_violinplot(
             "show_axis": True,
             "label_pos": "axis",
             "label_orientation": "h",
+            "labels": None,
         },
         x_kws,
     )
@@ -165,7 +166,7 @@ def add_violinplot(
             "ticks": None,
             "ticklabels": None,
             "offset": None,
-            "title": None,
+            "label": None,
         },
         y_kws,
     )
@@ -207,36 +208,44 @@ def add_violinplot(
 
         palette = np.array(palette)
 
-    print(palette)
+    print(order, hue_order)
 
-    if hue is not None:
-        palette = palette[0:2]
-
-    if x_order is None:
-        x_order = []
-        used = set()
+    if order is None:
+        order = []
+        used_hues = set()
 
         for n in data[x]:
-            if n in used:
+            if n in used_hues:
                 continue
 
-            x_order.append(n)
-            used.add(n)
+            order.append(n)
+            used_hues.add(n)
 
-    x_order = np.array(x_order)
+    order = np.array(order)
 
-    if hue_order is None:
+    # if hue specified but no order given, use order of appearance
+    if hue is not None and hue_order is None:
         hue_order = []
-        used = set()
+        used_hues = set()
 
         for n in data[hue]:
-            if n in used:
+            if n in used_hues:
                 continue
 
             hue_order.append(n)
-            used.add(n)
+            used_hues.add(n)
+
+    # if hue order is still None, just use all
+    if hue is not None:
+        if hue_order is not None:
+            # we only want colors for the hues we have
+            palette = palette[0 : len(hue_order)]
+        else:
+            hue_order = ["<all>"]
 
     hue_order = np.array(hue_order)
+
+    print(order, hue_order)
 
     x1, y1 = pos
 
@@ -246,8 +255,8 @@ def add_violinplot(
     if _y_kws["offset"] is None:
         _y_kws["offset"] = -(plot_width / 2 + x_gap)
 
-    if _y_kws["title"] is None:
-        _y_kws["title"] = y
+    if _y_kws["label"] is None:
+        _y_kws["label"] = y
 
     print("ticks", _y_kws["ticks"], _y_kws["ticklabels"])
 
@@ -256,54 +265,86 @@ def add_violinplot(
         lim=_y_kws["lim"],
         ticks=_y_kws["ticks"],
         ticklabels=_y_kws["ticklabels"],
-        label=_y_kws["title"],
+        label=_y_kws["label"],
         w=height,
     )
 
     if _y_kws["show"]:
         graph.add_y_axis(svg, axis=yaxis, pos=(_y_kws["offset"], 0))
 
-    densities = []
-    data_points = []
+    densities = collections.defaultdict(lambda: collections.defaultdict(lambda: None))
+    data_points = collections.defaultdict(lambda: collections.defaultdict(lambda: None))
 
     global_max_density = 0
-    max_densities = np.zeros(x_order.size)
+    max_densities = np.zeros(order.size)
 
-    for labeli, x_label in enumerate(x_order):
-        for huei, hue_label in enumerate(hue_order):
-            if hue_label != "":
-                d = data[(data[x] == x_label) & (data[hue] == hue_label)][y]
-            else:
-                d = data[data[x] == x_label][y]
+    # track which hues are present for each x label
+    # used_hues = collections.defaultdict(set)
 
-            print(d.values)
+    for x_labeli, x_label in enumerate(order):
+        x_data = data[data[x] == x_label] if x_label != "<all>" else data
 
-            kde, bw_used = _fit_kde(d.values, _bw_kws["bw"])
+        # print(x_label, x_data.shape)
 
-            x_d = _kde_support(
-                d.values, bw=bw_used, cut=_bw_kws["cut"], gridsize=_bw_kws["gridsize"]
-            )
+        for hue_label in hue_order:
+            # only filter by hue if specified
+            if hue_label != "<all>":
+                hue_data = x_data[x_data[hue] == hue_label]
 
-            print('---')
-            print(type(x_d))
-            print(x_d)
-            print(x_d.dtype)
+            # print(x_label, hue_label, hue_data.shape)
 
-            density = kde.evaluate(x_d)
+            if hue_data.shape[0] == 0:
+                continue
 
-            df = pd.DataFrame()
-            df["x"] = density
-            df["y"] = x_d
+            d = hue_data[y]
+            data_points[x_label][hue_label] = d
 
-            densities.append(df)
-            data_points.append(d)
-            global_max_density = max(global_max_density, density.max())
-            max_densities[labeli] = max(max_densities[labeli], density.max())
+            if hue_data.shape[0] > 1:
 
-    colori = 0
-    w = (hue_order.size - 1) * plot_width
+                print(x_label, d.values.size, "hue:" + str(hue_label))
 
-    for labeli, label in enumerate(x_order):
+                kde, bw_used = _fit_kde(d.values, _bw_kws["bw"])
+
+                x_d = _kde_support(
+                    d.values,
+                    bw=bw_used,
+                    cut=_bw_kws["cut"],
+                    gridsize=_bw_kws["gridsize"],
+                )
+
+                # print("---")
+                # print(type(x_d))
+                # print(x_d)
+                # print(x_d.dtype)
+
+                density = kde.evaluate(x_d)
+
+                df = pd.DataFrame()
+                df["x"] = density
+                df["y"] = x_d
+
+                densities[x_label][hue_label] = df
+
+                global_max_density = max(global_max_density, density.max())
+                max_densities[x_labeli] = max(max_densities[x_labeli], density.max())
+            # else:
+            # densities[x_label][hue_label].append(None)
+
+            # used_hues[x_label].add(hue_label)
+
+    # colori = 0
+    # w = (hue_order.size - 1) * plot_width
+
+    for x_labeli, x_label in enumerate(order):
+
+        w = len(data_points[x_label]) * plot_width
+
+        label = (
+            _x_kws["labels"][x_labeli]
+            if isinstance(_x_kws["labels"], list)
+            else x_label
+        )
+
         if _x_kws["show_labels"]:
             if _x_kws["label_pos"] == "title":
                 svg.add_text_bb(label, x=x1 + w / 2, y=title_offset, align="c")
@@ -319,24 +360,31 @@ def add_violinplot(
                 else:
                     svg.add_text_bb(label, x=x1 + w / 2, y=y1 + yaxis.w + 50, align="c")
 
-        for huei, hue_label in enumerate(hue_order):
-            color = palette[colori % palette.size]
+        for hi, hue_label in enumerate(hue_order):
+            # no data for this hue
+            if hue_label not in data_points[x_label]:
+                continue
 
-            dp = data_points[colori]
+            color = palette[hi % palette.size]
 
-            df = densities[colori]
+            dp = data_points[x_label][hue_label]
+
+            # can be None if too few data points to fit KDE
+            df = densities[x_label][hue_label]
 
             # determines how violin appears and whether
             # violins are scaled relative to each other
-            if scale == "area":
-                if scale_hue:
-                    md = max_densities[labeli]
-                else:
-                    md = global_max_density
-            else:
-                md = df["x"].max()
 
-            if _violin_kws["show"]:
+            # if too few data points, skip violin
+            if _violin_kws["show"] and df is not None:
+                if scale == "area":
+                    if scale_hue:
+                        md = max_densities[x_labeli]
+                    else:
+                        md = global_max_density
+                else:
+                    md = df["x"].max()
+
                 _add_violin(
                     svg,
                     df,
@@ -377,10 +425,11 @@ def add_violinplot(
                     stroke=_box_kws["stroke"],
                     pos=(x1, y1),
                     rounded=_box_kws["rounded"],
+                    label=hue_label,
                 )
 
             x1 += plot_width  # 2 * xaxis.w
-            colori += 1
+            # colori += 1
 
         x1 += x_gap
 
@@ -392,96 +441,216 @@ def add_violinplot(
         )
 
     if show_legend:
-        boxplot._add_legend(svg, hue_order, palette, pos=(x1 - plot_width + 40, 0))
+        swarm._add_legend(svg, hue_order, palette, pos=(x1 - plot_width + 40, 0))
 
     #
     # Stats
     #
 
+    test_pairs = [(x, y) for x in order for y in hue_order]
+
+    print("test pairs:", test_pairs)
+
     df_stats = None
 
-    if stats_mode != StatsMode.NONE:
-        d = np.ones((x_order.size, x_order.size))
+    if stats_mode != "none":
+        d = np.ones((len(test_pairs), len(test_pairs)))  # bonferroni correction
 
         print(d.size)
         stats = []
-        n = x_order.size * x_order.size
+        n = len(test_pairs) * len(test_pairs)
 
-        for s1, xc1 in enumerate(x_order):
-            for s2, xc2 in enumerate(x_order):
-                s, p = mannwhitneyu(data[data[x] == xc1][y], data[data[x] == xc2][y])
+        for p1, (xc1, hue1) in enumerate(test_pairs):
+
+            d1 = (
+                data[(data[x] == xc1) & (data[hue] == hue1)]
+                if hue1 != "<all>"
+                else data[data[x] == xc1]
+            )
+
+            for p2, (xc2, hue2) in enumerate(test_pairs):
+                if xc1 == xc2 and hue1 == hue2:
+                    continue
+
+                d2 = (
+                    data[(data[x] == xc2) & (data[hue] == hue2)]
+                    if hue2 != "<all>"
+                    else data[data[x] == xc2]
+                )
+
+                s, p = mannwhitneyu(
+                    d1[y],
+                    d2[y],
+                    alternative="two-sided",
+                )
+
                 # print(p)
                 # bonferroni
-                q = min(1, p * d.size)
-                d[s1, s2] = q
-                stats.append([xc1, xc2, p, q])
+                q = min(1, p * n)
+                d[p1, p2] = q
+                stats.append([f"{xc1}|{hue1}", f"{xc2}|{hue2}", p, q])
+
+        # for s1, xc1 in enumerate(order):
+        #     for s2, xc2 in enumerate(order):
+        #         if xc1 == xc2:
+        #             continue
+
+        #         for h1, hue1 in enumerate(hue_order):
+        #             for h2, hue2 in enumerate(hue_order):
+        #                 if hue1 == hue2:
+        #                     continue
+
+        #                 s, p = mannwhitneyu(
+        #                     data[data[x] == xc1][y], data[data[x] == xc2][y]
+        #                 )
+        #                 # print(p)
+        #                 # bonferroni
+        #                 q = min(1, p * d.size)
+        #                 d[s1, s2] = q
+        #                 stats.append([xc1, xc2, p, q])
 
         df_stats = pd.DataFrame(stats, columns=[f"{x} 1", f"{x} 2", "p", "q"])
+
+        if stats_file is not None:
+            df_stats.to_csv(stats_file, sep="\t", header=True, index=False)
 
         # dfp = pd.DataFrame(d, index=hue_order, columns=hue_order)
         # dfp.to_csv('bcca_nrc31_subtype_q.tsv', sep='\t', header=True, index=True)
 
-        if stats_mode == StatsMode.SHOW:
-            # count number of lines
+        if stats_mode == "show":
+            # count number of lines required
             bars = 0
 
-            for t1i, t1 in enumerate(x_order):
-                for t2i, t2 in enumerate(x_order):
-                    if t2i > t1i:
-                        df_stats_t = df_stats[
-                            (df_stats[f"{x} 1"] == t1) & (df_stats[f"{x} 2"] == t2)
-                        ]
-                        if df_stats_t.shape[0] == 0:
-                            continue
+            for p1, (xc1, hue1) in enumerate(test_pairs):
+                for p2, (xc2, hue2) in enumerate(test_pairs):
+                    if xc1 == xc2 and hue1 == hue2:
+                        continue
 
-                        q = df_stats_t["q"].values[0]
+                    df_stats_t = df_stats[
+                        (df_stats[f"{x} 1"] == f"{xc1}|{hue1}")
+                        & (df_stats[f"{x} 2"] == f"{xc2}|{hue2}")
+                    ]
 
-                        if q < 0.05:
-                            bars += 1
+                    q = df_stats_t["q"].values[0]
+
+                    if q < 0.05:
+                        bars += 1
+
+            # for t1i, t1 in enumerate(order):
+            #     for t2i, t2 in enumerate(order):
+            #         if t2i > t1i:
+            #             df_stats_t = df_stats[
+            #                 (df_stats[f"{x} 1"] == t1) & (df_stats[f"{x} 2"] == t2)
+            #             ]
+            #             if df_stats_t.shape[0] == 0:
+            #                 continue
+
+            #             q = df_stats_t["q"].values[0]
+
+            #             if q < 0.05:
+            #                 bars += 1
 
             ty = -bars * 40
-            plot_total_width = plot_width + x_gap
+            # plot_total_width = plot_width + x_gap
 
-            for t1i, t1 in enumerate(x_order):
-                for t2i, t2 in enumerate(x_order):
-                    if t2i > t1i:
-                        df_stats_t = df_stats[
-                            (df_stats[f"{x} 1"] == t1) & (df_stats[f"{x} 2"] == t2)
-                        ]
-                        if df_stats_t.shape[0] == 0:
-                            continue
+            for p1, (xc1, hue1) in enumerate(test_pairs):
+                block1 = p1 // hue_order.size
+                blockx1 = block1 * (plot_width * hue_order.size + x_gap)
+                withinx1 = (p1 % hue_order.size) * plot_width
+                x1 = blockx1 + withinx1
+                for p2, (xc2, hue2) in enumerate(test_pairs):
+                    if xc1 == xc2 and hue1 == hue2:
+                        continue
 
-                        q = df_stats_t["q"].values[0]
+                    block2 = p2 // hue_order.size
+                    blockx2 = block2 * (plot_width * hue_order.size + x_gap)
+                    withinx2 = (p2 % hue_order.size) * plot_width
+                    x2 = blockx2 + withinx2
 
-                        if q < 0.05:
-                            if q < 0.001:
-                                stars = "***"
-                            elif q < 0.01:
-                                stars = "**"
-                            else:
-                                stars = "*"
+                    df_stats_t = df_stats[
+                        (df_stats[f"{x} 1"] == f"{xc1}|{hue1}")
+                        & (df_stats[f"{x} 2"] == f"{xc2}|{hue2}")
+                    ]
 
-                            svg.add_text_bb(
-                                stars,
-                                x=(t1i + t2i) * plot_total_width / 2,
-                                y=ty,
-                                align="c",
-                            )
-                            svg.add_line(
-                                t1i * plot_total_width, ty, t2i * plot_total_width, ty
-                            )
-                            svg.add_line(
-                                t1i * plot_total_width,
-                                ty,
-                                t1i * plot_total_width,
-                                ty + 10,
-                            )
-                            svg.add_line(
-                                t2i * plot_total_width,
-                                ty,
-                                t2i * plot_total_width,
-                                ty + 10,
-                            )
-                            ty += 40
+                    q = df_stats_t["q"].values[0]
+
+                    if q < 0.05:
+                        if q < 0.001:
+                            stars = "***"
+                        elif q < 0.01:
+                            stars = "**"
+                        else:
+                            stars = "*"
+
+                        if (
+                            xc1 == "Kostia"
+                            and hue1 == "GCB"
+                            and xc2 == "BCCA"
+                            and hue2 == "ABC"
+                        ):
+                            print("here", x1, x2, p1, p2, block1, block2)
+
+                        svg.add_text_bb(
+                            stars,  # + f"{xc1}|{hue1}" + f"{xc2}|{hue2}",
+                            x=(x1 + x2) / 2,
+                            y=ty,
+                            align="c",
+                        )
+                        svg.add_line(x1, ty, x2, ty)
+                        svg.add_line(
+                            x1,
+                            ty,
+                            x1,
+                            ty + 10,
+                        )
+                        svg.add_line(
+                            x2,
+                            ty,
+                            x2,
+                            ty + 10,
+                        )
+                        ty += 40
+
+            # for t1i, t1 in enumerate(order):
+            #     for t2i, t2 in enumerate(order):
+            #         if t2i > t1i:
+            #             df_stats_t = df_stats[
+            #                 (df_stats[f"{x} 1"] == t1) & (df_stats[f"{x} 2"] == t2)
+            #             ]
+            #             if df_stats_t.shape[0] == 0:
+            #                 continue
+
+            #             q = df_stats_t["q"].values[0]
+
+            #             if q < 0.05:
+            #                 if q < 0.001:
+            #                     stars = "***"
+            #                 elif q < 0.01:
+            #                     stars = "**"
+            #                 else:
+            #                     stars = "*"
+
+            #                 svg.add_text_bb(
+            #                     stars,
+            #                     x=(t1i + t2i) * plot_total_width / 2,
+            #                     y=ty,
+            #                     align="c",
+            #                 )
+            #                 svg.add_line(
+            #                     t1i * plot_total_width, ty, t2i * plot_total_width, ty
+            #                 )
+            #                 svg.add_line(
+            #                     t1i * plot_total_width,
+            #                     ty,
+            #                     t1i * plot_total_width,
+            #                     ty + 10,
+            #                 )
+            #                 svg.add_line(
+            #                     t2i * plot_total_width,
+            #                     ty,
+            #                     t2i * plot_total_width,
+            #                     ty + 10,
+            #                 )
+            #                 ty += 40
 
     return {"w": x1 - x_gap - plot_width, "h": height, "stats": df_stats}

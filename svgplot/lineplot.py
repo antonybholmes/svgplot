@@ -48,6 +48,7 @@ def add_lineplot(
             _type_: _description_
     """
     # set some defaults
+    print("y", yaxis_kws)
     _show_axes = graph._get_default_axes_kws(xaxis_kws, yaxis_kws)
 
     _fill_kws = {"color": None, "opacity": 0.2}
@@ -81,7 +82,9 @@ def add_lineplot(
 
     hue_order = np.array(hue_order)
 
-    graph.add_axes(svg, pos=pos, axes=axes, xaxis_kws=xaxis_kws, yaxis_kws=yaxis_kws)
+    graph.add_axes(
+        svg, pos=pos, axes=axes, xaxis_kws=_show_axes[0], yaxis_kws=_show_axes[1]
+    )
 
     for ho in hue_order:
         if ho != "":

@@ -1,10 +1,13 @@
-import numpy as np
-from .axis import Axis
-from .svgfigure import SVGFigure
 import re
 from enum import Enum
+
+import numpy as np
 import pandas as pd
+
 import svgplot
+
+from .axis import Axis
+from .svgfigure import SVGFigure
 
 # https://bioconductor.org/packages/release/bioc/vignettes/universalmotif/inst/doc/IntroductionToSequenceMotifs.pdf
 
@@ -174,7 +177,7 @@ def parse_meme_motifs(
 
                     if not merge_ids:
                         motifs[id] = ret
-                    
+
                     motifs[alt_id] = ret
                     # reset so we find the next motif
                     bases = []
@@ -279,8 +282,11 @@ def add_motifs(
     title_pos=TitlePos.TOP,
     letter_width: int = 48,
     show_x_ticks: bool = True,
+    show_x_ticks_labels: bool = True,
     align: str = "left",
     alt_ticks: bool = True,
+    show_y_label: bool = True,
+    extra_info: str = None,
 ):
     x, y = pos
 
@@ -305,8 +311,6 @@ def add_motifs(
 
         w = letter_width * df.shape[0]
 
- 
-
         if align == "right":
             x1 -= w
 
@@ -318,10 +322,14 @@ def add_motifs(
                 align="c",
             )
         elif title_pos == TitlePos.RIGHT:
-            svg.add_text_bb(name, x=x1 + w + 50, y=y1 + height / 2)
+            svg.add_text_bb(
+                f"{name} {extra_info}" if extra_info else name,
+                x=x1 + w + 30,
+                y=y1 + height / 2,
+            )
         else:
             pass
-        
+
         # switch to using every other tick if the motif is long
         alt_ticks = df.shape[0] > 12
 
@@ -338,7 +346,7 @@ def add_motifs(
             axis=svgplot.Axis(
                 lim=[0, df.shape[0]],
                 ticks=ticks if show_x_ticks else [],
-                ticklabels=ticklabels if show_x_ticks else [],
+                ticklabels=ticklabels if show_x_ticks_labels else [],
                 w=letter_width * df.shape[0],
             ),
         )
@@ -347,14 +355,24 @@ def add_motifs(
             svgplot.add_y_axis(
                 svg,
                 pos=(x1, y1),
-                axis=svgplot.Axis(lim=[0, 2], ticks=[0, 2], w=height, label="Bits"),
+                axis=svgplot.Axis(
+                    lim=[0, 2],
+                    ticks=[0, 2],
+                    w=height,
+                    label="Bits" if show_y_label else "",
+                ),
                 title_offset=60,
             )
         else:
             svgplot.add_y_axis(
                 svg,
                 pos=(x1, y1),
-                axis=svgplot.Axis(lim=[0, 1], ticks=[0, 1], w=height, label="Prob"),
+                axis=svgplot.Axis(
+                    lim=[0, 1],
+                    ticks=[0, 1],
+                    w=height,
+                    label="Prob" if show_y_label else "",
+                ),
                 title_offset=60,
             )
 
@@ -393,11 +411,9 @@ def add_motifs(
                     baseline="auto",
                 )
                 t = svg.scale(t, x=x_scale_factor, y=y_scale)
-                
+
                 t = svg.trans(t, x=x1, y=y3)
                 svg.add(t)
-
-                 
 
                 y3 -= h
 

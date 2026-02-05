@@ -108,6 +108,25 @@ class Axis:
     def label(self, label: str):
         self._label = label
 
+    def frac(self, x: float, clip: bool = False) -> float:
+        # print(x, self.__lim[0], self.__lim[1], self.__scale_factor)
+        # print(x, self.__lim[0])
+
+        if self._clip or clip:
+            x = max(min(x, self.lim[1]), self.lim[0])
+
+        norm = (x - self._lim[0]) / self._range
+
+        if self._invert:
+            norm = 1 - norm
+
+        # print(norm)
+
+        # if self._invert:
+        #    norm = 1 - norm
+
+        return norm
+
     def scale(self, x: float, clip: bool = False) -> float:
         # print(x, self.__lim[0], self.__lim[1], self.__scale_factor)
         # print(x, self.__lim[0])

@@ -20,27 +20,30 @@ DEFAULT_COLORBAR_CELL = (50, 25)
 DEFAULT_LIMITS = (-2, 2)
 
 
-def add_heatmap(svg: SVGFigure,
-                df: pd.DataFrame,
-                pos: tuple[int, int] = (0, 0),
-                cell: tuple[int, int] = DEFAULT_CELL,
-                lim: tuple[int, int] = DEFAULT_LIMITS,
-                show:bool = True,
-                cmap=libplot.BWR2_CMAP,
-                gridcolor:str=core.GRID_COLOR,
-                framecolor:str = 'black',
-                xticklabels: Optional[Union[list[str], bool]] = True,
-                xticklabel_colors: dict[str, str] = {},
-                yticklabels: Optional[Union[list[str], bool]] = True,
-                yticklabel_colors: dict[str, str] = {},
-                col_colors: dict[str, str] = {},
-                col_color_height=0,
-                rename_cols: dict[str, str] = {},
-                row_zscore: bool = False,
-                xsplits: Optional[list[int]] = None,
-                xsplitgap=40,
-                ysplits: Optional[list[int]] = None,
-                ysplitgap=40):
+def add_heatmap(
+    svg: SVGFigure,
+    df: pd.DataFrame,
+    pos: tuple[int, int] = (0, 0),
+    cell: tuple[int, int] = DEFAULT_CELL,
+    lim: tuple[int, int] = DEFAULT_LIMITS,
+    show: bool = True,
+    cmap=libplot.BWR2_CMAP,
+    gridcolor: str = core.GRID_COLOR,
+    gridstroke: int = core.GRID_STROKE,
+    framecolor: str = "black",
+    xticklabels: Optional[Union[list[str], bool]] = True,
+    xticklabel_colors: dict[str, str] = {},
+    yticklabels: Optional[Union[list[str], bool]] = True,
+    yticklabel_colors: dict[str, str] = {},
+    col_colors: dict[str, str] = {},
+    col_color_height=0,
+    rename_cols: dict[str, str] = {},
+    row_zscore: bool = False,
+    xsplits: Optional[list[int]] = None,
+    xsplitgap=40,
+    ysplits: Optional[list[int]] = None,
+    ysplitgap=40,
+):
     """
     Draws a heat map.
 
@@ -86,7 +89,8 @@ def add_heatmap(svg: SVGFigure,
             yticklabels = []
 
     mapper = matplotlib.cm.ScalarMappable(
-        norm=matplotlib.colors.Normalize(vmin=lim[0], vmax=lim[1]), cmap=cmap)
+        norm=matplotlib.colors.Normalize(vmin=lim[0], vmax=lim[1]), cmap=cmap
+    )
 
     w = cell[0] * df.shape[1]
 
@@ -133,14 +137,17 @@ def add_heatmap(svg: SVGFigure,
                 x2 += cell[0]
 
             if show and gridcolor is not None:
-                add_grid(svg,
-                         pos=(x1, y1),
-                         size=(x2 - x1, y2 - y1),
-                         shape=(ys2 - ys1, xs2 - xs1),
-                         color=gridcolor)
+                add_grid(
+                    svg,
+                    pos=(x1, y1),
+                    size=(x2 - x1, y2 - y1),
+                    shape=(ys2 - ys1, xs2 - xs1),
+                    color=gridcolor,
+                    stroke=gridstroke,
+                )
 
             if show and framecolor:
-                svg.add_frame(x=x1, y=y1, w=x2-x1, h=y2-y1, color=framecolor)
+                svg.add_frame(x=x1, y=y1, w=x2 - x1, h=y2 - y1, color=framecolor)
 
             ys1 = ys2
             y1 = y2 + ysplitgap
@@ -158,8 +165,13 @@ def add_heatmap(svg: SVGFigure,
         ys1 = 0
         for ys2 in ysplits:
             labels = yticklabels[ys1:ys2]
-            add_yticklabels(svg, yticklabels[ys1:ys2], cell=cell, pos=(
-                w+20, y1), colors=yticklabel_colors)
+            add_yticklabels(
+                svg,
+                yticklabels[ys1:ys2],
+                cell=cell,
+                pos=(w + 20, y1),
+                colors=yticklabel_colors,
+            )
             ys1 = ys2
             y1 += cell[1] * len(labels) + ysplitgap
 
@@ -169,19 +181,24 @@ def add_heatmap(svg: SVGFigure,
         y1 = y - 30
 
         if col_color_height > 0 and len(col_colors) > 0:
-            y1 -= (col_color_height + 30)
+            y1 -= col_color_height + 30
 
         for xs2 in xsplits:
             labels = df.columns[xs1:xs2]
-            #labels = np.array([rename_cols[x] if x in rename_cols else x for x in labels])
+            # labels = np.array([rename_cols[x] if x in rename_cols else x for x in labels])
 
-            add_xticklabels(svg, labels, pos=(x1, y1),
-                            colors=xticklabel_colors, rename_cols=rename_cols)
+            add_xticklabels(
+                svg,
+                labels,
+                pos=(x1, y1),
+                colors=xticklabel_colors,
+                rename_cols=rename_cols,
+            )
 
             x1 += cell[0] * labels.size + xsplitgap
             xs1 = xs2
 
-        #add_xticklabels(svg, xticklabels, cell=cell, colors=xticklabelcolors)
+        # add_xticklabels(svg, xticklabels, cell=cell, colors=xticklabelcolors)
 
     if show and col_color_height > 0 and len(col_colors) > 0:
         x1 = x
@@ -192,32 +209,39 @@ def add_heatmap(svg: SVGFigure,
         xs1 = 0
         for xs2 in xsplits:
             labels = df.columns[xs1:xs2]
-            #labels = np.array([rename_cols[x] if x in rename_cols else x for x in labels])
+            # labels = np.array([rename_cols[x] if x in rename_cols else x for x in labels])
 
             x2 = x1
             for i, c in enumerate(labels):
                 for name in col_colors:
                     if name in c:
-                        svg.add_rect(x2, y1, cell[0] * (labels.size - i), col_color_height,
-                                     fill=col_colors[name])
+                        svg.add_rect(
+                            x2,
+                            y1,
+                            cell[0] * (labels.size - i),
+                            col_color_height,
+                            fill=col_colors[name],
+                        )
                         break
                 x2 += cell[0]
 
-            svg.add_frame(x=x1, y=y1, w=x2-x1, h=col_color_height)
+            svg.add_frame(x=x1, y=y1, w=x2 - x1, h=col_color_height)
 
             x1 = x2 + xsplitgap
             xs1 = xs2
 
-    return {'w': w, 'h': h, 'x_map': x_map, 'y_map': y_map}
+    return {"w": w, "h": h, "x_map": x_map, "y_map": y_map}
 
 
-def add_xticklabels(svg: SVGFigure,
-                    labels: Union[pd.DataFrame, list[str]],
-                    colors: dict[str, str] = {},
-                    pos: tuple[int, int] = (0, -30),
-                    cell: tuple[int, int] = DEFAULT_CELL,
-                    default_color: str = 'black',
-                    rename_cols: dict[str, str] = {}):
+def add_xticklabels(
+    svg: SVGFigure,
+    labels: Union[pd.DataFrame, list[str]],
+    colors: dict[str, str] = {},
+    pos: tuple[int, int] = (0, -30),
+    cell: tuple[int, int] = DEFAULT_CELL,
+    default_color: str = "black",
+    rename_cols: dict[str, str] = {},
+):
     if isinstance(labels, pd.DataFrame):
         labels = labels.columns
 
@@ -239,17 +263,25 @@ def add_xticklabels(svg: SVGFigure,
                     color = c
                     break
 
-        svg.add_text_bb(rename_cols.get(name, name), x=x1,
-                        y=y, orientation='v', color=color, align='l')
+        svg.add_text_bb(
+            rename_cols.get(name, name),
+            x=x1,
+            y=y,
+            orientation="v",
+            color=color,
+            align="l",
+        )
         x1 += cell[0]
 
 
-def add_yticklabels(svg: SVGFigure,
-                    labels: Union[pd.DataFrame, list[str]],
-                    colors: dict[str, str] = {},
-                    pos: tuple[int, int] = (0, 0),
-                    cell: tuple[int, int] = DEFAULT_CELL,
-                    default_color: str = 'black'):
+def add_yticklabels(
+    svg: SVGFigure,
+    labels: Union[pd.DataFrame, list[str]],
+    colors: dict[str, str] = {},
+    pos: tuple[int, int] = (0, 0),
+    cell: tuple[int, int] = DEFAULT_CELL,
+    default_color: str = "black",
+):
     if isinstance(labels, pd.DataFrame):
         labels = labels.index
 
@@ -273,15 +305,17 @@ def add_yticklabels(svg: SVGFigure,
         y1 += cell[1]
 
 
-def add_col_colorbar(svg: SVGFigure,
-                     labels: list[str],
-                     colormap: dict[str, str],
-                     pos: tuple[int, int] = (0, 0),
-                     cell: tuple[int, int] = DEFAULT_COLORBAR_CELL,
-                     gridcolor: str = core.GRID_COLOR,
-                     showgrid: bool = False,
-                     showframe: bool = False,
-                     default_color: str = '#cccccc'):
+def add_col_colorbar(
+    svg: SVGFigure,
+    labels: list[str],
+    colormap: dict[str, str],
+    pos: tuple[int, int] = (0, 0),
+    cell: tuple[int, int] = DEFAULT_COLORBAR_CELL,
+    gridcolor: str = core.GRID_COLOR,
+    showgrid: bool = False,
+    showframe: bool = False,
+    default_color: str = "#cccccc",
+):
 
     x, y = pos
 
@@ -299,11 +333,7 @@ def add_col_colorbar(svg: SVGFigure,
     h = cell[1]
 
     if showgrid:
-        add_grid(svg,
-                 pos=pos,
-                 size=(w, h),
-                 shape=len(labels),
-                 color=gridcolor)
+        add_grid(svg, pos=pos, size=(w, h), shape=len(labels), color=gridcolor)
 
     if showframe:
         svg.add_frame(x=x, y=y, w=w, h=h)
@@ -311,14 +341,16 @@ def add_col_colorbar(svg: SVGFigure,
     return (w, h)
 
 
-def add_grid(svg: SVGFigure,
-             pos: tuple[int, int] = (0, 0),
-             size: tuple[int, int] = (0, 0),
-             shape: tuple[int, int] = (0, 0),
-             color: str = core.GRID_COLOR,
-             stroke: int = core.GRID_STROKE,
-             drawrows: bool = True,
-             drawcols: bool = True):
+def add_grid(
+    svg: SVGFigure,
+    pos: tuple[int, int] = (0, 0),
+    size: tuple[int, int] = (0, 0),
+    shape: tuple[int, int] = (0, 0),
+    color: str = core.GRID_COLOR,
+    stroke: int = core.GRID_STROKE,
+    drawrows: bool = True,
+    drawcols: bool = True,
+):
     """
     Add grid lines to a figure. Mostly used for enhancing heat maps.
 
@@ -343,12 +375,11 @@ def add_grid(svg: SVGFigure,
     dy = h / rows
 
     if drawrows:
-        #x += dx
+        # x += dx
         y += dy
 
         for _ in range(1, rows):
-            svg.add_line(x1=x, y1=y, x2=x+w, y2=y,
-                         color=color, stroke=stroke)
+            svg.add_line(x1=x, y1=y, x2=x + w, y2=y, color=color, stroke=stroke)
 
             y += dy
 
@@ -357,37 +388,38 @@ def add_grid(svg: SVGFigure,
         x += dx
 
         for _ in range(1, cols):
-            svg.add_line(x1=x, y1=y, x2=x, y2=y+h,
-                         color=color, stroke=stroke)
+            svg.add_line(x1=x, y1=y, x2=x, y2=y + h, color=color, stroke=stroke)
 
             x += dx
 
 
-def cluster_label_rows(svg: SVGFigure,
-                       row_labels,
-                       clusters,
-                       x=0,
-                       y=0,
-                       h=0,
-                       w=core.LABEL_COLOR_BLOCK_SIZE,
-                       padding=5,
-                       showgroups=True,
-                       frame=True,
-                       framecolor='white',
-                       stroke=core.STROKE_SIZE,
-                       showlabels=True,
-                       showblocks=True,
-                       mingroupsize=2,
-                       weight='normal',
-                       invert_x=False,
-                       align='left'):
+def cluster_label_rows(
+    svg: SVGFigure,
+    row_labels,
+    clusters,
+    x=0,
+    y=0,
+    h=0,
+    w=core.LABEL_COLOR_BLOCK_SIZE,
+    padding=5,
+    showgroups=True,
+    frame=True,
+    framecolor="white",
+    stroke=core.STROKE_SIZE,
+    showlabels=True,
+    showblocks=True,
+    mingroupsize=2,
+    weight="normal",
+    invert_x=False,
+    align="left",
+):
     startx = x
     starty = y
 
     c = 0
 
     for group in row_labels:
-        c += len(group['items'])
+        c += len(group["items"])
 
     yd = h / c
 
@@ -403,42 +435,36 @@ def cluster_label_rows(svg: SVGFigure,
     c = 0
 
     for group in row_labels:
-        h = yd * len(group['items'])
+        h = yd * len(group["items"])
 
-        for item in group['items']:
+        for item in group["items"]:
             color = clusters.get_color(item)
 
             if showblocks:
                 svg.add_rect(x, y, w, yd, fill=color)
 
                 if frame:
-                    #svg.add_frame(x, y, w, yd, color=framecolor)
+                    # svg.add_frame(x, y, w, yd, color=framecolor)
 
                     if c > 0:
-                        svg.add_line(x1=x-padding,
-                                     y1=y,
-                                     x2=x+w+padding,
-                                     y2=y,
-                                     color=framecolor,
-                                     stroke=stroke)
+                        svg.add_line(
+                            x1=x - padding,
+                            y1=y,
+                            x2=x + w + padding,
+                            y2=y,
+                            color=framecolor,
+                            stroke=stroke,
+                        )
 
             if showlabels:
                 tw = svg.get_string_width(item)
 
                 mtw = max(mtw, tw)
 
-                if align == 'left':
-                    svg.add_text_bb(item,
-                                    x=x - tw - 10,
-                                    y=y,
-                                    h=yd,
-                                    color=color)
+                if align == "left":
+                    svg.add_text_bb(item, x=x - tw - 10, y=y, h=yd, color=color)
                 else:
-                    svg.add_text_bb(item,
-                                    x=x + w + 10,
-                                    y=y,
-                                    h=yd,
-                                    color=color)
+                    svg.add_text_bb(item, x=x + w + 10, y=y, h=yd, color=color)
 
             y += yd
 
@@ -448,58 +474,82 @@ def cluster_label_rows(svg: SVGFigure,
         y = starty + yd / 2
 
         for group in row_labels:
-            n = len(group['items'])
+            n = len(group["items"])
 
             x = -mtw - 50
             h = (n - 1) * yd
-            color = clusters.get_block_color(group['name'])
+            color = clusters.get_block_color(group["name"])
 
             if n > 1:
-                svg.add_line(x,
-                             y - svg.get_font_h() / 2 + padding / 2,
-                             x,
-                             y + h + svg.get_font_h() / 2 - padding / 2,
-                             color=color)
+                svg.add_line(
+                    x,
+                    y - svg.get_font_h() / 2 + padding / 2,
+                    x,
+                    y + h + svg.get_font_h() / 2 - padding / 2,
+                    color=color,
+                )
 
-#                svg.add_line(x,
-#                              y,
-#                              x + core.BRACKET_SIZE,
-#                              y,
-#                              color=color)
-#
-#                svg.add_line(x,
-#                              y + h,
-#                              x + core.BRACKET_SIZE,
-#                              y + h,
-#                              color=color)
+            #                svg.add_line(x,
+            #                              y,
+            #                              x + core.BRACKET_SIZE,
+            #                              y,
+            #                              color=color)
+            #
+            #                svg.add_line(x,
+            #                              y + h,
+            #                              x + core.BRACKET_SIZE,
+            #                              y + h,
+            #                              color=color)
 
-            names = group['name'].split(' ')
+            names = group["name"].split(" ")
 
-            if group['name'] == 'Plasmablasts':
-                names = ['Plasma', 'blasts']
+            if group["name"] == "Plasmablasts":
+                names = ["Plasma", "blasts"]
 
             if n >= mingroupsize:
                 if len(names) == 2:
                     tw = svg.get_string_width(names[0])
-                    svg.add_text(names[0], x=x-60, y=y + h / 2 + tw/2, h=yd,
-                                 color=color, rotate=-90, weight=weight)
+                    svg.add_text(
+                        names[0],
+                        x=x - 60,
+                        y=y + h / 2 + tw / 2,
+                        h=yd,
+                        color=color,
+                        rotate=-90,
+                        weight=weight,
+                    )
                     tw = svg.get_string_width(names[1])
-                    svg.add_text(names[1], x=x-20, y=y + h / 2 + tw/2, h=yd,
-                                 color=color, rotate=-90, weight=weight)
+                    svg.add_text(
+                        names[1],
+                        x=x - 20,
+                        y=y + h / 2 + tw / 2,
+                        h=yd,
+                        color=color,
+                        rotate=-90,
+                        weight=weight,
+                    )
                 else:
-                    tw = svg.get_string_width(group['name'])
-                    svg.add_text(names[0],
-                                 x=x-20,
-                                 y=y + h / 2 + tw/2,
-                                 h=yd,
-                                 color=color,
-                                 rotate=-90,
-                                 weight=weight)
+                    tw = svg.get_string_width(group["name"])
+                    svg.add_text(
+                        names[0],
+                        x=x - 20,
+                        y=y + h / 2 + tw / 2,
+                        h=yd,
+                        color=color,
+                        rotate=-90,
+                        weight=weight,
+                    )
 
             y += n * yd
 
 
-def zscore(d: pandas.DataFrame, clip: Optional[Union[int, float]] = None, min: Optional[Union[int, float]] = None, max: Optional[Union[int, float]] = None, axis: int = 1):
+def zscore(
+    d: pandas.DataFrame,
+    clip: Optional[Union[int, float]] = None,
+    min: Optional[Union[int, float]] = None,
+    max: Optional[Union[int, float]] = None,
+    axis: int = 1,
+):
     """Z-score matrix
 
     Args:
@@ -518,18 +568,18 @@ def zscore(d: pandas.DataFrame, clip: Optional[Union[int, float]] = None, min: O
     else:
         sd = StandardScaler().fit_transform(d)
 
-    #sd = sd.T
+    # sd = sd.T
 
     if isinstance(clip, float) or isinstance(clip, int):
         max = abs(clip)
         min = -max
 
     if isinstance(min, float) or isinstance(min, int):
-        print('scale min', min)
+        print("scale min", min)
         sd[np.where(sd < min)] = min
 
     if isinstance(max, float) or isinstance(max, int):
-        print('scale max', max)
+        print("scale max", max)
         sd[np.where(sd > max)] = max
 
     return pd.DataFrame(sd, index=d.index, columns=d.columns)

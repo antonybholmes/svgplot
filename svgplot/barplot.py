@@ -396,7 +396,7 @@ def add_stacked_bar(
         yaxis = Axis(lim=[0, 100], ticks=yticks, w=height)
     else:
         # pc_tables = tables
-        yaxis = Axis(lim=ylim, w=height)
+        yaxis = Axis(lim=ylim, w=height, ticks=yticks)
 
     block_size = bar_width + 2 * bar_padding
 
@@ -424,6 +424,7 @@ def add_stacked_bar(
         for hi, h in enumerate(hue_order):
             dfh = dfc[dfc[hue] == h]
 
+            print(hue_order)
             print(dfc)
             print(h, dfh)
 
@@ -472,6 +473,8 @@ def add_stacked_bar(
         # reverse
         ticklabels = ticklabels[::-1]
 
+    print("yticklabels", ticklabels, yticks)
+
     graph.add_y_axis(
         svg,
         axis=yaxis,
@@ -479,7 +482,7 @@ def add_stacked_bar(
         ticks=yticks,
         ticklabels=ticklabels,
         label=ylabel,
-        title_offset=100,
+        title_offset=120,
     )
 
     # svg.inc(x=x2 + 50)
