@@ -158,6 +158,8 @@ def add_violinplot(
             "labels": None,
             "title": None,
             "title_offset": -50,
+            "add_counts": False,
+            "counts_format": ",",
         },
         x_kws,
     )
@@ -290,7 +292,7 @@ def add_violinplot(
     for x_labeli, x_label in enumerate(order):
         x_data = data[data[x] == x_label] if x_label != "<all>" else data
 
-        print("x", x_label, x_data, hue_order)
+        print("x", x_label, x_data.shape, hue_order)
 
         for hue_label in hue_order:
             # only filter by hue if specified
@@ -299,7 +301,8 @@ def add_violinplot(
             else:
                 hue_data = x_data
 
-            # print(x_label, hue_label, hue_data.shape)
+            if x_label == "Kostia":
+                print("Kostia", x_label, hue_label, hue_data.shape)
 
             if hue_data.shape[0] == 0:
                 continue
@@ -366,9 +369,22 @@ def add_violinplot(
             else x_label
         )
 
+        total = sum(
+            [
+                len(data_points[x_label][hue_label])
+                for hue_label in hue_order
+                if hue_label in data_points[x_label]
+            ]
+        )
+
+        if _x_kws["add_counts"]:
+            label += f" (n={total:{_x_kws['counts_format']}})"
+
         if _x_kws["show_labels"]:
             if _x_kws["label_pos"] == "title":
-                svg.add_text_bb(label, x=x1 + w / 2, y=title_offset, align="c")
+                svg.add_text_bb(
+                    label, x=x1 + w / 2, y=_x_kws["title_offset"], align="c"
+                )
             else:
                 if _x_kws["label_orientation"] == "v":
                     svg.add_text_bb(
@@ -481,6 +497,8 @@ def add_violinplot(
         stats = []
         n = len(test_pairs) * len(test_pairs)
 
+        tested_pairs = set()
+
         for p1, (xc1, hue1) in enumerate(test_pairs):
 
             d1 = (
@@ -490,7 +508,13 @@ def add_violinplot(
             )
 
             for p2, (xc2, hue2) in enumerate(test_pairs):
+
                 if xc1 == xc2 and hue1 == hue2:
+                    continue
+
+                id = f"{xc1}|{hue1}|{xc2}|{hue2}"
+
+                if id in tested_pairs:
                     continue
 
                 d2 = (
@@ -510,6 +534,10 @@ def add_violinplot(
                 q = min(1, p * n)
                 d[p1, p2] = q
                 stats.append([f"{xc1}|{hue1}", f"{xc2}|{hue2}", p, q])
+
+                # so we don't test compliments of each other
+                tested_pairs.add(f"{xc1}|{hue1}|{xc2}|{hue2}")
+                tested_pairs.add(f"{xc2}|{hue2}|{xc1}|{hue1}")
 
         # for s1, xc1 in enumerate(order):
         #     for s2, xc2 in enumerate(order):
@@ -552,6 +580,9 @@ def add_violinplot(
                         & (df_stats[f"{x} 2"] == f"{xc2}|{hue2}")
                     ]
 
+                    if df_stats_t.shape[0] == 0:
+                        continue
+
                     q = df_stats_t["q"].values[0]
 
                     if q < 0.05:
@@ -592,6 +623,9 @@ def add_violinplot(
                         (df_stats[f"{x} 1"] == f"{xc1}|{hue1}")
                         & (df_stats[f"{x} 2"] == f"{xc2}|{hue2}")
                     ]
+
+                    if df_stats_t.shape[0] == 0:
+                        continue
 
                     q = df_stats_t["q"].values[0]
 

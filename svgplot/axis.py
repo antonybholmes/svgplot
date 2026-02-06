@@ -61,9 +61,9 @@ def generate_ticks(
 
 
 def nice_bounds(
-    lim: tuple[Union[int, float], Union[int, float]],
+    lim: list[Union[int, float], Union[int, float]],
     target_ticks: int = 6,
-    pad_ticks: int = 0,
+    pad_ticks: list[int, int] = (1, 0),
 ):
     span = lim[1] - lim[0]
 
@@ -75,8 +75,8 @@ def nice_bounds(
     hi = step * math.ceil(lim[1] / step)
 
     # 3. Add padding in units of ticks
-    lo -= pad_ticks * step
-    hi += pad_ticks * step
+    lo -= pad_ticks[0] * step
+    hi += pad_ticks[1] * step
 
     nice_lim = [lo, hi]
 
