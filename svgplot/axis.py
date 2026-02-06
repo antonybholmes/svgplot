@@ -1,10 +1,11 @@
+import math
 from collections.abc import Iterable
 from typing import Optional, Union
 
 import numpy as np
 
 
-def _calc_linear_scale(
+def calc_linear_scale(
     lim: tuple[Union[int, float], Union[int, float]] = [0, 1], ticks=6
 ):
     if lim[0] == lim[1]:
@@ -27,6 +28,61 @@ def _calc_linear_scale(
     upper = stepSize * np.ceil(1 + lim[1] / stepSize)
     lower = stepSize * np.floor(lim[0] / stepSize)
     return (lower, upper)
+
+
+def nice_step(span, target_ticks=6):
+    raw = span / target_ticks
+    exp = 10 ** math.floor(math.log10(raw))
+    frac = raw / exp
+
+    if frac <= 1:
+        nice = 1
+    elif frac <= 2:
+        nice = 2
+    elif frac <= 5:
+        nice = 5
+    else:
+        nice = 10
+
+    return nice * exp
+
+
+def generate_ticks(
+    lim: tuple[Union[int, float], Union[int, float]],
+    step: Union[int, float],
+    eps: float = 1e-9,
+):
+    ticks = []
+    x = lim[0]
+    while x <= lim[1] + eps:
+        ticks.append(x)
+        x += step
+    return ticks
+
+
+def nice_bounds(
+    lim: tuple[Union[int, float], Union[int, float]],
+    target_ticks: int = 6,
+    pad_ticks: int = 0,
+):
+    span = lim[1] - lim[0]
+
+    # 1. Pick a nice step
+    step = nice_step(span, target_ticks)
+
+    # 2. Snap bounds to step
+    lo = step * math.floor(lim[0] / step)
+    hi = step * math.ceil(lim[1] / step)
+
+    # 3. Add padding in units of ticks
+    lo -= pad_ticks * step
+    hi += pad_ticks * step
+
+    nice_lim = [lo, hi]
+
+    ticks = generate_ticks(nice_lim, step)
+
+    return {"lim": nice_lim, "step": step, "ticks": ticks}
 
 
 class Axis:
@@ -155,14 +211,16 @@ class Axis:
 def auto_axis(
     lim: tuple[float, float] = [0, 1],
     label: str = "",
-    ticks: int = 6,
+    target_ticks: int = 6,
     dp: int = 2,
     w: int = 100,
 ):
-    lower, upper = _calc_linear_scale(lim, ticks=ticks)
-    ticks = [np.round(x, dp) for x in np.linspace(lower, upper, ticks)]
+    # lower, upper = calc_linear_scale(lim, ticks=ticks)
+    # ticks = [np.round(x, dp) for x in np.linspace(lower, upper, ticks)]
 
-    return Axis(lim=[lower, upper], ticks=ticks, label=label, w=w)
+    bounds = nice_bounds(lim, target_ticks=target_ticks)
+
+    return Axis(lim=bounds["lim"], ticks=bounds["ticks"], label=label, w=w)
 
 
 def create_axis(

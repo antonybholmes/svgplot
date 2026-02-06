@@ -9,7 +9,7 @@ import pandas as pd
 from scipy.stats import gaussian_kde, mannwhitneyu
 
 from . import boxplot, core, graph, swarm
-from .axis import Axis, auto_axis
+from .axis import Axis, auto_axis, calc_linear_scale, nice_bounds
 from .svgfigure import SVGFigure
 
 
@@ -134,12 +134,10 @@ def add_violinplot(
     plot_width: int = 80,
     height: int = 500,
     x_gap: int = 20,
-    title_offset: int = -50,
     show_legend: bool = False,
     stats_mode: Optional[str] = "show",
     show_labels: bool = False,
     stats_file: Optional[str] = None,
-    title: Optional[str] = None,
     bw_kws: Optional[dict[str, Any]] = None,
     x_kws: Optional[dict[str, Any]] = None,
     y_kws: Optional[dict[str, Any]] = None,
@@ -158,6 +156,8 @@ def add_violinplot(
             "label_pos": "axis",
             "label_orientation": "h",
             "labels": None,
+            "title": None,
+            "title_offset": -50,
         },
         x_kws,
     )
@@ -251,8 +251,14 @@ def add_violinplot(
 
     x1, y1 = pos
 
+    # nice bounds for yaxis
+    bounds = nice_bounds([data[y].min(), data[y].max()])
+
     if _y_kws["lim"] is None:
-        _y_kws["lim"] = (data[y].min(), data[y].max())
+        _y_kws["lim"] = bounds["lim"]
+
+    if _y_kws["ticks"] is None:
+        _y_kws["ticks"] = bounds["ticks"]
 
     if _y_kws["offset"] is None:
         _y_kws["offset"] = -(plot_width / 2 + x_gap)
@@ -261,19 +267,13 @@ def add_violinplot(
         _y_kws["label"] = y
 
     xaxis = Axis(lim=[0, 1], w=plot_width / 2)
-    yaxis = auto_axis(
-        _y_kws["lim"],
+    yaxis = Axis(
+        lim=_y_kws["lim"],
+        ticks=_y_kws["ticks"],
+        ticklabels=_y_kws["ticklabels"],
         label=_y_kws["label"],
         w=height,
     )
-
-    # Axis(
-    #     lim=_y_kws["lim"],
-    #     ticks=_y_kws["ticks"],
-    #     ticklabels=_y_kws["ticklabels"],
-    #     label=_y_kws["label"],
-    #     w=height,
-    # )
 
     if _y_kws["show"]:
         graph.add_y_axis(svg, axis=yaxis, pos=(_y_kws["offset"], 0))
@@ -348,9 +348,9 @@ def add_violinplot(
         total_width += len(data_points[x_label]) * plot_width + (x_gap if i > 0 else 0)
     total_width -= plot_width
 
-    if title is not None:
+    if _x_kws["title"] is not None:
         svg.add_text_bb(
-            title,
+            _x_kws["title"],
             x=x1 + total_width / 2,
             y=y1 - 20,
             align="c",
@@ -358,7 +358,7 @@ def add_violinplot(
 
     for x_labeli, x_label in enumerate(order):
 
-        w = len(data_points[x_label]) * plot_width
+        w = (len(data_points[x_label]) - 1) * plot_width
 
         label = (
             _x_kws["labels"][x_labeli]
@@ -571,7 +571,7 @@ def add_violinplot(
             #             if q < 0.05:
             #                 bars += 1
 
-            ty = -bars * 40 - (20 if title is not None else 0)
+            ty = -bars * 40 - (20 if _x_kws["title"] is not None else 0)
             # plot_total_width = plot_width + x_gap
 
             for p1, (xc1, hue1) in enumerate(test_pairs):
