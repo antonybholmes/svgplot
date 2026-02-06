@@ -9,7 +9,7 @@ import pandas as pd
 from scipy.stats import gaussian_kde, mannwhitneyu
 
 from . import boxplot, core, graph, swarm
-from .axis import Axis
+from .axis import Axis, auto_axis
 from .svgfigure import SVGFigure
 
 
@@ -126,7 +126,7 @@ def add_violinplot(
     y: str = "",
     hue: Optional[str] = None,
     order: Optional[list[str]] = None,
-    hue_order: Optional[list[str]] = [""],
+    hue_order: Optional[list[str]] = None,
     palette: Optional[list[str]] = None,
     scale: str = "area",
     scale_hue: bool = True,
@@ -137,7 +137,9 @@ def add_violinplot(
     title_offset: int = -50,
     show_legend: bool = False,
     stats_mode: Optional[str] = "show",
+    show_labels: bool = False,
     stats_file: Optional[str] = None,
+    title: Optional[str] = None,
     bw_kws: Optional[dict[str, Any]] = None,
     x_kws: Optional[dict[str, Any]] = None,
     y_kws: Optional[dict[str, Any]] = None,
@@ -202,13 +204,14 @@ def add_violinplot(
     if isinstance(palette, matplotlib.colors.ListedColormap):
         palette = [core.rgbtohex(c) for c in palette.colors]
 
+    if isinstance(palette, str):
+        p = matplotlib.cm.get_cmap(palette)
+
     if isinstance(palette, list):
         if isinstance(palette[0], tuple) or isinstance(palette[0], list):
             palette = [core.rgbtohex(c) for c in palette]
 
         palette = np.array(palette)
-
-    print(order, hue_order)
 
     if order is None:
         order = []
@@ -236,12 +239,11 @@ def add_violinplot(
             used_hues.add(n)
 
     # if hue order is still None, just use all
-    if hue is not None:
-        if hue_order is not None:
-            # we only want colors for the hues we have
-            palette = palette[0 : len(hue_order)]
-        else:
-            hue_order = ["<all>"]
+    if hue_order is not None:
+        # we only want colors for the hues we have
+        palette = palette[0 : len(hue_order)]
+    else:
+        hue_order = ["<all>"]
 
     hue_order = np.array(hue_order)
 
@@ -258,16 +260,20 @@ def add_violinplot(
     if _y_kws["label"] is None:
         _y_kws["label"] = y
 
-    print("ticks", _y_kws["ticks"], _y_kws["ticklabels"])
-
     xaxis = Axis(lim=[0, 1], w=plot_width / 2)
-    yaxis = Axis(
-        lim=_y_kws["lim"],
-        ticks=_y_kws["ticks"],
-        ticklabels=_y_kws["ticklabels"],
+    yaxis = auto_axis(
+        _y_kws["lim"],
         label=_y_kws["label"],
         w=height,
     )
+
+    # Axis(
+    #     lim=_y_kws["lim"],
+    #     ticks=_y_kws["ticks"],
+    #     ticklabels=_y_kws["ticklabels"],
+    #     label=_y_kws["label"],
+    #     w=height,
+    # )
 
     if _y_kws["show"]:
         graph.add_y_axis(svg, axis=yaxis, pos=(_y_kws["offset"], 0))
@@ -284,12 +290,14 @@ def add_violinplot(
     for x_labeli, x_label in enumerate(order):
         x_data = data[data[x] == x_label] if x_label != "<all>" else data
 
-        # print(x_label, x_data.shape)
+        print("x", x_label, x_data, hue_order)
 
         for hue_label in hue_order:
             # only filter by hue if specified
             if hue_label != "<all>":
                 hue_data = x_data[x_data[hue] == hue_label]
+            else:
+                hue_data = x_data
 
             # print(x_label, hue_label, hue_data.shape)
 
@@ -334,6 +342,19 @@ def add_violinplot(
 
     # colori = 0
     # w = (hue_order.size - 1) * plot_width
+    total_width = 0
+
+    for i, x_label in enumerate(order):
+        total_width += len(data_points[x_label]) * plot_width + (x_gap if i > 0 else 0)
+    total_width -= plot_width
+
+    if title is not None:
+        svg.add_text_bb(
+            title,
+            x=x1 + total_width / 2,
+            y=y1 - 20,
+            align="c",
+        )
 
     for x_labeli, x_label in enumerate(order):
 
@@ -352,7 +373,7 @@ def add_violinplot(
                 if _x_kws["label_orientation"] == "v":
                     svg.add_text_bb(
                         label,
-                        x=x1 + w / 2,
+                        x=x1,
                         y=y1 + yaxis.w + 10,
                         orientation="v",
                         align="r",
@@ -425,7 +446,7 @@ def add_violinplot(
                     stroke=_box_kws["stroke"],
                     pos=(x1, y1),
                     rounded=_box_kws["rounded"],
-                    label=hue_label,
+                    label=hue_label if show_labels else None,
                 )
 
             x1 += plot_width  # 2 * xaxis.w
@@ -550,7 +571,7 @@ def add_violinplot(
             #             if q < 0.05:
             #                 bars += 1
 
-            ty = -bars * 40
+            ty = -bars * 40 - (20 if title is not None else 0)
             # plot_total_width = plot_width + x_gap
 
             for p1, (xc1, hue1) in enumerate(test_pairs):

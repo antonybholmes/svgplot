@@ -376,7 +376,8 @@ def add_y_axis(
         else:
             ticky = y + axis.w - axis.scale(tick)
 
-        print("ticky", ticklabels, i, ticks)
+        # print("ticky", ticklabels, i, ticks)
+
         ticklabel = ticklabels[i]
 
         if not isinstance(ticklabel, str):
